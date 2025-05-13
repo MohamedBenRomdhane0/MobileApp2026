@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Traits;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
+
+/**
+ * Trait ApplyQueryScopes
+ *
+ * Applies dynamic Eloquent filters like ?status=active → scopeByStatus().
+ */
+trait ApplyQueryScopes
+{
+    /**
+     * Dynamically apply model scopes based on request filters.
+     *
+     * @param array $filters
+     * @param Builder $query
+     * @return void
+     */
+    public static function applyFilters(array $filters, Builder $query): void
+    {
+        foreach ($filters as $filter => $value) {
+            if (self::isValidFilter($filter, $query)) {
+                $methodName = 'scopeBy' . Str::studly($filter);
+                $query->{$methodName}($query, $value);
+            }
+        }
+    }
+
+    /**
+     * Check if the model has a matching filter scope.
+     *
+     * @param string $filter
+     * @param Builder $query
+     * @return bool
+     */
+    private static function isValidFilter(string $filter, Builder $query): bool
+    {
+        $model = $query->getModel();
+        $methodName = 'scopeBy' . Str::studly($filter);
+        return method_exists($model, $methodName);
+    }
+}
