@@ -6,17 +6,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Material extends Model
+class Answer extends Model
 {
     use HasFactory, SoftDeletes;
-    
-    protected $fillable = ['name'];
+
+    protected $fillable = ['question_id', 'answer', 'is_valid', 'matching_answer'];
 
     /**
-     * The levels that belong to the material.
+     * Relation with question
      */
-    public function levelMaterials()
+    public function question()
     {
-        return $this->hasMany(LevelMaterial::class);
+        return $this->belongsTo(Question::class);
     }
+
 }

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->morphs('model');
             $table->foreignId('teacher_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('level_material_id')->nullable()->constrained('level_materials')->onDelete('cascade');
             $table->unsignedBigInteger('status')->nullable()->comment('1: Draft, 2: Published, 3: Archived');
             $table->string('title')->nullable();
             $table->float('score')->nullable();

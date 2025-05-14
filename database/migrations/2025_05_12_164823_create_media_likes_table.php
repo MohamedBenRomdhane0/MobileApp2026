@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_answer_results', function (Blueprint $table) {
+        Schema::create('media_likes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_answer_id')->constrained('user_answers')->onDelete('cascade');
-            $table->float('score')->nullable();
-            $table->enum('status', ['PASSED', 'FAILED', 'NEEDS_REVIEW']);
-
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->morphs('likeable');
             $table->timestamps();
-            $table->softDeletes();
+
+            $table->unique(['user_id', 'likeable_id', 'likeable_type']);
+            $table->index(['likeable_id', 'likeable_type']);
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_answer_results');
+        Schema::dropIfExists('media_likes');
     }
 };

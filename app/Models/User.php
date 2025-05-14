@@ -10,6 +10,12 @@ use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\TeacherProfile;
+use App\Models\ParentProfile;
+use App\Models\ChildProfile;
+use App\Models\UserSession;
+use App\Models\SocialAccount;
+use App\Models\Book;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -20,24 +26,14 @@ class User extends Authenticatable implements JWTSubject
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'full_name',
-        'email',
-        'phone',
-        'password',
-        'status',
-        'email_verified_at',
-    ];
+    protected $fillable = ['full_name', 'email', 'phone', 'password', 'status', 'email_verified_at'];
 
     /**
      * The attributes that should be hidden for arrays and JSON.
      *
      * @var array<int, string>
      */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
     /**
      * The attributes that should be cast to native types.
@@ -87,6 +83,41 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(ChildProfile::class);
     }
+    /**
+     * One-to-many: User sessions
+     */
+
+    public function sessions()
+    {
+        return $this->hasMany(UserSession::class);
+    }
+    /**
+     * One-to-many: User social accounts
+     */
+
+    public function socialAccounts()
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+    /**
+     * One-to-many: User books, a user can create many books
+     */
+
+    public function books()
+    {
+        return $this->hasMany(Book::class);
+    }
+    /**
+     * One-to-many: User media, a user can have many media
+     */
+    public function media()
+    {
+        return $this->morphMany(Media::class, 'model');
+    }
+    public function mediaLikes()
+    {
+        return $this->hasMany(MediaLike::class);
+    }
 
     /**
      * Accessor for dynamic profile based on role
@@ -114,9 +145,15 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getProfileTypeAttribute(): ?string
     {
-        if ($this->hasRole(RoleEnum::TEACHER->value)) return RoleEnum::TEACHER->value;
-        if ($this->hasRole(RoleEnum::PARENT->value)) return RoleEnum::PARENT->value;
-        if ($this->hasRole(RoleEnum::CHILD->value)) return RoleEnum::CHILD->value;
+        if ($this->hasRole(RoleEnum::TEACHER->value)) {
+            return RoleEnum::TEACHER->value;
+        }
+        if ($this->hasRole(RoleEnum::PARENT->value)) {
+            return RoleEnum::PARENT->value;
+        }
+        if ($this->hasRole(RoleEnum::CHILD->value)) {
+            return RoleEnum::CHILD->value;
+        }
 
         return null;
     }
