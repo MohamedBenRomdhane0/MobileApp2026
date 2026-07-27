@@ -280,6 +280,7 @@ src/
 ---
 
 ## Changelog
+- **2026-07-27** — **Dribbble-style tab bar enhancement.** `MainTabs.tsx` upgraded with glow halo behind active tab, animated labels that fade/slide with icon focus, bounce scale animation using `withSpring` (damping 18, stiffness 320), and brighter pill indicator with shadow. Labels (`Profile`, `Meet`, `Learn`, `Books`) appear/disappear with the icon transition.
 - **2026-07-27** — **Dribbble-style animated tab bar.** `MainTabs.tsx` updated with a sliding indicator pill (`Animated.View` with `withSpring` physics) and glow-ring animation behind the focused icon (`CrossfadeIcon` enhanced with `glowStyle`).
 - **2026-07-27** — **README.md** created with project overview, tech stack, architecture, build/test commands, and conventions.
 - **2026-07-27** — **O15 resolved.** App no longer forces "Add a child" on restart when an `ActiveChildId` is persisted. SignInScreen routing now considers both `user.children` and `activeChildId`; `useAuthInitialization` now triggers `getParentMe` to refresh the children list; `createChild` now persists `ActiveChildId` to storage. 4 surgical edits across `SignInScreen.tsx`, `useAuthInitialization.ts`, `authSlice.ts`, `parentApi.ts`.
