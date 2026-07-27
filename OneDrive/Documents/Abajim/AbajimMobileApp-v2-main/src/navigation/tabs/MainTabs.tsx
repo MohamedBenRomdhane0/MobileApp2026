@@ -11,12 +11,10 @@ import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
-  Easing,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  withTiming,
 } from "react-native-reanimated";
 
 import { PATHS } from "@config/constants/paths";
@@ -50,6 +48,7 @@ type TabItem = {
   iconFocused: keyof typeof Ionicons.glyphMap;
   icon: keyof typeof Ionicons.glyphMap;
   isCenter?: boolean;
+  label: string;
 };
 
 function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
@@ -158,54 +157,73 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
     });
   };
 
-   const items: TabItem[] = useMemo(
-     () => [
-       {
-         name: PATHS.TABS.SETTINGS as keyof TabsParamList,
-         iconFocused: "person",
-         icon: "person-outline",
-       },
-       {
-         name: PATHS.TABS.MEETINGS as keyof TabsParamList,
-         iconFocused: "videocam",
-         icon: "videocam-outline",
-       },
-       {
-         name: PATHS.TABS.HOME as keyof TabsParamList,
-         iconFocused: "home",
-         icon: "home-outline",
-         isCenter: true,
-       },
-       {
-         name: PATHS.TABS.COURSES as keyof TabsParamList,
-         iconFocused: "library",
-         icon: "library-outline",
-       },
-       {
-         name: PATHS.TABS.BOOKS as keyof TabsParamList,
-         iconFocused: "book",
-         icon: "book-outline",
-       },
-     ],
-     []
-   );
+    const items: TabItem[] = useMemo(
+      () => [
+        {
+          name: PATHS.TABS.SETTINGS as keyof TabsParamList,
+          iconFocused: "person",
+          icon: "person-outline",
+          label: "Profile",
+        },
+        {
+          name: PATHS.TABS.MEETINGS as keyof TabsParamList,
+          iconFocused: "videocam",
+          icon: "videocam-outline",
+          label: "Meet",
+        },
+        {
+          name: PATHS.TABS.HOME as keyof TabsParamList,
+          iconFocused: "home",
+          icon: "home-outline",
+          isCenter: true,
+          label: "Home",
+        },
+        {
+          name: PATHS.TABS.COURSES as keyof TabsParamList,
+          iconFocused: "library",
+          icon: "library-outline",
+          label: "Learn",
+        },
+        {
+          name: PATHS.TABS.BOOKS as keyof TabsParamList,
+          iconFocused: "book",
+          icon: "book-outline",
+          label: "Books",
+        },
+      ],
+      []
+    );
 
    // ---------- Animated indicator pill position ----------
    const indicatorPos = useSharedValue(0);
    const indicatorWidth = useSharedValue(itemWidth);
+   const glowPos = useSharedValue(0);
+   const glowWidth = useSharedValue(itemWidth);
 
    useEffect(() => {
      const activeIndex = items.findIndex((it) => !it.isCenter && isFocused(it.name));
      const targetX = activeIndex * (itemWidth + 0);
      indicatorPos.value = withSpring(targetX, {
-       damping: 20,
-       stiffness: 280,
-       mass: 0.8,
+       damping: 22,
+       stiffness: 300,
+       mass: 0.7,
+       overshootClamping: false,
      });
      indicatorWidth.value = withSpring(itemWidth, {
-       damping: 20,
-       stiffness: 280,
-       mass: 0.8,
+       damping: 22,
+       stiffness: 300,
+       mass: 0.7,
+     });
+     glowPos.value = withSpring(targetX, {
+       damping: 18,
+       stiffness: 260,
+       mass: 1.2,
+       overshootClamping: false,
+     });
+     glowWidth.value = withSpring(itemWidth * 1.6, {
+       damping: 18,
+       stiffness: 260,
+       mass: 1.2,
      });
    }, [current, itemWidth, items]);
 
@@ -214,41 +232,47 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
      transform: [{ translateX: indicatorPos.value }],
    }));
 
+   const glowStyle = useAnimatedStyle(() => ({
+     width: glowWidth.value,
+     transform: [{ translateX: glowPos.value }],
+   }));
+
    return (
-    <View style={styles.tabBarContainer}>
-      <View style={styles.tabBar}>
-        {/* Sliding indicator pill */}
-        <Animated.View
-          style={[styles.indicator, indicatorStyle]}
-        />
-        {items.map((it) => {
-          if (it.isCenter) {
-            return (
-              <View
-                key="__center_slot__"
-                style={styles.centerSlot}
-              />
-            );
-          }
-          return (
-            <TouchableOpacity
-              key={String(it.name)}
-              onPress={() => handleNavigate(it.name)}
-              activeOpacity={0.85}
-              style={styles.tabItem}
-            >
-              <CrossfadeIcon
-                isFocused={isFocused(it.name)}
-                iconFocused={it.iconFocused}
-                icon={it.icon}
-                activeColor={activeColor}
-                inactiveColor={inactiveColor}
-                size={iconSize}
-              />
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+     <View style={styles.tabBarContainer}>
+       <View style={styles.tabBar}>
+         {/* Glow halo behind active tab */}
+         <Animated.View style={[styles.glow, glowStyle]} />
+         {/* Sliding indicator pill */}
+         <Animated.View style={[styles.indicator, indicatorStyle]} />
+         {items.map((it) => {
+           if (it.isCenter) {
+             return (
+               <View
+                 key="__center_slot__"
+                 style={styles.centerSlot}
+               />
+             );
+           }
+           return (
+             <TouchableOpacity
+               key={String(it.name)}
+               onPress={() => handleNavigate(it.name)}
+               activeOpacity={0.85}
+               style={styles.tabItem}
+             >
+               <CrossfadeIcon
+                 isFocused={isFocused(it.name)}
+                 iconFocused={it.iconFocused}
+                 icon={it.icon}
+                 activeColor={activeColor}
+                 inactiveColor={inactiveColor}
+                 size={iconSize}
+                 label={it.label}
+               />
+             </TouchableOpacity>
+           );
+         })}
+       </View>
 
       {/* FAB overlays the reserved center slot */}
       <Animated.View
@@ -273,7 +297,7 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   );
 }
 
-// ---------- Crossfade + scale icon between active/inactive ----------
+// ---------- Crossfade + scale + bounce icon + label ----------
 function CrossfadeIcon({
   isFocused,
   iconFocused,
@@ -281,6 +305,7 @@ function CrossfadeIcon({
   activeColor,
   inactiveColor,
   size,
+  label,
 }: {
   isFocused: boolean;
   iconFocused: keyof typeof Ionicons.glyphMap;
@@ -288,16 +313,35 @@ function CrossfadeIcon({
   activeColor: string;
   inactiveColor: string;
   size: number;
+  label: string;
 }) {
+  const labelStyle = useMemo(
+    () =>
+      StyleSheet.create({
+        label: {
+          fontSize: 9,
+          fontWeight: "600",
+          marginTop: 2,
+          letterSpacing: 0.3,
+        },
+      }),
+    []
+  );
+
   const progress = useSharedValue(isFocused ? 1 : 0);
 
   useEffect(() => {
-    progress.value = withTiming(isFocused ? 1 : 0, {
-      duration: 220,
-      easing: Easing.out(Easing.cubic),
+    progress.value = withSpring(isFocused ? 1 : 0, {
+      damping: 18,
+      stiffness: 320,
+      mass: 0.9,
+      overshootClamping: false,
     });
   }, [isFocused, progress]);
 
+  const iconScale = useAnimatedStyle(() => ({
+    transform: [{ scale: interpolate(progress.value, [0, 1], [0.7, 1.1]) }],
+  }));
   const focusedStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
     transform: [
@@ -312,10 +356,17 @@ function CrossfadeIcon({
   }));
 
   const glowStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(progress.value, [0, 0.5, 1], [0, 0.3, 0.5]),
+    opacity: interpolate(progress.value, [0, 0.4, 1], [0, 0.35, 0.55]),
   }));
 
-  const box = size + 14;
+  const labelOpacity = useAnimatedStyle(() => ({
+    opacity: interpolate(progress.value, [0, 0.6, 1], [0, 0.5, 1]),
+    transform: [
+      { translateY: interpolate(progress.value, [0, 1], [6, 0]) },
+    ],
+  }));
+
+  const box = size + 26;
 
   return (
     <View
@@ -339,6 +390,8 @@ function CrossfadeIcon({
           },
         ]}
       />
+      
+      {/* Unfocused icon */}
       <Animated.View
         style={[
           StyleSheet.absoluteFill,
@@ -348,15 +401,30 @@ function CrossfadeIcon({
       >
         <Ionicons name={icon} size={size} color={inactiveColor} />
       </Animated.View>
+      
+      {/* Focused icon with scale bounce */}
       <Animated.View
         style={[
           StyleSheet.absoluteFill,
           focusedStyle,
+          iconScale,
           { alignItems: "center", justifyContent: "center" },
         ]}
       >
         <Ionicons name={iconFocused} size={size} color={activeColor} />
       </Animated.View>
+
+      {/* Animated label */}
+      <Animated.Text
+        numberOfLines={1}
+        style={[
+          labelStyle.label,
+          { color: isFocused ? activeColor : inactiveColor },
+          labelOpacity,
+        ]}
+      >
+        {label}
+      </Animated.Text>
     </View>
   );
 }
@@ -398,7 +466,7 @@ function makeStyles({
       paddingHorizontal: PAD_X,
       paddingVertical: PAD_Y,
       width: tabBarWidth,
-      height: fabSize + PAD_Y * 2,
+      height: fabSize + PAD_Y * 2 + 16,
       alignItems: "center",
       justifyContent: "space-between",
       borderWidth: isDark ? 1 : 0,
@@ -413,10 +481,30 @@ function makeStyles({
 
     indicator: {
       position: "absolute",
-      top: PAD_Y + 4,
-      bottom: PAD_Y + 4,
-      borderRadius: (fabSize + PAD_Y * 2 - 8) / 2,
-      backgroundColor: isDark ? "rgba(34,190,200,0.15)" : "rgba(34,190,200,0.10)",
+      top: PAD_Y + 2,
+      bottom: PAD_Y + 2,
+      borderRadius: (fabSize + PAD_Y * 2 - 4) / 2,
+      backgroundColor: isDark ? "rgba(34,190,200,0.22)" : "rgba(34,190,200,0.16)",
+      shadowColor: isDark ? undefined : "#22bcb8",
+      shadowOpacity: isDark ? 0 : 0.25,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 4,
+    },
+
+    glow: {
+      position: "absolute",
+      top: PAD_Y - 2,
+      bottom: PAD_Y - 2,
+      borderRadius: (fabSize + PAD_Y * 2) / 2,
+      backgroundColor: isDark ? "rgba(34,190,200,0.08)" : "rgba(34,190,200,0.06)",
+    },
+
+    label: {
+      fontSize: 9,
+      fontWeight: "600",
+      marginTop: 2,
+      letterSpacing: 0.3,
     },
 
     tabItem: {
