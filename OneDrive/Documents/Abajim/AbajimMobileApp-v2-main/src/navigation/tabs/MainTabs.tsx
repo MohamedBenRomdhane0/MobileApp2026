@@ -127,20 +127,20 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   const isFocused = (routeName: keyof TabsParamList) =>
     current === routeName;
 
-  // ---------- FAB target switching ----------
-  const currentRouteName = current;
-  let centerTarget: keyof TabsParamList = PATHS.TABS.HOME as keyof TabsParamList;
-  let centerIcon: keyof typeof Ionicons.glyphMap = "home-outline";
+   // ---------- FAB target switching ----------
+   const currentRouteName = current;
+   let centerTarget: keyof TabsParamList = PATHS.TABS.HOME as keyof TabsParamList;
+   let centerIcon: keyof typeof Ionicons.glyphMap = "home-outline";
 
-  if (currentRouteName === (PATHS.TABS.HOME as keyof TabsParamList)) {
-    centerTarget = PATHS.TABS.PLANS as keyof TabsParamList;
-    centerIcon = "pricetags-outline";
-  } else if (currentRouteName === (PATHS.TABS.PLANS as keyof TabsParamList)) {
-    centerTarget = PATHS.TABS.HOME as keyof TabsParamList;
-    centerIcon = "home-outline";
-  }
+   if (currentRouteName === (PATHS.TABS.HOME as keyof TabsParamList)) {
+     centerTarget = PATHS.TABS.PLANS as keyof TabsParamList;
+     centerIcon = "pricetags-outline";
+   } else if (currentRouteName === (PATHS.TABS.PLANS as keyof TabsParamList)) {
+     centerTarget = PATHS.TABS.HOME as keyof TabsParamList;
+     centerIcon = "home-outline";
+   }
 
-  // ---------- FAB spring scale on press ----------
+   // ---------- FAB spring scale on press ----------
   const fabScale = useSharedValue(1);
   const fabAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: fabScale.value }],
@@ -158,41 +158,69 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
     });
   };
 
-  const items: TabItem[] = useMemo(
-    () => [
-      {
-        name: PATHS.TABS.SETTINGS as keyof TabsParamList,
-        iconFocused: "person",
-        icon: "person-outline",
-      },
-      {
-        name: PATHS.TABS.MEETINGS as keyof TabsParamList,
-        iconFocused: "videocam",
-        icon: "videocam-outline",
-      },
-      {
-        name: PATHS.TABS.HOME as keyof TabsParamList,
-        iconFocused: "home",
-        icon: "home-outline",
-        isCenter: true,
-      },
-      {
-        name: PATHS.TABS.COURSES as keyof TabsParamList,
-        iconFocused: "library",
-        icon: "library-outline",
-      },
-      {
-        name: PATHS.TABS.BOOKS as keyof TabsParamList,
-        iconFocused: "book",
-        icon: "book-outline",
-      },
-    ],
-    []
-  );
+   const items: TabItem[] = useMemo(
+     () => [
+       {
+         name: PATHS.TABS.SETTINGS as keyof TabsParamList,
+         iconFocused: "person",
+         icon: "person-outline",
+       },
+       {
+         name: PATHS.TABS.MEETINGS as keyof TabsParamList,
+         iconFocused: "videocam",
+         icon: "videocam-outline",
+       },
+       {
+         name: PATHS.TABS.HOME as keyof TabsParamList,
+         iconFocused: "home",
+         icon: "home-outline",
+         isCenter: true,
+       },
+       {
+         name: PATHS.TABS.COURSES as keyof TabsParamList,
+         iconFocused: "library",
+         icon: "library-outline",
+       },
+       {
+         name: PATHS.TABS.BOOKS as keyof TabsParamList,
+         iconFocused: "book",
+         icon: "book-outline",
+       },
+     ],
+     []
+   );
 
-  return (
+   // ---------- Animated indicator pill position ----------
+   const indicatorPos = useSharedValue(0);
+   const indicatorWidth = useSharedValue(itemWidth);
+
+   useEffect(() => {
+     const activeIndex = items.findIndex((it) => !it.isCenter && isFocused(it.name));
+     const targetX = activeIndex * (itemWidth + 0);
+     indicatorPos.value = withSpring(targetX, {
+       damping: 20,
+       stiffness: 280,
+       mass: 0.8,
+     });
+     indicatorWidth.value = withSpring(itemWidth, {
+       damping: 20,
+       stiffness: 280,
+       mass: 0.8,
+     });
+   }, [current, itemWidth, items]);
+
+   const indicatorStyle = useAnimatedStyle(() => ({
+     width: indicatorWidth.value,
+     transform: [{ translateX: indicatorPos.value }],
+   }));
+
+   return (
     <View style={styles.tabBarContainer}>
       <View style={styles.tabBar}>
+        {/* Sliding indicator pill */}
+        <Animated.View
+          style={[styles.indicator, indicatorStyle]}
+        />
         {items.map((it) => {
           if (it.isCenter) {
             return (
@@ -283,7 +311,11 @@ function CrossfadeIcon({
     ],
   }));
 
-  const box = size + 10;
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(progress.value, [0, 0.5, 1], [0, 0.3, 0.5]),
+  }));
+
+  const box = size + 14;
 
   return (
     <View
@@ -294,6 +326,19 @@ function CrossfadeIcon({
         justifyContent: "center",
       }}
     >
+      {/* Glow behind focused icon */}
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFill,
+          glowStyle,
+          {
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: box / 2,
+            backgroundColor: activeColor,
+          },
+        ]}
+      />
       <Animated.View
         style={[
           StyleSheet.absoluteFill,
@@ -363,6 +408,15 @@ function makeStyles({
       shadowRadius: 18,
       shadowOffset: { width: 0, height: 10 },
       elevation: 14,
+      overflow: "hidden",
+    },
+
+    indicator: {
+      position: "absolute",
+      top: PAD_Y + 4,
+      bottom: PAD_Y + 4,
+      borderRadius: (fabSize + PAD_Y * 2 - 8) / 2,
+      backgroundColor: isDark ? "rgba(34,190,200,0.15)" : "rgba(34,190,200,0.10)",
     },
 
     tabItem: {
