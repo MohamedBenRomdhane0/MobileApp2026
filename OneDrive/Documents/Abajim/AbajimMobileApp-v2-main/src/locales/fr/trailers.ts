@@ -1,0 +1,17 @@
+export const trailers = {
+    screen_title:    "Live Classes",
+    screen_subtitle: "Select at least one teacher",
+    schedule_btn:    "My Schedule",
+    confirm_btn:     "Confirm",
+    filter_all:      "All",
+    loading:         "Loading...",
+    generic_error:   "An error occurred",
+    retry:           "Retry",
+    empty_title:     "No teachers found",
+    empty_subtitle:  "Try changing the filter",
+    profile_btn:     "Profile",
+    trailers_btn:    "View Trailers",
+    choose_title:    "Choose your Live teachers",
+    choose_sub:      "Select at least one teacher",
+    watch_btn:       "Watch Trailer",
+} as const;

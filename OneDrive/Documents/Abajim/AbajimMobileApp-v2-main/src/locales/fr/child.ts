@@ -1,0 +1,16 @@
+export default {
+  add_title: "Ajouter un enfant",
+  edit_title: "Modifier l’enfant",
+  full_name: "Nom complet",
+  full_name_placeholder: "Saisir le nom complet de l’enfant",
+  full_name_required: "Le nom complet est obligatoire",
+  gender: "Genre",
+  boy: "Garçon",
+  girl: "Fille",
+  gender_required: "Le genre est obligatoire",
+  level: "Niveau",
+  level_required: "Le niveau est obligatoire",
+  level_locked_hint: "Le niveau ne peut pas être changé après la création",
+  add_submit: "Ajouter",
+  edit_submit: "Enregistrer",
+};

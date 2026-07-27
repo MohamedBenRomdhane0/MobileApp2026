@@ -1,0 +1,21 @@
+export const sidebar = {
+  dashboard_teacher: 'Tableau de bord',
+  dashboard_admin: 'Tableau de bord',
+  dashboard_staff: 'Tableau de bord',
+  my_channel: 'Ma chaîne',
+  courses: 'Cours',
+  meetings: 'Réunions',
+  concours: 'Concours',
+  teacher_subjects: 'Matières enseignées',
+  books: 'Livres',
+  ministry_books: 'Livres de ministère',
+  teacher_books: 'Livres des enseignants',
+  users: {
+    root: 'Utilisateurs',
+    teachers: 'Enseignants',
+    parents: 'Parents',
+    staff: 'Personnel',
+    add_user: 'Ajouter un utilisateur',
+  },
+  user_roles: 'Rôles des utilisateurs',
+}

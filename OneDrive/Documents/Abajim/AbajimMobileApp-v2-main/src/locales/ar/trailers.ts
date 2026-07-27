@@ -1,0 +1,17 @@
+export const trailers = {
+  screen_title:    "الحصص المباشرة",
+  screen_subtitle: "اختر أستاذك على الأقل",
+  schedule_btn:    "جدولي",
+  confirm_btn:     "تأكيد",
+  filter_all:      "الكل",
+  loading:         "جارٍ التحميل...",
+  generic_error:   "حدث خطأ",
+  retry:           "إعادة المحاولة",
+  empty_title:     "لا يوجد معلمون",
+  empty_subtitle:  "جرّب تغيير الفئة",
+  profile_btn:     "الملف",
+  trailers_btn:    "عرض التريلرات",
+  choose_title:    "اختر أساتذتك لـ Live",
+  choose_sub:      "اختر أستاذاً على الأقل",
+    watch_btn:       "شاهد التريلر",
+};

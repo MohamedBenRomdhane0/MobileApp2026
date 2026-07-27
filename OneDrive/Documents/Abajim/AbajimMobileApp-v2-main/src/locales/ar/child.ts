@@ -1,0 +1,16 @@
+export default {
+  add_title: "إضافة طفل",
+  edit_title: "تعديل بيانات الطفل",
+  full_name: "الاسم الكامل",
+  full_name_placeholder: "أدخل الاسم الكامل للطفل",
+  full_name_required: "الاسم الكامل مطلوب",
+  gender: "الجنس",
+  boy: "ولد",
+  girl: "بنت",
+  gender_required: "الرجاء اختيار الجنس",
+  level: "المستوى",
+  level_required: "الرجاء اختيار المستوى",
+  level_locked_hint: "لا يمكن تغيير المستوى بعد الإنشاء",
+  add_submit: "إضافة",
+  edit_submit: "حفظ",
+};

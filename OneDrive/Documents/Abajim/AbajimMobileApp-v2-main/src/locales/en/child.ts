@@ -1,0 +1,16 @@
+export default {
+  add_title: "Add a child",
+  edit_title: "Edit child",
+  full_name: "Full name",
+  full_name_placeholder: "Enter the child's full name",
+  full_name_required: "Full name is required",
+  gender: "Gender",
+  boy: "Boy",
+  girl: "Girl",
+  gender_required: "Gender is required",
+  level: "Level",
+  level_required: "Level is required",
+  level_locked_hint: "Level can't be changed after creation",
+  add_submit: "Add",
+  edit_submit: "Save",
+};
