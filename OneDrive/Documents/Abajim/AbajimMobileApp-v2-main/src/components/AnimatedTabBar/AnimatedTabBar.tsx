@@ -1,19 +1,20 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import { View, StyleSheet, Pressable, LayoutChangeEvent, useWindowDimensions } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   withTiming,
-  interpolate,
   useAnimatedProps,
+  runOnJS,
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 import { useTheme } from 'src/theme/ThemeProvider';
 import { AnimatedTabBarProps, TabItem, TabLayout } from './AnimatedTabBar.type';
-import { createTabBarCurvePath, SPRING_CONFIG, ICON_SPRING_CONFIG } from './AnimatedTabBar.utils';
+import { generateTabBarCurvePath, SPRING_CONFIG } from './AnimatedTabBar.utils';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
   state,
@@ -28,13 +29,16 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
   const { width: screenWidth } = useWindowDimensions();
   
   const [tabLayouts, setTabLayouts] = useState<TabLayout[]>([]);
+  const [isReady, setIsReady] = useState(false);
+  
   const activeIndex = useSharedValue(state.index);
+  const previousIndex = useSharedValue(state.index);
   
   const primaryColor = bubbleColor || colors.primary || '#4F46E5';
   const barBackgroundColor = isDark ? '#1F2937' : '#FFFFFF';
   
   const tabCount = tabItems.length;
-  const tabWidth = screenWidth / tabCount;
+  const tabWidth = useMemo(() => screenWidth / tabCount, [screenWidth, tabCount]);
   const curveHeight = 40;
   const bubbleSize = 64;
 
@@ -43,11 +47,15 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
     setTabLayouts(prev => {
       const updated = [...prev];
       updated[index] = { x, width };
+      if (updated.filter(Boolean).length === tabCount) {
+        setIsReady(true);
+      }
       return updated;
     });
-  }, []);
+  }, [tabCount]);
 
   const handleTabPress = useCallback((index: number, routeKey: string) => {
+    previousIndex.value = activeIndex.value;
     activeIndex.value = index;
     
     const event = navigation.emit({
@@ -59,13 +67,14 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
     if (!event.defaultPrevented) {
       navigation.navigate(routeKey);
     }
-  }, [navigation, activeIndex]);
+  }, [navigation, activeIndex, previousIndex]);
 
+  // Animated bubble style
   const animatedBubbleStyle = useAnimatedStyle(() => {
     const index = Math.round(activeIndex.value);
     const targetLayout = tabLayouts[index];
     
-    if (!targetLayout) {
+    if (!targetLayout || !isReady) {
       return {
         opacity: 0,
         transform: [{ translateX: 0 }, { scale: 0 }],
@@ -75,27 +84,31 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
     const targetX = targetLayout.x + targetLayout.width / 2 - bubbleSize / 2;
     
     return {
-      opacity: 1,
+      opacity: withTiming(1, { duration: 100 }),
       transform: [
         { translateX: withSpring(targetX, SPRING_CONFIG) },
-        { scale: withSpring(1, ICON_SPRING_CONFIG) },
+        { scale: withSpring(1, { damping: 12, stiffness: 220 }) },
       ],
     };
-  }, [tabLayouts]);
+  }, [tabLayouts, isReady]);
 
-  const animatedCurvePath = useAnimatedProps(() => {
+  // Animated curve path
+  const animatedPathProps = useAnimatedProps(() => {
     const index = Math.round(activeIndex.value);
     const layout = tabLayouts[index];
     
-    if (!layout) {
-      return { d: createTabBarCurvePath(tabWidth, curveHeight, 0) };
+    if (!layout || !isReady) {
+      return {
+        d: generateTabBarCurvePath(screenWidth, curveHeight, tabWidth, 0),
+      };
     }
     
-    const path = createTabBarCurvePath(layout.width, curveHeight, layout.x);
-    return { d: path };
-  }, [tabLayouts, tabWidth]);
+    return {
+      d: generateTabBarCurvePath(screenWidth, curveHeight, layout.width, layout.x),
+    };
+  }, [tabLayouts, isReady, screenWidth, tabWidth]);
 
-  const renderTabItem = (item: TabItem, index: number) => {
+  const renderTabItem = useCallback((item: TabItem, index: number) => {
     const isFocused = state.index === index;
     
     const animatedIconStyle = useAnimatedStyle(() => {
@@ -104,7 +117,7 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
       const opacity = isActive ? 1 : 0.6;
       
       return {
-        transform: [{ scale: withSpring(scale, ICON_SPRING_CONFIG) }],
+        transform: [{ scale: withSpring(scale, { damping: 12, stiffness: 220 }) }],
         opacity: withSpring(opacity, SPRING_CONFIG),
       };
     }, []);
@@ -112,14 +125,12 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
     const animatedLabelStyle = useAnimatedStyle(() => {
       const isActive = Math.round(activeIndex.value) === index;
       return {
-        opacity: withTiming(isActive ? 1 : 0, { duration: 200 }),
+        opacity: withTiming(isActive ? 1 : 0, { duration: 150 }),
         transform: [
-          { translateY: withSpring(isActive ? 0 : -10, SPRING_CONFIG) },
+          { translateY: withSpring(isActive ? 0 : -8, { damping: 15, stiffness: 200 }) },
         ],
       };
     }, []);
-
-    const IconComponent = item.icon;
 
     return (
       <AnimatedPressable
@@ -130,7 +141,7 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
       >
         <View style={styles.iconContainer}>
           <Animated.View style={animatedIconStyle}>
-            <IconComponent
+            <item.icon
               size={isFocused ? activeIconSize : inactiveIconSize}
               color={isFocused ? primaryColor : (isDark ? '#9CA3AF' : '#6B7280')}
             />
@@ -149,19 +160,19 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
         </View>
       </AnimatedPressable>
     );
-  };
+  }, [state.index, tabWidth, handleTabPress, handleTabLayout, primaryColor, isDark, activeIconSize, inactiveIconSize]);
 
   return (
     <View style={[styles.container, { backgroundColor: barBackgroundColor }]}>
       {/* Curved notch background */}
-      <View style={styles.svgContainer}>
+      <View style={[styles.svgContainer, { height: curveHeight + 10 }]}>
         <Svg
           width={screenWidth}
           height={curveHeight + 10}
           style={styles.curveSvg}
         >
           <AnimatedPath
-            animatedProps={animatedCurvePath}
+            animatedProps={animatedPathProps}
             fill={barBackgroundColor}
           />
         </Svg>
@@ -196,8 +207,6 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
   );
 };
 
-const AnimatedPath = Animated.createAnimatedComponent(Path);
-
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
@@ -215,10 +224,10 @@ const styles = StyleSheet.create({
   },
   svgContainer: {
     position: 'absolute',
-    top: -curveHeight,
+    top: -40,
     left: 0,
     right: 0,
-    height: curveHeight + 10,
+    overflow: 'visible',
   },
   curveSvg: {
     position: 'absolute',

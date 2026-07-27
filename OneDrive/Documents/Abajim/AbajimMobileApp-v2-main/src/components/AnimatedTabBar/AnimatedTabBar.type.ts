@@ -23,7 +23,8 @@ export interface TabLayout {
 }
 
 export interface CurvePathConfig {
-  tabWidth: number;
+  screenWidth: number;
   curveHeight: number;
-  offsetX?: number;
+  tabWidth: number;
+  offsetX: number;
 }

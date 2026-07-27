@@ -1,2 +1,2 @@
 export { AnimatedTabBar } from './AnimatedTabBar';
-export type { AnimatedTabBarProps, TabItem } from './AnimatedTabBar.type';
+export type { AnimatedTabBarProps, TabItem, TabLayout } from './AnimatedTabBar.type';
