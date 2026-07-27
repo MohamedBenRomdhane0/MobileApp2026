@@ -59,21 +59,41 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   const { width: screenWidth } = useWindowDimensions();
 
   // ---------- Responsive sizing ----------
-  const tabBarWidth = Math.max(
-    TAB_BAR_MIN_WIDTH,
-    Math.min(screenWidth * TAB_BAR_RATIO, TAB_BAR_MAX_WIDTH)
+  const tabBarWidth = useMemo(
+    () =>
+      Math.max(
+        TAB_BAR_MIN_WIDTH,
+        Math.min(screenWidth * TAB_BAR_RATIO, TAB_BAR_MAX_WIDTH)
+      ),
+    [screenWidth]
   );
-  const fabSize = Math.max(
-    FAB_MIN,
-    Math.min(screenWidth * FAB_RATIO, FAB_MAX)
+  const fabSize = useMemo(
+    () =>
+      Math.max(
+        FAB_MIN,
+        Math.min(screenWidth * FAB_RATIO, FAB_MAX)
+      ),
+    [screenWidth]
   );
-  const itemWidth = Math.max(
-    40,
-    (tabBarWidth - 2 * PAD_X - fabSize) / 4
+  const itemWidth = useMemo(
+    () => (tabBarWidth - 2 * PAD_X - fabSize) / 4,
+    [tabBarWidth, fabSize]
   );
-  const iconSize = Math.max(
-    ICON_MIN,
-    Math.min(screenWidth * ICON_RATIO, ICON_MAX)
+  const iconSize = useMemo(
+    () =>
+      Math.max(
+        ICON_MIN,
+        Math.min(screenWidth * ICON_RATIO, ICON_MAX)
+      ),
+    [screenWidth]
+  );
+  const bottomOffset = useMemo(
+    () =>
+      Math.max(
+        insets.bottom + 10,
+        Platform.OS === "ios" ? 24 : 12
+      ),
+    [insets.bottom]
   );
 
   const styles = useMemo(
@@ -84,9 +104,9 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
         itemWidth,
         iconSize,
         isDark,
-        insets,
+        bottomOffset,
       }),
-    [tabBarWidth, fabSize, itemWidth, iconSize, isDark, insets]
+    [tabBarWidth, fabSize, itemWidth, iconSize, isDark, bottomOffset]
   );
 
   const activeColor = colors.primary;
@@ -129,14 +149,12 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
     fabScale.value = withSpring(0.9, {
       damping: 18,
       stiffness: 320,
-      mass: 0.6,
     });
   };
   const onPressOutFab = () => {
     fabScale.value = withSpring(1, {
       damping: 18,
       stiffness: 320,
-      mass: 0.6,
     });
   };
 
@@ -304,7 +322,7 @@ type MakeStylesArgs = {
   itemWidth: number;
   iconSize: number;
   isDark: boolean;
-  insets: { top: number; bottom: number; left: number; right: number };
+  bottomOffset: number;
 };
 
 function makeStyles({
@@ -313,22 +331,18 @@ function makeStyles({
   itemWidth,
   iconSize,
   isDark,
-  insets,
+  bottomOffset,
 }: MakeStylesArgs) {
   const tabSurface = isDark ? "rgba(11,18,32,0.95)" : "rgba(255,255,255,0.97)";
   const fabSurface = isDark ? "#0F172A" : "#FFFFFF";
   const shadowOpacity = isDark ? 0.55 : 0.16;
-  const bottomInset = Math.max(
-    insets.bottom + 10,
-    Platform.OS === "ios" ? 24 : 12
-  );
 
   return StyleSheet.create({
     tabBarContainer: {
       position: "absolute",
       left: 0,
       right: 0,
-      bottom: bottomInset,
+      bottom: bottomOffset,
       alignItems: "center",
     },
 
@@ -380,9 +394,9 @@ function makeStyles({
       borderWidth: 2,
       shadowColor: "#000",
       shadowOpacity: isDark ? 0.65 : 0.3,
-      shadowRadius: 22,
+      shadowRadius: 18,
       shadowOffset: { width: 0, height: 12 },
-      elevation: 16,
+      elevation: 14,
     },
   });
 }
