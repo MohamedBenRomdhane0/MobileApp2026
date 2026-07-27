@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { PATHS } from "@config/constants/paths";
 import type { RootStackParamList } from "@config/types/navigation.types";
 
-import MainTabs from "@navigation/tabs/MainTabs";
+import MainTabs from "@navigation/tabs/AnimatedTabBar";
 import ParentInfoScreen from "@screens/parent/ParentInfoScreen/ParentInfoScreen";
 import KidsListScreen from "@screens/parent/KidsList/KidsListScreen";
 import AddKidsScreen from "@screens/child/AddKidsScreen";
