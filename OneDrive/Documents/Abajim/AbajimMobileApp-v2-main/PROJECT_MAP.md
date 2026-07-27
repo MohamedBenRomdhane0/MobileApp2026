@@ -280,7 +280,8 @@ src/
 ---
 
 ## Changelog
-- **2026-07-27** — **Tab bar UX overhaul.** `MainTabs.tsx` rewritten: responsive sizing via `useWindowDimensions` + `useSafeAreaInsets` (no more overflow on narrow devices, no more overlap with Android 3-button nav). Reanimated 4 animations added: FAB spring-scale on press, icon crossfade + scale between active/inactive. Capped width for tablets (480dp), min 300dp for tiny screens.
+- **2026-07-27** — **Dribbble-style animated tab bar.** `MainTabs.tsx` updated with a sliding indicator pill (`Animated.View` with `withSpring` physics) and glow-ring animation behind the focused icon (`CrossfadeIcon` enhanced with `glowStyle`).
+- **2026-07-27** — **README.md** created with project overview, tech stack, architecture, build/test commands, and conventions.
 - **2026-07-27** — **O15 resolved.** App no longer forces "Add a child" on restart when an `ActiveChildId` is persisted. SignInScreen routing now considers both `user.children` and `activeChildId`; `useAuthInitialization` now triggers `getParentMe` to refresh the children list; `createChild` now persists `ActiveChildId` to storage. 4 surgical edits across `SignInScreen.tsx`, `useAuthInitialization.ts`, `authSlice.ts`, `parentApi.ts`.
 - **2026-07-24** — Initial creation. Baseline audit complete. 14 orphans identified (4 critical, 5 medium, 5 low).
 - **2026-07-27** — Fixed child switch not refreshing data (added `invalidatesTags` to `switchToChild` and `switchToParent` for `Books`/`Book`/`MaterialsByLevel` tags), Auth web input fix (removed `TouchableWithoutFeedback` that blocked TextInput focus on web), HomeScreen UX cleanup, dead image cleanup, child session persistence fix, sign-in screen re-render on child switch, cross-API tag types added to childApi.
