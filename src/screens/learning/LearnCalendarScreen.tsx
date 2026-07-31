@@ -144,6 +144,15 @@ export default function LearnCalendarScreen() {
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
 
+  const isToday = useMemo(() => {
+    const d = new Date();
+    return (
+      d.getDate() === selectedDay &&
+      d.getMonth() === currentMonth &&
+      d.getFullYear() === currentYear
+    );
+  }, [selectedDay, currentMonth, currentYear]);
+
   const daysInMonth = useMemo(() => {
     const days: { day: number; label: string }[] = [];
     const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -155,10 +164,12 @@ export default function LearnCalendarScreen() {
     return days;
   }, [currentMonth, currentYear, i18n.language]);
 
-  const monthName = useMemo(() => {
+  const monthLabel = useMemo(() => {
     const date = new Date(currentYear, currentMonth, 1);
-    return date.toLocaleDateString(i18n.language || "en", { month: "long", year: "numeric" });
-  }, [currentMonth, currentYear, i18n.language]);
+    return date.toLocaleDateString(i18n.language || "en", { month: "long" });
+  }, [currentMonth, i18n.language]);
+
+  const yearLabel = useMemo(() => currentYear.toString(), [currentYear]);
 
   const goPrevMonth = useCallback(() => {
     if (currentMonth === 0) {
@@ -256,13 +267,24 @@ export default function LearnCalendarScreen() {
 
         {/* Month row */}
         <View style={styles.monthRow}>
-          <Text style={styles.monthTitle}>{monthName}</Text>
+          <View style={styles.monthTitleWrap}>
+            <Text style={styles.monthName}>{monthLabel}</Text>
+            <Text style={styles.monthYear}>{yearLabel}</Text>
+          </View>
           <View style={styles.monthNav}>
             <TouchableOpacity style={styles.navArrow} onPress={goPrevMonth}>
-              <Ionicons name="chevron-back" size={16} color="#6B7280" />
+              <Ionicons
+                name={isRTL ? "chevron-forward" : "chevron-back"}
+                size={16}
+                color="#22BEC8"
+              />
             </TouchableOpacity>
             <TouchableOpacity style={styles.navArrow} onPress={goNextMonth}>
-              <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+              <Ionicons
+                name={isRTL ? "chevron-back" : "chevron-forward"}
+                size={16}
+                color="#22BEC8"
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -275,17 +297,39 @@ export default function LearnCalendarScreen() {
         >
           {daysInMonth.map((day) => {
             const isSelected = day.day === selectedDay;
+            const isDayToday =
+              isSelected && isToday;
             return (
               <TouchableOpacity
                 key={day.day}
                 style={styles.dayCol}
                 onPress={() => setSelectedDay(day.day)}
               >
-                <Text style={[styles.dayLabel, isSelected && { color: "#22BEC8" }]}>
-                  {day.label}
+                <Text
+                  style={[
+                    styles.dayLabel,
+                    isSelected && { color: "#22BEC8" },
+                  ]}
+                >
+                  {day.label.toUpperCase()}
                 </Text>
-                <View style={[styles.dayNum, isSelected && styles.dayNumActive]}>
-                  <Text style={[styles.dayNumText, isSelected && styles.dayNumTextActive]}>
+                <View
+                  style={[
+                    styles.dayNum,
+                    isSelected && styles.dayNumSelected,
+                    !isSelected && isToday && styles.dayNumToday,
+                  ]}
+                >
+                  {isDayToday && (
+                    <View style={styles.todayDot} />
+                  )}
+                  <Text
+                    style={[
+                      styles.dayNumText,
+                      isSelected && styles.dayNumTextSelected,
+                      !isSelected && isToday && styles.dayNumTextToday,
+                    ]}
+                  >
                     {day.day}
                   </Text>
                 </View>
@@ -657,16 +701,34 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
   },
   monthRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 10, paddingHorizontal: 20, marginBottom: 16 },
-  monthTitle: { fontSize: 17, fontWeight: "800", color: "#1F2937" },
+  monthTitleWrap: { alignItems: "flex-start" },
+  monthName: { fontSize: 22, fontWeight: "800", color: "#1F2937" },
+  monthYear: { fontSize: 13, fontWeight: "500", color: "#787774", marginTop: 2 },
   monthNav: { flexDirection: "row", gap: 10 },
-  navArrow: { width: 32, height: 32, borderRadius: 16, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center" },
+  navArrow: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center", justifyContent: "center",
+    shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3,
+  },
   calendarStrip: { flexDirection: "row", gap: 4, paddingHorizontal: 20, marginBottom: 16, alignItems: "center" },
   dayCol: { alignItems: "center", gap: 6, minWidth: 40 },
   dayLabel: { fontSize: 12, color: "#9CA3AF", fontWeight: "600" },
-  dayNum: { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center" },
-  dayNumActive: { backgroundColor: "#1F2430" },
-  dayNumText: { fontSize: 13, fontWeight: "700", color: "#1F2937" },
-  dayNumTextActive: { color: "#FFFFFF" },
+  dayNum: {
+    width: 38, height: 38, borderRadius: 12,
+    alignItems: "center", justifyContent: "center",
+    flexDirection: "row", gap: 4,
+  },
+  dayNumSelected: { backgroundColor: "#22BEC8", shadowColor: "#22BEC8", shadowOpacity: 0.35, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 4 },
+  dayNumToday: { borderWidth: 1.5, borderColor: "#22BEC8" },
+  dayNumText: { fontSize: 14, fontWeight: "800", color: "#1F2937" },
+  dayNumTextSelected: { color: "#FFFFFF" },
+  dayNumTextToday: { color: "#22BEC8" },
+  todayDot: {
+    width: 5, height: 5, borderRadius: 2.5,
+    backgroundColor: "#44B556",
+    position: "absolute", bottom: 2,
+  },
   mapCard: { backgroundColor: "#FFFFFF", borderRadius: 20, padding: 16, marginBottom: 16, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   mapTop: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 },
   mapAvatarShell: {
