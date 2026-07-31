@@ -1,0 +1,47 @@
+# Ignore Node.js dependencies
+node_modules/
+package-lock.json
+
+# Ignore vendor (Composer dependencies)
+vendor/
+
+# Ignore compiled assets
+/public/build
+/public/hot
+/public/storage
+
+# Ignore environment & security-sensitive files
+.env
+.env.testing
+/.fleet
+/.idea
+/.vscode
+auth.json
+
+# Ignore Laravel storage except the .gitignore files
+/storage/*
+!storage/.gitignore
+
+# Ignore Laravel cache files
+/bootstrap/cache/*
+!bootstrap/cache/.gitignore
+
+# Ignore logs and testing cache
+.phpunit.result.cache
+npm-debug.log
+yarn-error.log
+
+# Ignore TypeScript definitions (if generated dynamically)
+components.d.ts
+
+# Ignore SSL certificates and Nginx settings
+/letsencrypt/
+/public/.well-known/
+/nginx/dhparam.pem
+
+# Ignore build & deployment-related files
+dist/
+sitepro/
+/nginx/upstream.conf
+.deployment-state
+/nginx/upstream.conf
