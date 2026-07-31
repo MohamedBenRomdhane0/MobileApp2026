@@ -1,0 +1,18 @@
+export const user = {
+  delete_user_confirm: 'Avez-vous sûr de vouloir supprimer cet utilisateur ?',
+  delete_user: "Supprimer l'utilisateur",
+  user_deleted_successfully: 'Utilisateur supprimé avec succès',
+  no_subjects: 'Aucune matière',
+  teachers: 'Les enseignants',
+  add_teacher: 'Ajouter un enseignant',
+  followers: 'Abonnés',
+  impersonate: 'Se connecter en tant que parent',
+  impersonate_teacher: 'Se connecter en tant que enseignant',
+  impersonation_started: 'Connecté en tant que parent avec succès',
+  impersonation_teacher_started: 'Connecté en tant que enseignant avec succès',
+  impersonation_exited: 'Retourné au compte administrateur',
+  exit_impersonation: "Quitter l'usurpation",
+  impersonating_as: 'Usurpation en cours:',
+  original_user: 'Utilisateur original',
+  created_at: 'Créé le',
+}

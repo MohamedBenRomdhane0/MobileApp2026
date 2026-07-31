@@ -1,0 +1,18 @@
+export const learning = {
+  all_subjects: "Toutes les matières",
+  filter: "Filtrer",
+  modal_title: "Filtrer",
+  subject_label: "Matière",
+  max_price: "Prix max: {{price}} DT",
+  reset: "Réinitialiser",
+  apply: "Appliquer",
+  reserved_children: "enfants réservés",
+  places_reserved: "{{filled}}/{{total}} places réservées",
+  price_from: "à partir de",
+  price_per_month: "DT/mois",
+  view_details: "Voir détails",
+  places_left: "Plus que {{count}} places",
+  sessions_count: "{{count}} séances/mois",
+  groups_count: "{{count}} groupes",
+  days_per_week: "{{days}} JOURS / SEM",
+}

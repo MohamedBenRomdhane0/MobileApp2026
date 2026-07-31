@@ -1,0 +1,18 @@
+export const learning = {
+  all_subjects: "All Subjects",
+  filter: "Filter",
+  modal_title: "Filter",
+  subject_label: "Subject",
+  max_price: "Max price: {{price}} DT",
+  reset: "Reset",
+  apply: "Apply",
+  reserved_children: "children reserved",
+  places_reserved: "{{filled}}/{{total}} places reserved",
+  price_from: "from",
+  price_per_month: "DT/month",
+  view_details: "View details",
+  places_left: "Only {{count}} places left",
+  sessions_count: "{{count}} sessions/month",
+  groups_count: "{{count}} groups",
+  days_per_week: "{{days}} DAYS / WEEK",
+}

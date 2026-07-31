@@ -1,0 +1,18 @@
+export const learning = {
+  all_subjects: "جميع المواد",
+  filter: "تصفية",
+  modal_title: "تصفية",
+  subject_label: "المادة",
+  max_price: "الحد الأقصى للسعر: {{price}} د.ت",
+  reset: "إعادة ضبط",
+  apply: "تطبيق",
+  reserved_children: "أطفال محجوزون",
+  places_reserved: "{{filled}}/{{total}} مكان محجوز",
+  price_from: "تبدأ من",
+  price_per_month: "د.ت/شهر",
+  view_details: "عرض التفاصيل",
+  places_left: "{{count}} أماكن متبقية فقط",
+  sessions_count: "{{count}} جلسة/شهر",
+  groups_count: "{{count}} مجموعات",
+  days_per_week: "{{days}} أيام / أسبوع",
+}
