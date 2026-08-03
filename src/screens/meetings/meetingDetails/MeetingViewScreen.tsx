@@ -8,6 +8,7 @@ import {
   StatusBar,
   Animated,
   Easing,
+  Image,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -15,13 +16,46 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { styles, COLORS } from "./MeetingViewScreen.styles";
 import AiOrb from "./AiOrb";
+import { useActiveChildHeaderData } from "@hooks/useActiveChildHeaderData";
+import LanguageSwitcher from "@components/header/LanguageSwitcher";
 
-// ── Static data ───────────────────────────────────────────────────────────────
-const AVATARS = [
-  { id: 1, color: "#F97316" },
-  { id: 2, color: "#8B5CF6" },
-  { id: 3, color: "#EC4899" },
+const TEACHER_PHOTO = require("@assets/teachers/ismail.png");
+
+// Children already reserved in the group session (shown as overlapping avatars)
+const RESERVED_CHILDREN = [
+  require("../../../../assets/kids/boys/boy1.png"),
+  require("../../../../assets/kids/girls/girl1.jpg"),
+  require("../../../../assets/kids/boys/boy2.jpg"),
 ];
+
+// Group-session detail used to render the "meeting details" card.
+type GroupSessionDetail = {
+  subject: string;
+  accent: string;
+  time: string;
+  sessionsCount: number;
+  groupsCount: number;
+  daysPerWeek: number;
+  placesLeft: number;
+  placesTotal: number;
+  days: { label: string; active: boolean }[];
+};
+
+const GROUP_SESSION_DETAIL: GroupSessionDetail = {
+  subject: "Anglais",
+  accent: "#22BEC8",
+  time: "18:30 – 20:00",
+  sessionsCount: 8,
+  groupsCount: 4,
+  daysPerWeek: 2,
+  placesLeft: 5,
+  placesTotal: 20,
+  days: [
+    { label: "L", active: true }, { label: "M", active: false },
+    { label: "M", active: true }, { label: "J", active: false },
+    { label: "V", active: false }, { label: "D", active: true },
+  ],
+};
 
 // Decorative stars scattered over the hero background (percent positions)
 const STARS = [
@@ -89,6 +123,9 @@ const TODAY_FRAC = (DAYS.indexOf(ACTIVE_DAY) + 0.5) / DAYS.length;
 export default function MeetingViewScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const headerData = useActiveChildHeaderData();
+  const childPhotoUri = headerData?.avatarUrl ?? null;
+  const childInitials = headerData?.initials ?? "أ";
 
   // ── Live orb animation: slow spin + gentle breathing pulse ──────────────────
   const spin = useRef(new Animated.Value(0)).current;
@@ -145,15 +182,23 @@ export default function MeetingViewScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.bg} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <LinearGradient
+        colors={["#153A6B", "#1D3B65", "#091D36"]}
+        start={{ x: 0.1, y: 0 }}
+        end={{ x: 0.9, y: 1 }}
+        style={styles.header}
+      >
         <TouchableOpacity style={styles.headerBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={18} color={COLORS.title} />
+          <Ionicons name="arrow-back" size={18} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Live Session</Text>
-        <TouchableOpacity style={styles.headerBtn}>
-          <Ionicons name="menu" size={20} color={COLORS.title} />
-        </TouchableOpacity>
-      </View>
+        <View style={styles.headerRight}>
+          <LanguageSwitcher />
+          <TouchableOpacity style={styles.headerMenuBtn}>
+            <Ionicons name="menu" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
 
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -161,7 +206,7 @@ export default function MeetingViewScreen() {
       >
         {/* Hero card — starry gradient + glowing orb (code-built) */}
         <LinearGradient
-          colors={["#8E9BF0", "#8B7FE8", "#A78BE0"]}
+          colors={["#9fd4e6", "#4c95e2", "#0b1a45"]}
           start={{ x: 0.1, y: 0 }}
           end={{ x: 0.9, y: 1 }}
           style={styles.heroCard}
@@ -184,21 +229,26 @@ export default function MeetingViewScreen() {
           ))}
 
           <View style={styles.heroTopRow}>
-            {/* Stacked avatars */}
-            <View style={styles.avatarStack}>
-              {AVATARS.map((a, i) => (
-                <View
-                  key={a.id}
-                  style={[
-                    styles.avatar,
-                    {
-                      backgroundColor: a.color,
-                      marginLeft: i === 0 ? 0 : -10,
-                      zIndex: AVATARS.length - i,
-                    },
-                  ]}
+            {/* Real child photo in the live session */}
+            <View style={styles.childAvatarWrap}>
+              {childPhotoUri ? (
+                <Image
+                  source={{ uri: childPhotoUri }}
+                  style={styles.childAvatar}
+                  resizeMode="cover"
                 />
-              ))}
+              ) : (
+                <LinearGradient
+                  colors={[COLORS.orange, "#EC4899"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.childAvatar}
+                >
+                  <Text style={styles.childAvatarText}>{childInitials}</Text>
+                </LinearGradient>
+              )}
+              {/* live dot */}
+              <View style={styles.liveDot} />
             </View>
             {/* Filter button */}
             <TouchableOpacity style={styles.filterBtn}>
@@ -211,10 +261,14 @@ export default function MeetingViewScreen() {
             <Animated.View
               style={[styles.orbPulseGlow, { opacity: glowOpacity, transform: [{ scale }] }]}
             />
-            {/* the SVG orb, slowly spinning + breathing */}
+            {/* the old SVG orb, slowly spinning + breathing */}
             <Animated.View style={{ transform: [{ rotate }, { scale }] }}>
               <AiOrb size={150} />
             </Animated.View>
+            {/* teacher photo fixed in the center */}
+            <View style={styles.orbTeacher}>
+              <Image source={TEACHER_PHOTO} style={styles.orbTeacherImg} resizeMode="cover" />
+            </View>
           </View>
 
           <View style={styles.greetingBubble}>
@@ -275,7 +329,97 @@ export default function MeetingViewScreen() {
           </TouchableOpacity>
         </ScrollView>
 
-        {/* Roadmap */}
+       
+
+        {/* Meeting details — group session summary */}
+        <View style={styles.detailSection}>
+          <View style={styles.detailHeader}>
+            <View style={[styles.detailTitleDot, { backgroundColor: GROUP_SESSION_DETAIL.accent }]} />
+            <Text style={styles.detailTitle}>Meeting Details</Text>
+          </View>
+
+          <View style={styles.detailCard}>
+            {/* Subject + sessions + time pills */}
+            <View style={styles.cardSubjectPillRow}>
+              <View
+                style={[
+                  styles.cardSubjectPill,
+                  { backgroundColor: `${GROUP_SESSION_DETAIL.accent}18`, borderColor: `${GROUP_SESSION_DETAIL.accent}35` },
+                ]}
+              >
+                <Ionicons name="book-outline" size={12} color={GROUP_SESSION_DETAIL.accent} />
+                <Text style={[styles.cardSubjectPillText, { color: GROUP_SESSION_DETAIL.accent }]}>{GROUP_SESSION_DETAIL.subject}</Text>
+              </View>
+              <View
+                style={[
+                  styles.cardSubjectPill,
+                  { backgroundColor: `${GROUP_SESSION_DETAIL.accent}12`, borderColor: `${GROUP_SESSION_DETAIL.accent}30` },
+                ]}
+              >
+                <Ionicons name="calendar-outline" size={12} color={GROUP_SESSION_DETAIL.accent} />
+                <Text style={[styles.cardSubjectPillText, { color: GROUP_SESSION_DETAIL.accent }]}>{GROUP_SESSION_DETAIL.sessionsCount} séances/mois</Text>
+              </View>
+              <View
+                style={[
+                  styles.cardSubjectPill,
+                  { backgroundColor: `${GROUP_SESSION_DETAIL.accent}12`, borderColor: `${GROUP_SESSION_DETAIL.accent}30` },
+                ]}
+              >
+                <Ionicons name="time-outline" size={12} color={GROUP_SESSION_DETAIL.accent} />
+                <Text style={[styles.cardSubjectPillText, { color: GROUP_SESSION_DETAIL.accent }]}>{GROUP_SESSION_DETAIL.time}</Text>
+              </View>
+            </View>
+
+            {/* Groups count + days per week */}
+            <View style={styles.sessionTopRow}>
+              <View style={styles.groupPill}>
+                <Ionicons name="people" size={14} color={GROUP_SESSION_DETAIL.accent} />
+                <Text style={styles.groupPillText}>{GROUP_SESSION_DETAIL.groupsCount} groupes</Text>
+              </View>
+              <Text style={styles.sessionFreq}>{GROUP_SESSION_DETAIL.daysPerWeek} jours/semaine</Text>
+            </View>
+
+            {/* Day pills */}
+            <View style={styles.dayPillsRow}>
+              {GROUP_SESSION_DETAIL.days.map((day, i) => (
+                <View key={i} style={[styles.dayPill, day.active ? styles.dayPillActive : styles.dayPillOff]}>
+                  <Text style={[styles.dayPillText, day.active ? styles.dayPillTextActive : styles.dayPillTextOff]}>{day.label}</Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Reserved children */}
+            <View style={styles.reserveRow}>
+              <View style={styles.avatarStack}>
+                {RESERVED_CHILDREN.map((src, i) => (
+                  <Image key={i} source={src} style={[styles.reserveAvatar, { marginLeft: i === 0 ? 0 : -10, zIndex: RESERVED_CHILDREN.length - i }]} />
+                ))}
+              </View>
+              <Text style={styles.reserveText}>{RESERVED_CHILDREN.length} enfants réservés</Text>
+            </View>
+
+            {/* Places progress */}
+            <View style={styles.placesBar}>
+              <View
+                style={[
+                  styles.placesFill,
+                  { width: `${((GROUP_SESSION_DETAIL.placesTotal - GROUP_SESSION_DETAIL.placesLeft) / GROUP_SESSION_DETAIL.placesTotal) * 100}%` },
+                ]}
+              />
+            </View>
+            <Text style={styles.placesCaption}>
+              {GROUP_SESSION_DETAIL.placesTotal - GROUP_SESSION_DETAIL.placesLeft}/{GROUP_SESSION_DETAIL.placesTotal} places réservées
+            </Text>
+
+            {/* Price */}
+            <View style={styles.detailPriceRow}>
+              <Text style={styles.detailPriceValue}>80 DT</Text>
+              <Text style={styles.detailPriceUnit}>/mois</Text>
+            </View>
+          </View>
+        </View>
+
+         {/* Roadmap */}
         <View style={styles.roadmapSection}>
           <View style={styles.roadmapHeader}>
             <Text style={styles.roadmapTitle}>Roadmap</Text>
