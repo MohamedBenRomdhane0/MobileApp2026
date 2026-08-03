@@ -32,6 +32,7 @@ export const PATHS = {
     MATERIAL_HUB: "MaterialHub",
     MEETING_DETAILS: "Meeting_details",
     RESERVED_MEETINGS: "ReservedMeetings",
+    JOIN_SESSION: "JoinSession",
     PLANS: "Plans",
     DETAIL_PLAN_MEETING: "DetailPlanMetting",
     TRAILERS: "Trailer",

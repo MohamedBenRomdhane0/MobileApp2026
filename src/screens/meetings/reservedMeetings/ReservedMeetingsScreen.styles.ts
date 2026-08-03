@@ -13,6 +13,8 @@ export const C = {
   hairline: "#EDF1F6",
   teal: "#22BEC8",
   tealSoft: "#E9F9FA",
+  live: "#EF4444",
+  liveSoft: "#FEE2E2",
   dark: "#12151F",
 };
 
@@ -220,6 +222,11 @@ const S = StyleSheet.create({
     height: 5,
     borderRadius: 999,
     backgroundColor: "transparent",
+  },
+
+  dayNumberWrapLive: {
+    borderWidth: 2,
+    borderColor: C.live,
   },
 
   /* Today banner --------------------------------------------------------- */
@@ -531,6 +538,57 @@ const S = StyleSheet.create({
     fontSize: 11,
     fontWeight: "800",
     color: "#0B2033",
+  },
+
+  /* Live session --------------------------------------------------------- */
+
+  liveBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 5,
+    backgroundColor: C.liveSoft,
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    marginBottom: 4,
+  },
+
+  liveBadgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: C.live,
+  },
+
+  liveBadgeText: {
+    fontSize: 9,
+    fontWeight: "800",
+    color: C.live,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+
+  liveJoinBtn: {
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: C.live,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    shadowColor: C.live,
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
+  },
+
+  liveJoinText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#FFFFFF",
   },
 
   blockAvatar: {

@@ -53,13 +53,13 @@ type TabDef = {
 
 const TABS: TabDef[] = [
   { name: PATHS.TABS.SETTINGS as keyof TabsParamList, icon: "person-outline",     iconFocused: "person"      },
-  { name: PATHS.TABS.MEETINGS as keyof TabsParamList, icon: "videocam-outline",   iconFocused: "videocam"    },
+  // { name: PATHS.TABS.MEETINGS as keyof TabsParamList, icon: "videocam-outline",   iconFocused: "videocam"    },
   { name: PATHS.TABS.RESERVED_MEETINGS as keyof TabsParamList, icon: "calendar-outline", iconFocused: "calendar" },
   { name: PATHS.TABS.HOME     as keyof TabsParamList, icon: "home-outline",       iconFocused: "home"        },
   // { name: PATHS.TABS.COURSES  as keyof TabsParamList, icon: "library-outline",    iconFocused: "library"     },
   { name: PATHS.TABS.BOOKS    as keyof TabsParamList, icon: "book-outline",       iconFocused: "book"        },
-  { name: PATHS.TABS.STUDY_GUIDE    as keyof TabsParamList, icon: "document-text-outline", iconFocused: "document-text" },
-  { name: PATHS.TABS.MEETING_VIEW   as keyof TabsParamList, icon: "play-circle-outline",   iconFocused: "play-circle"   },
+  // { name: PATHS.TABS.STUDY_GUIDE    as keyof TabsParamList, icon: "document-text-outline", iconFocused: "document-text" },
+  // { name: PATHS.TABS.MEETING_VIEW   as keyof TabsParamList, icon: "play-circle-outline",   iconFocused: "play-circle"   },
   // { name: PATHS.TABS.START_LEARNING as keyof TabsParamList, icon: "rocket-outline",        iconFocused: "rocket"        },
   // { name: PATHS.TABS.PROGRESS_TODAY as keyof TabsParamList, icon: "trending-up-outline",   iconFocused: "trending-up"   },
   // { name: PATHS.TABS.EDU_HOME       as keyof TabsParamList, icon: "school-outline",        iconFocused: "school"        },

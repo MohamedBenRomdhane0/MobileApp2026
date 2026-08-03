@@ -16,6 +16,7 @@ import FavoriteCoursesScreen from "@screens/courses/FavoriteCoursesScreen";
 import CourseChaptersScreen from "@screens/courses/courseChapters/CourseChaptersScreen";
 import MeetingDetailsScreen from "@screens/meetings/meetingDetails/MeetingdetailsScreen";
 import ReservedMeetingsScreen from "@screens/meetings/reservedMeetings/ReservedMeetingsScreen";
+import JoinSessionScreen from "@screens/meetings/joinSession/JoinSessionScreen";
 import PlansScreen from "@screens/plans/PlansScreen";
 import DetailPlanMettingScreen from "@screens/plans/DetailPlanMettingScreen";
 import TrailersScreen from "@screens/trailers/TrailersScreen";
@@ -57,6 +58,10 @@ export default function AppTree() {
       <Stack.Screen
         name={PATHS.APP.RESERVED_MEETINGS}
         component={ReservedMeetingsScreen}
+      />
+      <Stack.Screen
+        name={PATHS.APP.JOIN_SESSION}
+        component={JoinSessionScreen}
       />
       <Stack.Screen name={PATHS.APP.PLANS} component={PlansScreen} />
       <Stack.Screen

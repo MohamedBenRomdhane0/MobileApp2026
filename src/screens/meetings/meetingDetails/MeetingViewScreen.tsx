@@ -12,11 +12,18 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, type CompositeNavigationProp } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { styles, COLORS } from "./MeetingViewScreen.styles";
 import AiOrb from "./AiOrb";
 import { useActiveChildHeaderData } from "@hooks/useActiveChildHeaderData";
 import LanguageSwitcher from "@components/header/LanguageSwitcher";
+import { PATHS } from "@config/constants/paths";
+import type {
+  RootStackParamList,
+  TabsParamList,
+} from "@config/types/navigation.types";
 
 const TEACHER_PHOTO = require("@assets/teachers/ismail.png");
 
@@ -125,7 +132,12 @@ const WEEK_STATS = {
 // ── Main screen ───────────────────────────────────────────────────────────────
 export default function MeetingViewScreen() {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
+  const navigation = useNavigation<
+    CompositeNavigationProp<
+      NativeStackNavigationProp<RootStackParamList>,
+      BottomTabNavigationProp<TabsParamList>
+    >
+  >();
   const headerData = useActiveChildHeaderData();
   const childPhotoUri = headerData?.avatarUrl ?? null;
   const childInitials = headerData?.initials ?? "أ";
@@ -305,7 +317,11 @@ export default function MeetingViewScreen() {
           </View>
 
           {/* Join meeting button */}
-          <TouchableOpacity style={styles.joinBtn} activeOpacity={0.9}>
+          <TouchableOpacity
+            style={styles.joinBtn}
+            activeOpacity={0.9}
+            onPress={() => navigation.navigate(PATHS.APP.JOIN_SESSION)}
+          >
             <View style={styles.joinBtnIcon}>
               <Ionicons name="play" size={13} color="#FFFFFF" />
             </View>

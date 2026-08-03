@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -32,6 +32,8 @@ import {
   RESERVED_ALL_TEACHERS,
   RESERVED_EMPTY_LABEL,
   RESERVED_EMPTY_TITLE,
+  RESERVED_LIVE_JOIN,
+  RESERVED_LIVE_LABEL,
   RESERVED_MONTH_INDEX,
   RESERVED_PICK_DATE_TITLE,
   RESERVED_SCHEDULE_TITLE,
@@ -42,6 +44,7 @@ import {
   RESERVED_YEAR,
   TIMELINE_PADDING_HOURS,
   buildCalendarWeeks,
+  currentNowHour,
   dayLabelOf,
   formatHour,
   weekIndexOf,
@@ -51,7 +54,11 @@ import S, { C } from "./ReservedMeetingsScreen.styles";
 /** Hours shown when the selected day has nothing booked. */
 const EMPTY_RANGE: [number, number] = [9, 15];
 
-export default function ReservedMeetingsScreen() {
+export default function ReservedMeetingsScreen({
+  embedded = false,
+}: {
+  embedded?: boolean;
+}) {
   const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<
@@ -119,11 +126,27 @@ export default function ReservedMeetingsScreen() {
     [rangeStart, rangeEnd]
   );
 
-  /** Live "now" marker, only meaningful on today's column. */
-  const nowHour = useMemo(() => {
-    const now = new Date();
-    return now.getHours() + now.getMinutes() / 60;
+  /** Current hour (decimal), refreshed every 30s. */
+  const [nowHour, setNowHour] = useState(currentNowHour);
+
+  useEffect(() => {
+    const id = setInterval(() => setNowHour(currentNowHour), 30_000);
+    return () => clearInterval(id);
   }, []);
+
+  /** Ids of sessions running right now — only meaningful on the mock "today". */
+  const liveIds = useMemo(() => {
+    if (!isReservedMonth) return new Set<number>();
+    return new Set(
+      RESERVED_SESSIONS.filter(
+        (s) =>
+          s.date === RESERVED_TODAY &&
+          nowHour >= s.start &&
+          nowHour < s.end,
+      ).map((s) => s.id),
+    );
+  }, [nowHour, isReservedMonth]);
+
   const showNow =
     isReservedMonth &&
     selectedDate === RESERVED_TODAY &&
@@ -164,13 +187,13 @@ export default function ReservedMeetingsScreen() {
 
   return (
     <View style={S.screen}>
-      <StatusBar barStyle="dark-content" />
+      {!embedded && <StatusBar barStyle="dark-content" />}
       <View style={S.glowTop} pointerEvents="none" />
       <View style={S.glowSide} pointerEvents="none" />
 
       {/* ── Header ─────────────────────────────────────────────── */}
-      <View style={[S.header, { paddingTop: insets.top + 8 }]}>
-        {navigation.canGoBack() ? (
+      <View style={[S.header, { paddingTop: embedded ? 10 : insets.top + 8 }]}>
+        {!embedded && navigation.canGoBack() ? (
           <TouchableOpacity
             style={S.roundBtn}
             activeOpacity={0.85}
@@ -250,6 +273,7 @@ export default function ReservedMeetingsScreen() {
               {week.map((day, i) => {
                 if (!day) return <View key={`pad-${i}`} style={S.dayCell} />;
                 const isSelected = day.date === selectedDate;
+                const isLive = day.isToday && liveIds.size > 0;
                 return (
                   <TouchableOpacity
                     key={day.date}
@@ -268,6 +292,7 @@ export default function ReservedMeetingsScreen() {
                         S.dayNumberWrap,
                         day.isToday && S.dayNumberWrapToday,
                         isSelected && S.dayNumberWrapSelected,
+                        isLive && S.dayNumberWrapLive,
                       ]}
                     >
                       <Text
@@ -282,9 +307,11 @@ export default function ReservedMeetingsScreen() {
                     <View
                       style={[
                         S.dayDot,
-                        !!day.accent && {
-                          backgroundColor: isSelected ? C.teal : day.accent,
-                        },
+                        isLive
+                          ? { backgroundColor: C.live }
+                          : !!day.accent && {
+                              backgroundColor: isSelected ? C.teal : day.accent,
+                            },
                       ]}
                     />
                   </TouchableOpacity>
@@ -386,6 +413,7 @@ export default function ReservedMeetingsScreen() {
                   );
                   // Short slots only get the title + hours, no meta chips.
                   const compact = height < 86;
+                  const live = liveIds.has(session.id);
                   return (
                     <TouchableOpacity
                       key={session.id}
@@ -396,7 +424,7 @@ export default function ReservedMeetingsScreen() {
                         session.teacherName
                       }, ${formatHour(session.start)} à ${formatHour(
                         session.end
-                      )}`}
+                      )}${live ? ", en direct" : ""}`}
                       onPress={() => openSession(session)}
                     >
                       <LinearGradient
@@ -406,6 +434,14 @@ export default function ReservedMeetingsScreen() {
                         style={[S.block, { height }]}
                       >
                         <View style={S.blockInfo}>
+                          {live && (
+                            <View style={S.liveBadge}>
+                              <View style={S.liveBadgeDot} />
+                              <Text style={S.liveBadgeText}>
+                                {RESERVED_LIVE_LABEL}
+                              </Text>
+                            </View>
+                          )}
                           <Text style={S.blockTitle} numberOfLines={1}>
                             {session.subject}
                           </Text>
@@ -415,7 +451,7 @@ export default function ReservedMeetingsScreen() {
                             )}`}
                           </Text>
 
-                          {!compact && (
+                          {!compact && !live && (
                             <View style={S.blockMetaRow}>
                               <View style={S.blockChip}>
                                 <Ionicons
@@ -447,11 +483,32 @@ export default function ReservedMeetingsScreen() {
                           )}
                         </View>
 
-                        <View style={S.progressPill}>
-                          <Text style={S.progressPillText}>
-                            {`${session.progress}%`}
-                          </Text>
-                        </View>
+                        {live ? (
+                          <TouchableOpacity
+                            style={S.liveJoinBtn}
+                            activeOpacity={0.85}
+                            accessibilityRole="button"
+                            accessibilityLabel="Rejoindre la séance en direct"
+                            onPress={() =>
+                              navigation.navigate(PATHS.APP.JOIN_SESSION)
+                            }
+                          >
+                            <Ionicons
+                              name="videocam"
+                              size={12}
+                              color="#FFFFFF"
+                            />
+                            <Text style={S.liveJoinText}>
+                              {RESERVED_LIVE_JOIN}
+                            </Text>
+                          </TouchableOpacity>
+                        ) : (
+                          <View style={S.progressPill}>
+                            <Text style={S.progressPillText}>
+                              {`${session.progress}%`}
+                            </Text>
+                          </View>
+                        )}
                       </LinearGradient>
 
                       <Image

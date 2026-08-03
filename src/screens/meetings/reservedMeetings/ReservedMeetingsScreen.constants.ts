@@ -25,6 +25,8 @@ export const RESERVED_SCHEDULE_TITLE = "Emploi du temps";
 export const RESERVED_EMPTY_TITLE = "Journée libre";
 export const RESERVED_EMPTY_LABEL = "Aucune séance réservée ce jour";
 export const RESERVED_ALL_TEACHERS = "Tous";
+export const RESERVED_LIVE_LABEL = "En direct";
+export const RESERVED_LIVE_JOIN = "Rejoindre";
 
 /** Two-letter column headers, week starting on Monday. */
 export const DAY_LABELS = ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"];
@@ -34,6 +36,20 @@ const DAY_SHORT = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 export const HOUR_HEIGHT = 68;
 /** Hours of padding kept above the first and below the last session. */
 export const TIMELINE_PADDING_HOURS = 1;
+
+/**
+ * Preview hook for the "live" state: the real device clock (August) can
+ * never fall inside the June mock, so this forces the current hour used for
+ * live detection. Set to `null` to use the real device clock instead.
+ */
+export const LIVE_PREVIEW_NOW: number | null = 14.25;
+
+/** Decimal hour of "now", honoring the preview override above. */
+export function currentNowHour(): number {
+  if (LIVE_PREVIEW_NOW !== null) return LIVE_PREVIEW_NOW;
+  const now = new Date();
+  return now.getHours() + now.getMinutes() / 60;
+}
 
 export const MONTHS = [
   "Janvier",
@@ -101,8 +117,8 @@ export const RESERVED_SESSIONS: ReservedSession[] = [
     accent: "#22BEC8",
     date: 19,
     dayLabel: dayLabelOf(19),
-    start: 9,
-    end: 10.5,
+    start: 8,
+    end: 9.5,
     group: "Groupe B",
     room: "Salle 204",
     status: "confirmed",
@@ -117,8 +133,8 @@ export const RESERVED_SESSIONS: ReservedSession[] = [
     accent: "#7C4DCC",
     date: 19,
     dayLabel: dayLabelOf(19),
-    start: 13,
-    end: 14.5,
+    start: 11,
+    end: 12.5,
     group: "Groupe A",
     room: "Salle 108",
     status: "confirmed",
@@ -133,8 +149,8 @@ export const RESERVED_SESSIONS: ReservedSession[] = [
     accent: "#F97316",
     date: 19,
     dayLabel: dayLabelOf(19),
-    start: 16.5,
-    end: 18,
+    start: 13.5,
+    end: 15,
     group: "Groupe A",
     room: "Salle 302",
     status: "upcoming",
@@ -196,7 +212,7 @@ const ACCENT_BY_DATE: Record<number, string> = RESERVED_SESSIONS.reduce(
     if (!acc[session.date]) acc[session.date] = session.accent;
     return acc;
   },
-  {} as Record<number, string>
+  {} as Record<number, string>,
 );
 
 /**
@@ -206,7 +222,7 @@ const ACCENT_BY_DATE: Record<number, string> = RESERVED_SESSIONS.reduce(
  */
 export function buildCalendarWeeks(
   year: number,
-  monthIndex: number
+  monthIndex: number,
 ): CalendarWeek[] {
   const weeks: CalendarWeek[] = [];
   const offset = leadingOffset(year, monthIndex);
@@ -242,7 +258,7 @@ export function buildCalendarWeeks(
 export function weekIndexOf(
   date: number,
   year: number,
-  monthIndex: number
+  monthIndex: number,
 ): number {
   return Math.floor((leadingOffset(year, monthIndex) + date - 1) / 7);
 }

@@ -61,6 +61,8 @@ export type RootStackParamList = {
 
   [PATHS.APP.RESERVED_MEETINGS]: undefined;
 
+  [PATHS.APP.JOIN_SESSION]: undefined;
+
   [PATHS.APP.VIDEO]: {
     bookId: number;
     iconId: number;
