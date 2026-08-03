@@ -692,10 +692,20 @@ export default function MeetingsScreen() {
         <View style={styles.headerBubble} />
 
         <View style={styles.headerTopRow}>
-          <TouchableOpacity style={styles.notifBtn} activeOpacity={0.9}>
-            <Ionicons name="notifications-outline" size={20} color="#FFD76A" />
-            <View style={styles.notifDot} />
-          </TouchableOpacity>
+          <View style={styles.headerLeft}>
+            <TouchableOpacity style={styles.notifBtn} activeOpacity={0.9}>
+              <Ionicons name="notifications-outline" size={20} color="#FFD76A" />
+              <View style={styles.notifDot} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.notifBtn}
+              activeOpacity={0.9}
+              onPress={() => navigation.navigate(PATHS.APP.RESERVED_MEETINGS)}
+            >
+              <Ionicons name="calendar-outline" size={20} color="#A8ECF0" />
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.headerCenter}>
             <Text style={[styles.title, { color: palette.white }]}>

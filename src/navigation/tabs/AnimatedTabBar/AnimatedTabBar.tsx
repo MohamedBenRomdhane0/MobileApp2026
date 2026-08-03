@@ -25,6 +25,7 @@ import BooksScreen from "@screens/books/BooksScreen";
 import CoursesScreen from "@screens/courses/CoursesScreen";
 import HomeScreen from "@screens/home/HomeScreen";
 import MeetingsScreen from "@screens/meetings/MeetingsScreen";
+import ReservedMeetingsScreen from "@screens/meetings/reservedMeetings/ReservedMeetingsScreen";
 import PlansScreen from "@screens/plans/PlansScreen";
 import SettingsScreen from "@screens/settings/SettingsScreen";
 import StudyGuideScreen from "@screens/learning/StudyGuideScreen";
@@ -53,6 +54,7 @@ type TabDef = {
 const TABS: TabDef[] = [
   { name: PATHS.TABS.SETTINGS as keyof TabsParamList, icon: "person-outline",     iconFocused: "person"      },
   { name: PATHS.TABS.MEETINGS as keyof TabsParamList, icon: "videocam-outline",   iconFocused: "videocam"    },
+  { name: PATHS.TABS.RESERVED_MEETINGS as keyof TabsParamList, icon: "calendar-outline", iconFocused: "calendar" },
   { name: PATHS.TABS.HOME     as keyof TabsParamList, icon: "home-outline",       iconFocused: "home"        },
   // { name: PATHS.TABS.COURSES  as keyof TabsParamList, icon: "library-outline",    iconFocused: "library"     },
   { name: PATHS.TABS.BOOKS    as keyof TabsParamList, icon: "book-outline",       iconFocused: "book"        },
@@ -63,7 +65,7 @@ const TABS: TabDef[] = [
   // { name: PATHS.TABS.EDU_HOME       as keyof TabsParamList, icon: "school-outline",        iconFocused: "school"        },
   // { name: PATHS.TABS.STUDY_CRAFT    as keyof TabsParamList, icon: "construct-outline",     iconFocused: "construct"     },
   // { name: PATHS.TABS.AI_OWL         as keyof TabsParamList, icon: "bulb-outline",          iconFocused: "bulb"          },
-  { name: PATHS.TABS.LEARN_CALENDAR as keyof TabsParamList, icon: "calendar-outline",      iconFocused: "calendar"      },
+  { name: PATHS.TABS.LEARN_CALENDAR as keyof TabsParamList, icon: "school-outline",        iconFocused: "school"        },
 ];
 
 // ─── per-tab icon with scale/opacity animation ───────────────────────────────
@@ -216,6 +218,10 @@ const MainTabNavigator: React.FC = () => (
     <Tab.Screen name={PATHS.TABS.BOOKS}       component={BooksScreen}       />
     <Tab.Screen name={PATHS.TABS.COURSES}     component={CoursesScreen}     />
     <Tab.Screen name={PATHS.TABS.MEETINGS}    component={MeetingsScreen}    />
+    <Tab.Screen
+      name={PATHS.TABS.RESERVED_MEETINGS}
+      component={ReservedMeetingsScreen}
+    />
     <Tab.Screen name={PATHS.TABS.SETTINGS}    component={SettingsScreen}    />
     <Tab.Screen name={PATHS.TABS.PLANS}       component={PlansScreen}       />
     <Tab.Screen name={PATHS.TABS.STUDY_GUIDE}    component={StudyGuideScreen}    />

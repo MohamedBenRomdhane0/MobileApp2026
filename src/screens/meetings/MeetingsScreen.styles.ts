@@ -86,6 +86,12 @@ export const meetingsStyles = StyleSheet.create({
     marginBottom: 8,
   },
 
+  headerLeft: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 8,
+  },
+
   avatarButton: { borderRadius: 999 },
 
   notifBtn: {

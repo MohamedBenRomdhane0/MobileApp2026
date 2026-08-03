@@ -59,6 +59,8 @@ export type RootStackParamList = {
     meetingId: number | string;
   };
 
+  [PATHS.APP.RESERVED_MEETINGS]: undefined;
+
   [PATHS.APP.VIDEO]: {
     bookId: number;
     iconId: number;
@@ -75,6 +77,7 @@ export type TabsParamList = {
   [PATHS.TABS.BOOKS]: undefined;
   [PATHS.TABS.COURSES]: undefined;
   [PATHS.TABS.MEETINGS]: undefined;
+  [PATHS.TABS.RESERVED_MEETINGS]: undefined;
   [PATHS.TABS.SETTINGS]: undefined;
   [PATHS.TABS.HOME]: undefined;
   [PATHS.TABS.PLANS]: undefined;
