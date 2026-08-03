@@ -15,6 +15,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  type SharedValue,
 } from "react-native-reanimated";
 
 import { PATHS } from "@config/constants/paths";
@@ -39,69 +40,133 @@ import LearnCalendarScreen from "@screens/learning/LearnCalendarScreen";
 
 const Tab = createBottomTabNavigator<TabsParamList>();
 
-const ICON_SIZE = 24;
-const BAR_HEIGHT = 64;
-const BUBBLE_SIZE = 52;
-const NOTCH_DEPTH = 26;
-const SPRING = { damping: 20, stiffness: 260, mass: 0.8 } as const;
+const ICON_SIZE = 22;
+const BAR_HEIGHT = 70;
+/** Height of a tab pill; also the touch-target height. */
+const TAB_HEIGHT = 46;
+/** Width of an inactive, icon-only tab. */
+const TAB_COLLAPSED_W = 54;
+/** Horizontal padding inside the bar. */
+const BAR_PAD_H = 14;
+/** Widest an expanded pill is allowed to get. */
+const TAB_ACTIVE_MAX_W = 168;
+const SPRING = { damping: 18, stiffness: 190, mass: 0.9 } as const;
 
 type TabDef = {
   name: keyof TabsParamList;
+  label: string;
   icon: keyof typeof Ionicons.glyphMap;
   iconFocused: keyof typeof Ionicons.glyphMap;
 };
 
 const TABS: TabDef[] = [
-  { name: PATHS.TABS.SETTINGS as keyof TabsParamList, icon: "person-outline",     iconFocused: "person"      },
-  // { name: PATHS.TABS.MEETINGS as keyof TabsParamList, icon: "videocam-outline",   iconFocused: "videocam"    },
-  { name: PATHS.TABS.RESERVED_MEETINGS as keyof TabsParamList, icon: "calendar-outline", iconFocused: "calendar" },
-  { name: PATHS.TABS.HOME     as keyof TabsParamList, icon: "home-outline",       iconFocused: "home"        },
-  // { name: PATHS.TABS.COURSES  as keyof TabsParamList, icon: "library-outline",    iconFocused: "library"     },
-  { name: PATHS.TABS.BOOKS    as keyof TabsParamList, icon: "book-outline",       iconFocused: "book"        },
-  // { name: PATHS.TABS.STUDY_GUIDE    as keyof TabsParamList, icon: "document-text-outline", iconFocused: "document-text" },
-  // { name: PATHS.TABS.MEETING_VIEW   as keyof TabsParamList, icon: "play-circle-outline",   iconFocused: "play-circle"   },
-  // { name: PATHS.TABS.START_LEARNING as keyof TabsParamList, icon: "rocket-outline",        iconFocused: "rocket"        },
-  // { name: PATHS.TABS.PROGRESS_TODAY as keyof TabsParamList, icon: "trending-up-outline",   iconFocused: "trending-up"   },
-  // { name: PATHS.TABS.EDU_HOME       as keyof TabsParamList, icon: "school-outline",        iconFocused: "school"        },
-  // { name: PATHS.TABS.STUDY_CRAFT    as keyof TabsParamList, icon: "construct-outline",     iconFocused: "construct"     },
-  // { name: PATHS.TABS.AI_OWL         as keyof TabsParamList, icon: "bulb-outline",          iconFocused: "bulb"          },
-  { name: PATHS.TABS.LEARN_CALENDAR as keyof TabsParamList, icon: "school-outline",        iconFocused: "school"        },
+  { name: PATHS.TABS.SETTINGS as keyof TabsParamList, label: "Profil",  icon: "person-outline",     iconFocused: "person"      },
+  // { name: PATHS.TABS.MEETINGS as keyof TabsParamList, label: "Live", icon: "videocam-outline",   iconFocused: "videocam"    },
+  { name: PATHS.TABS.RESERVED_MEETINGS as keyof TabsParamList, label: "Séances", icon: "calendar-outline", iconFocused: "calendar" },
+  { name: PATHS.TABS.HOME     as keyof TabsParamList, label: "Accueil", icon: "home-outline",       iconFocused: "home"        },
+  // { name: PATHS.TABS.COURSES  as keyof TabsParamList, label: "Cours", icon: "library-outline",    iconFocused: "library"     },
+  { name: PATHS.TABS.BOOKS    as keyof TabsParamList, label: "Livres",  icon: "book-outline",       iconFocused: "book"        },
+  // { name: PATHS.TABS.STUDY_GUIDE    as keyof TabsParamList, label: "Guide", icon: "document-text-outline", iconFocused: "document-text" },
+  // { name: PATHS.TABS.MEETING_VIEW   as keyof TabsParamList, label: "Replay", icon: "play-circle-outline",   iconFocused: "play-circle"   },
+  // { name: PATHS.TABS.START_LEARNING as keyof TabsParamList, label: "Départ", icon: "rocket-outline",        iconFocused: "rocket"        },
+  // { name: PATHS.TABS.PROGRESS_TODAY as keyof TabsParamList, label: "Progrès", icon: "trending-up-outline",  iconFocused: "trending-up"   },
+  // { name: PATHS.TABS.EDU_HOME       as keyof TabsParamList, label: "Édu", icon: "school-outline",           iconFocused: "school"        },
+  // { name: PATHS.TABS.STUDY_CRAFT    as keyof TabsParamList, label: "Atelier", icon: "construct-outline",    iconFocused: "construct"     },
+  // { name: PATHS.TABS.AI_OWL         as keyof TabsParamList, label: "IA", icon: "bulb-outline",              iconFocused: "bulb"          },
+  { name: PATHS.TABS.LEARN_CALENDAR as keyof TabsParamList, label: "Écoles", icon: "school-outline",        iconFocused: "school"        },
 ];
 
-// ─── per-tab icon with scale/opacity animation ───────────────────────────────
-const TabIcon = React.memo(({
-  tab, focused, color, inactiveColor,
+/**
+ * One tab of the bar. Inactive tabs are icon-only; the active one expands
+ * into a filled pill that reveals its label. Every tab derives its own
+ * expansion from the shared spring position, so the pill appears to slide
+ * sideways while the widths always add up to the bar.
+ */
+const TabPill = React.memo(({
+  tab, index, pos, activeWidth, primary, inactiveColor, onPress,
 }: {
-  tab: TabDef; focused: boolean; color: string; inactiveColor: string;
+  tab: TabDef;
+  index: number;
+  pos: SharedValue<number>;
+  activeWidth: number;
+  primary: string;
+  inactiveColor: string;
+  onPress: () => void;
 }) => {
-  const prog = useSharedValue(focused ? 1 : 0);
-  useEffect(() => {
-    prog.value = withSpring(focused ? 1 : 0, { damping: 18, stiffness: 320 });
-  }, [focused, prog]);
+  // 1 when this tab owns the pill, 0 when it's a plain icon, fractional mid-slide.
+  const shellStyle = useAnimatedStyle(() => {
+    const t = Math.max(0, 1 - Math.abs(pos.value - index));
+    return { width: TAB_COLLAPSED_W + (activeWidth - TAB_COLLAPSED_W) * t };
+  });
 
-  const activeStyle = useAnimatedStyle(() => ({
-    opacity: prog.value,
-    transform: [{ scale: interpolate(prog.value, [0, 1], [0.6, 1.15], "clamp") }],
-  }));
-  const inactiveStyle = useAnimatedStyle(() => ({
-    opacity: 1 - prog.value,
-    transform: [{ scale: interpolate(prog.value, [0, 1], [1, 0.6], "clamp") }],
-  }));
+  const pillStyle = useAnimatedStyle(() => {
+    const t = Math.max(0, 1 - Math.abs(pos.value - index));
+    return {
+      opacity: t,
+      transform: [{ scale: interpolate(t, [0, 1], [0.9, 1], "clamp") }],
+    };
+  });
+
+  const activeIconStyle = useAnimatedStyle(() => {
+    const t = Math.max(0, 1 - Math.abs(pos.value - index));
+    return {
+      opacity: t,
+      transform: [{ scale: interpolate(t, [0, 0.6, 1], [0.7, 1.16, 1], "clamp") }],
+    };
+  });
+
+  const idleIconStyle = useAnimatedStyle(() => {
+    const t = Math.max(0, 1 - Math.abs(pos.value - index));
+    return {
+      opacity: 1 - t,
+      transform: [{ scale: interpolate(t, [0, 1], [1, 0.8], "clamp") }],
+    };
+  });
+
+  const labelStyle = useAnimatedStyle(() => {
+    const t = Math.max(0, 1 - Math.abs(pos.value - index));
+    return {
+      opacity: interpolate(t, [0.35, 1], [0, 1], "clamp"),
+      transform: [{ translateX: interpolate(t, [0, 1], [12, 0], "clamp") }],
+    };
+  });
 
   return (
-    <View style={{ width: 36, height: 36, alignItems: "center", justifyContent: "center" }}>
-      <Animated.View style={[StyleSheet.absoluteFill, { alignItems: "center", justifyContent: "center" }, inactiveStyle]}>
-        <Ionicons name={tab.icon} size={ICON_SIZE} color={inactiveColor} />
+    <TouchableOpacity
+      activeOpacity={0.9}
+      accessibilityRole="tab"
+      accessibilityLabel={tab.label}
+      onPress={onPress}
+    >
+      <Animated.View style={[styles.tabShell, shellStyle]}>
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.pill,
+            { backgroundColor: primary, shadowColor: primary },
+            pillStyle,
+          ]}
+        />
+
+        <View style={styles.iconBox}>
+          <Animated.View style={[styles.iconLayer, idleIconStyle]}>
+            <Ionicons name={tab.icon} size={ICON_SIZE} color={inactiveColor} />
+          </Animated.View>
+          <Animated.View style={[styles.iconLayer, activeIconStyle]}>
+            <Ionicons name={tab.iconFocused} size={ICON_SIZE} color="#FFFFFF" />
+          </Animated.View>
+        </View>
+
+        <Animated.Text numberOfLines={1} style={[styles.tabLabel, labelStyle]}>
+          {tab.label}
+        </Animated.Text>
       </Animated.View>
-      <Animated.View style={[StyleSheet.absoluteFill, { alignItems: "center", justifyContent: "center" }, activeStyle]}>
-        <Ionicons name={tab.iconFocused} size={ICON_SIZE} color={color} />
-      </Animated.View>
-    </View>
+    </TouchableOpacity>
   );
 });
 
 // ─── main tab bar ─────────────────────────────────────────────────────────────
-const NotchTabBar = ({ state, navigation }: BottomTabBarProps) => {
+const PillTabBar = ({ state, navigation }: BottomTabBarProps) => {
   const { colors, mode } = useAppTheme();
   const isDark = mode === "dark";
   const insets = useSafeAreaInsets();
@@ -109,110 +174,125 @@ const NotchTabBar = ({ state, navigation }: BottomTabBarProps) => {
 
   const primary  = colors.primary;
   const barBg    = isDark ? "#0B1220" : "#FFFFFF";
-  const inactive = isDark ? "rgba(148,163,184,0.7)" : "rgba(100,112,130,0.85)";
+  const inactive = isDark ? "rgba(148,163,184,0.8)" : "rgba(100,112,130,0.9)";
 
   // Map active route name → visual TABS index (independent of registration order)
   const activeRouteName = state.routes[state.index]?.name ?? "";
   const activeTabIndex  = Math.max(0, TABS.findIndex((t) => t.name === activeRouteName));
 
-  const tabWidth = W / TABS.length;
+  /** The expanded pill takes whatever the collapsed tabs leave behind. */
+  const activeWidth = Math.min(
+    TAB_ACTIVE_MAX_W,
+    W - BAR_PAD_H * 2 - TAB_COLLAPSED_W * (TABS.length - 1),
+  );
 
-  // measure each tab's center X via onLayout
-  const [centers, setCenters] = useState<number[]>([]);
-  const handleLayout = useCallback((i: number, e: LayoutChangeEvent) => {
-    const { x, width } = e.nativeEvent.layout;
-    setCenters((prev) => { const n = [...prev]; n[i] = x + width / 2; return n; });
-  }, []);
-
-  // shared value: active tab center X — spring slides to new position
-  const activeX = useSharedValue(tabWidth * activeTabIndex + tabWidth / 2);
+  // Animated tab position — springs from the old index to the new one.
+  const pos = useSharedValue(activeTabIndex);
 
   useEffect(() => {
-    const cx = centers[activeTabIndex] ?? (tabWidth * activeTabIndex + tabWidth / 2);
-    activeX.value = withSpring(cx, SPRING);
-  }, [activeTabIndex, centers, activeX, tabWidth]);
+    pos.value = withSpring(activeTabIndex, SPRING);
+  }, [activeTabIndex, pos]);
 
-  // bubble slides horizontally
-  const bubbleStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: activeX.value - BUBBLE_SIZE / 2 }],
-  }));
-
-  // cradle (bar-colored circle) slides with bubble to create notch illusion
-  const cradleStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: activeX.value - (BUBBLE_SIZE + 16) / 2 }],
-  }));
-
-  const totalHeight = BAR_HEIGHT + insets.bottom;
+  const goTo = useCallback(
+    (name: keyof TabsParamList) => navigation.navigate(name as never),
+    [navigation],
+  );
 
   return (
-    <View style={{ height: totalHeight, backgroundColor: "transparent" }}>
-      {/* bar */}
-      <View style={{
-        position: "absolute", left: 0, right: 0, bottom: 0,
-        height: BAR_HEIGHT + insets.bottom,
-        backgroundColor: barBg,
-        borderTopLeftRadius: 24, borderTopRightRadius: 24,
-        shadowColor: "#000",
-        shadowOpacity: isDark ? 0.5 : 0.12,
-        shadowRadius: 16, shadowOffset: { width: 0, height: -4 },
-        elevation: 12,
-      }} />
-
-      {/* sliding cradle — same color as bar, sits above bar to mask the notch */}
-      <Animated.View pointerEvents="none" style={[{
-        position: "absolute",
-        top: NOTCH_DEPTH / 2,
-        width: BUBBLE_SIZE + 16, height: BUBBLE_SIZE + 16,
-        borderRadius: (BUBBLE_SIZE + 16) / 2,
-        backgroundColor: barBg,
-      }, cradleStyle]} />
-
-      {/* sliding bubble */}
-      <Animated.View style={[{
-        position: "absolute",
-        top: -(BUBBLE_SIZE / 2 - NOTCH_DEPTH / 2),
-        width: BUBBLE_SIZE, height: BUBBLE_SIZE,
-        borderRadius: BUBBLE_SIZE / 2,
-        backgroundColor: primary,
-        alignItems: "center", justifyContent: "center",
-        shadowColor: primary, shadowOpacity: 0.5,
-        shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
-        elevation: 10,
-      }, bubbleStyle]}>
-        <Ionicons
-          name={TABS[activeTabIndex].iconFocused}
-          size={ICON_SIZE + 2}
-          color="#FFFFFF"
-        />
-      </Animated.View>
-
-      {/* tab touch targets */}
-      <View style={{ flexDirection: "row", height: BAR_HEIGHT }}>
-        {TABS.map((tab, i) => (
-          <TouchableOpacity
-            key={String(tab.name)}
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-            activeOpacity={0.8}
-            onLayout={(e) => handleLayout(i, e)}
-            onPress={() => navigation.navigate(tab.name as never)}
-          >
-            {i === activeTabIndex ? (
-              <View style={{ width: 36, height: 36 }} />
-            ) : (
-              <TabIcon tab={tab} focused={false} color={primary} inactiveColor={inactive} />
-            )}
-          </TouchableOpacity>
-        ))}
+    <View style={{ height: BAR_HEIGHT + insets.bottom }}>
+      <View
+        style={[
+          styles.bar,
+          {
+            height: BAR_HEIGHT + insets.bottom,
+            paddingBottom: insets.bottom,
+            backgroundColor: barBg,
+            borderTopColor: isDark ? "rgba(148,163,184,0.14)" : "rgba(18,42,78,0.06)",
+            shadowOpacity: isDark ? 0.5 : 0.12,
+          },
+        ]}
+      >
+        <View style={styles.row}>
+          {TABS.map((tab, i) => (
+            <TabPill
+              key={String(tab.name)}
+              tab={tab}
+              index={i}
+              pos={pos}
+              activeWidth={activeWidth}
+              primary={primary}
+              inactiveColor={inactive}
+              onPress={() => goTo(tab.name)}
+            />
+          ))}
+        </View>
       </View>
     </View>
   );
 };
 
+const styles = StyleSheet.create({
+  bar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: BAR_PAD_H,
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: -6 },
+    elevation: 14,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    height: BAR_HEIGHT - 18,
+  },
+  tabShell: {
+    height: TAB_HEIGHT,
+    borderRadius: 999,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  pill: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 999,
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 6,
+  },
+  iconBox: {
+    width: ICON_SIZE + 6,
+    height: ICON_SIZE + 6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconLayer: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tabLabel: {
+    marginLeft: 7,
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    letterSpacing: 0.2,
+  },
+});
+
 // ─── navigator ────────────────────────────────────────────────────────────────
 const MainTabNavigator: React.FC = () => (
   <Tab.Navigator
     initialRouteName={PATHS.TABS.HOME}
-    tabBar={(props) => <NotchTabBar {...props} />}
+    tabBar={(props) => <PillTabBar {...props} />}
     screenOptions={{ headerShown: false, lazy: true, tabBarHideOnKeyboard: true }}
   >
     <Tab.Screen name={PATHS.TABS.BOOKS}       component={BooksScreen}       />
