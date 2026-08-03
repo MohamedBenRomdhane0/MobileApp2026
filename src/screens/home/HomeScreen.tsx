@@ -647,46 +647,7 @@ export default function HomeScreen() {
             )} */}
           {/* </View> */}
 
-          {/* <TouchableOpacity
-            activeOpacity={0.92}
-            onPress={goSubscribe}
-            style={{ borderRadius: 22, overflow: "hidden" }}
-            accessibilityLabel={t(HOME_UI.subscribeTitle)}
-            accessibilityRole="button"
-          >
-            <LinearGradient
-              colors={HOME_TOKENS.subscribeGradient}
-              start={{ x: 1, y: 0.2 }}
-              end={{ x: 0, y: 0.95 }}
-              style={styles.subscribeBanner}
-            >
-              <View style={styles.subscribeContent}>
-                <View style={styles.subscribeTextBlock}>
-                  <Text style={styles.subscribeTitle}>{t(HOME_UI.subscribeTitle)}</Text>
-                  <Text style={styles.subscribeSub}>{t(HOME_UI.subscribeSub)}</Text>
-                </View>
-
-                <View style={styles.subscribeBtn}>
-                  <Ionicons name="arrow-back" size={16} color="#FFFFFF" />
-                  <Text style={styles.subscribeBtnText}>{t(HOME_UI.subscribeCta)}</Text>
-                </View>
-              </View>
-            </LinearGradient>
-          </TouchableOpacity>
-
-          <View style={styles.sectionHeaderRow}>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={goBooks}
-              accessibilityRole="link"
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Text style={styles.sectionLink}>
-                {t(HOME_COMMON_UI.seeAll)}
-              </Text>
-            </TouchableOpacity>
-            <Text style={styles.sectionTitle}>{t(HOME_UI.schoolBooks)}</Text>
-          </View> */}
+          
 
           {/* ── Materials (colored grid) ─────────────────────────────────── */}
           {showMaterialsLoader ? (
@@ -795,8 +756,91 @@ export default function HomeScreen() {
               })}
             </ScrollView>
           )}
+ 
+          <TouchableOpacity
+            activeOpacity={0.92}
+            onPress={goSubscribe}
+            style={{ borderRadius: 22, overflow: "hidden" }}
+            accessibilityLabel={t(HOME_UI.subscribeTitle)}
+            accessibilityRole="button"
+          >
+            <LinearGradient
+              colors={HOME_TOKENS.subscribeGradient}
+              start={{ x: 1, y: 0.2 }}
+              end={{ x: 0, y: 0.95 }}
+              style={styles.subscribeBanner}
+            >
+              <View style={styles.subscribeContent}>
+                <View style={styles.subscribeTextBlock}>
+                  <Text style={styles.subscribeTitle}>{t(HOME_UI.subscribeTitle)}</Text>
+                  <Text style={styles.subscribeSub}>{t(HOME_UI.subscribeSub)}</Text>
+                </View>
 
-          {/* <View style={[styles.sectionHeaderRow, { marginTop: 18 }]}>
+                <View style={styles.subscribeBtn}>
+                  <Ionicons name="arrow-back" size={16} color="#FFFFFF" />
+                  <Text style={styles.subscribeBtnText}>{t(HOME_UI.subscribeCta)}</Text>
+                </View>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <View style={styles.teachersSection}>
+              <View style={styles.teachersHeader}>
+                <Text style={styles.teachersSectionTitle}>
+                  {t("home.available_teachers")}
+                </Text>
+                <TouchableOpacity hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                  <Text style={styles.teachersSeeAll}>
+                    {t(HOME_COMMON_UI.seeAll, { defaultValue: "عرض الكل" })}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.teachersRow}>
+                {MOCK_TEACHERS.map((teacher, i) => (
+                  <TouchableOpacity
+                    key={teacher.id}
+                    style={styles.teacherCol}
+                    activeOpacity={0.8}
+                    onPress={() => openTeacher(teacher.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={teacher.fullName}
+                  >
+                    <View style={[styles.teacherAvatar, { backgroundColor: TEACHER_COLORS[i] }]}>
+                      <Image source={teacher.avatar} style={styles.teacherImg} />
+                    </View>
+                    <Text style={styles.teacherName} numberOfLines={1}>{teacher.fullName}</Text>
+                    <View style={styles.teacherBadge}>
+                      <Text style={styles.teacherBadgeText}>4.0</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+                {TEACHER_COLORS.slice(MOCK_TEACHERS.length).map((c, i) => (
+                  <TouchableOpacity key={`extra-${i}`} style={styles.teacherCol}>
+                    <View style={[styles.teacherAvatar, { backgroundColor: c }]} />
+                    <Text style={styles.teacherName} numberOfLines={1}>{`Teacher ${MOCK_TEACHERS.length + i + 1}`}</Text>
+                    <View style={styles.teacherBadge}>
+                      <Text style={styles.teacherBadgeText}>4.0</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          <View style={styles.sectionHeaderRow}>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={goBooks}
+              accessibilityRole="link"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={styles.sectionLink}>
+                {t(HOME_COMMON_UI.seeAll)}
+              </Text>
+            </TouchableOpacity>
+            <Text style={styles.sectionTitle}>{t(HOME_UI.schoolBooks)}</Text>
+          </View>
+
+          <View style={[styles.sectionHeaderRow, { marginTop: 18 }]}>
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={goMeetings}
@@ -808,9 +852,9 @@ export default function HomeScreen() {
               </Text>
             </TouchableOpacity>
             <Text style={styles.sectionTitle}>{t(HOME_UI.liveMeetings)}</Text>
-          </View> */}
+          </View>
 
-          {/* <View style={styles.liveCard}>
+          <View style={styles.liveCard}>
             <View style={styles.liveTopRow}>
               <View style={styles.liveInfo}>
                 <Text style={styles.liveTitle}>{t("home.live_title_mock")}</Text>
@@ -830,51 +874,11 @@ export default function HomeScreen() {
             >
               <Text style={styles.liveJoinText}>{t(HOME_UI.join)}</Text>
             </TouchableOpacity>
-          </View> */}
-        </View>
-         <View style={styles.teachersSection}>
-          <View style={styles.teachersHeader}>
-            <Text style={styles.teachersSectionTitle}>
-              {t("home.available_teachers")}
-            </Text>
-            <TouchableOpacity hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Text style={styles.teachersSeeAll}>
-                {t(HOME_COMMON_UI.seeAll, { defaultValue: "عرض الكل" })}
-              </Text>
-            </TouchableOpacity>
           </View>
-
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.teachersRow}>
-            {MOCK_TEACHERS.map((teacher, i) => (
-              <TouchableOpacity
-                key={teacher.id}
-                style={styles.teacherCol}
-                activeOpacity={0.8}
-                onPress={() => openTeacher(teacher.id)}
-                accessibilityRole="button"
-                accessibilityLabel={teacher.fullName}
-              >
-                <View style={[styles.teacherAvatar, { backgroundColor: TEACHER_COLORS[i] }]}>
-                  <Image source={teacher.avatar} style={styles.teacherImg} />
-                </View>
-                <Text style={styles.teacherName} numberOfLines={1}>{teacher.fullName}</Text>
-                <View style={styles.teacherBadge}>
-                  <Text style={styles.teacherBadgeText}>4.0</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-            {TEACHER_COLORS.slice(MOCK_TEACHERS.length).map((c, i) => (
-              <TouchableOpacity key={`extra-${i}`} style={styles.teacherCol}>
-                <View style={[styles.teacherAvatar, { backgroundColor: c }]} />
-                <Text style={styles.teacherName} numberOfLines={1}>{`Teacher ${MOCK_TEACHERS.length + i + 1}`}</Text>
-                <View style={styles.teacherBadge}>
-                  <Text style={styles.teacherBadgeText}>4.0</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
         </View>
-
+        
+        
+       
       </ScrollView>
     </View>
   );

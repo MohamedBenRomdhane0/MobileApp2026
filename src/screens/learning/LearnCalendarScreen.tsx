@@ -371,6 +371,137 @@ const RECORDED_SNAP = RECORDED_CARD_W + 14;
 
 const { width: W } = Dimensions.get("window");
 
+/** Screen gutter used by every block. */
+const GUTTER = 20;
+
+type ViewKey = "reservation" | "calendar" | "recorded";
+
+/** The three top-level views, rendered as an animated pill switch. */
+const VIEW_TABS: {
+  key: ViewKey;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconActive: keyof typeof Ionicons.glyphMap;
+}[] = [
+  {
+    key: "reservation",
+    label: "Réserver",
+    icon: "sparkles-outline",
+    iconActive: "sparkles",
+  },
+  {
+    key: "calendar",
+    label: "Agenda",
+    icon: "calendar-outline",
+    iconActive: "calendar",
+  },
+  {
+    key: "recorded",
+    label: "Replays",
+    icon: "play-circle-outline",
+    iconActive: "play-circle",
+  },
+];
+
+/**
+ * Geometry of the switch: inactive tabs collapse to an icon, the active one
+ * springs open wide enough for its label. Widths always sum to the bar.
+ */
+const TAB_PAD = 5;
+const TAB_BAR_W = W - GUTTER * 2;
+const TAB_COLLAPSED_W = 56;
+const TAB_ACTIVE_W =
+  TAB_BAR_W - TAB_PAD * 2 - TAB_COLLAPSED_W * (VIEW_TABS.length - 1);
+
+/**
+ * One tab of the view switch. Owns its own spring so expanding and
+ * collapsing run in parallel instead of waiting on a shared timeline.
+ */
+function ViewSwitchTab({
+  tab,
+  active,
+  onPress,
+}: {
+  tab: (typeof VIEW_TABS)[number];
+  active: boolean;
+  onPress: () => void;
+}) {
+  const anim = useRef(new Animated.Value(active ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.spring(anim, {
+      toValue: active ? 1 : 0,
+      friction: 9,
+      tension: 90,
+      // width/flex can't run on the native thread
+      useNativeDriver: false,
+    }).start();
+  }, [active, anim]);
+
+  const width = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [TAB_COLLAPSED_W, TAB_ACTIVE_W],
+  });
+  const labelOpacity = anim.interpolate({
+    inputRange: [0, 0.55, 1],
+    outputRange: [0, 0, 1],
+  });
+  const labelShift = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [12, 0],
+  });
+  // Little pop as the icon takes the active state.
+  const iconScale = anim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 1.22, 1.05],
+  });
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.9}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={tab.label}
+      onPress={onPress}
+    >
+      <Animated.View style={[styles.switchTab, { width }]}>
+        {active && (
+          <LinearGradient
+            colors={["#16324F", "#0B1B2E"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+        )}
+
+        <Animated.View style={{ transform: [{ scale: iconScale }] }}>
+          <Ionicons
+            name={active ? tab.iconActive : tab.icon}
+            size={18}
+            color={active ? "#5FE3EA" : "#8A94A6"}
+          />
+        </Animated.View>
+
+        <Animated.Text
+          numberOfLines={1}
+          style={[
+            styles.switchLabel,
+            { opacity: labelOpacity, transform: [{ translateX: labelShift }] },
+          ]}
+        >
+          {tab.label}
+        </Animated.Text>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
+
+/** Day cell width + gap in the horizontal month strip. */
+const DAY_STRIDE = 52;
+
+/** Compact card width in the "populaires" rail. */
+const RAIL_CARD_W = 232;
+
 export default function LearnCalendarScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
@@ -464,10 +595,41 @@ export default function LearnCalendarScreen() {
     setFilterMaxPrice(100);
   };
 
+  /** Badge on the filter button: subject picks + a non-default price cap. */
+  const activeFilterCount =
+    filterSubjects.length + (filterMaxPrice < 100 ? 1 : 0);
+
   // ── View toggle (Réservation ↔ Calendrier ↔ Séances enregistrées) ─
-  const [view, setView] = useState<"reservation" | "calendar" | "recorded">(
-    "reservation",
+  const [view, setView] = useState<ViewKey>("reservation");
+
+  // ── Day strip auto-centering ──────────────────────────────────────
+  const stripRef = useRef<ScrollView>(null);
+
+  const centerDay = useCallback((day: number) => {
+    stripRef.current?.scrollTo({
+      x: Math.max(0, (day - 1) * DAY_STRIDE - W / 2 + DAY_STRIDE / 2),
+      animated: true,
+    });
+  }, []);
+
+  useEffect(() => {
+    const id = setTimeout(() => centerDay(selectedDay), 60);
+    return () => clearTimeout(id);
+  }, [selectedDay, currentMonth, centerDay]);
+
+  const selectDay = useCallback(
+    (day: number) => {
+      setSelectedDay(day);
+      centerDay(day);
+    },
+    [centerDay],
   );
+
+  const goToday = useCallback(() => {
+    setCurrentMonth(today.getMonth());
+    setCurrentYear(today.getFullYear());
+    setSelectedDay(today.getDate());
+  }, [today]);
 
   // ── Recorded carousel pagination (one page index per teacher) ──
   const [recordedPages, setRecordedPages] = useState<Record<number, number>>({});
@@ -545,7 +707,7 @@ export default function LearnCalendarScreen() {
   );
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.root}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
      {/* Header */}
         <View style={styles.headerShell}>
@@ -585,72 +747,17 @@ export default function LearnCalendarScreen() {
             </View>
           </LinearGradient>
         </View>
-      {/* Réservation ↔ Calendrier ↔ Séances enregistrées toggle */}
+      {/* Réserver ↔ Agenda ↔ Replays — expanding pill switch */}
       <View style={styles.segWrap}>
-        <View style={styles.segControl}>
-          <TouchableOpacity
-            style={[styles.segBtn, view === "reservation" && styles.segBtnActive]}
-            activeOpacity={0.85}
-            accessibilityRole="button"
-            accessibilityState={{ selected: view === "reservation" }}
-            onPress={() => setView("reservation")}
-          >
-            <Ionicons
-              name="calendar-number-outline"
-              size={15}
-              color={view === "reservation" ? "#FFFFFF" : "#6B7280"}
+        <View style={styles.segControl} accessibilityRole="tablist">
+          {VIEW_TABS.map((tab) => (
+            <ViewSwitchTab
+              key={tab.key}
+              tab={tab}
+              active={view === tab.key}
+              onPress={() => setView(tab.key)}
             />
-            <Text
-              style={[
-                styles.segBtnText,
-                view === "reservation" && styles.segBtnTextActive,
-              ]}
-            >
-              Réservation
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.segBtn, view === "calendar" && styles.segBtnActive]}
-            activeOpacity={0.85}
-            accessibilityRole="button"
-            accessibilityState={{ selected: view === "calendar" }}
-            onPress={() => setView("calendar")}
-          >
-            <Ionicons
-              name="calendar-outline"
-              size={15}
-              color={view === "calendar" ? "#FFFFFF" : "#6B7280"}
-            />
-            <Text
-              style={[
-                styles.segBtnText,
-                view === "calendar" && styles.segBtnTextActive,
-              ]}
-            >
-              Calendrier
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.segBtn, view === "recorded" && styles.segBtnActive]}
-            activeOpacity={0.85}
-            accessibilityRole="button"
-            accessibilityState={{ selected: view === "recorded" }}
-            onPress={() => setView("recorded")}
-          >
-            <Ionicons
-              name="videocam-outline"
-              size={15}
-              color={view === "recorded" ? "#FFFFFF" : "#6B7280"}
-            />
-            <Text
-              style={[
-                styles.segBtnText,
-                view === "recorded" && styles.segBtnTextActive,
-              ]}
-            >
-              Séances enregistrées
-            </Text>
-          </TouchableOpacity>
+          ))}
         </View>
       </View>
 
@@ -661,72 +768,129 @@ export default function LearnCalendarScreen() {
         {view === "reservation" ? (
           <>
 
-        {/* Month row */}
-        <View style={styles.monthRow}>
-          <View>
-            <Text style={styles.monthTitle}>{monthLabel}</Text>
-            <Text style={styles.monthYear}>{yearLabel}</Text>
-          </View>
-          <View style={styles.monthNav}>
-            <TouchableOpacity style={styles.navArrow} onPress={goPrevMonth}>
-              <Ionicons name="chevron-back" size={16} color="#22BEC8" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navArrow} onPress={goNextMonth}>
-              <Ionicons name="chevron-forward" size={16} color="#22BEC8" />
-            </TouchableOpacity>
-          </View>
-        </View>
+        {/* Planner card — month navigation + scrollable day strip */}
+        <View style={styles.plannerCard}>
+          <View style={styles.monthRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.monthTitle} numberOfLines={1}>
+                {monthLabel}
+              </Text>
+              <Text style={styles.monthYear}>{yearLabel}</Text>
+            </View>
 
-        {/* Calendar strip — scrollable day picker */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.calendarStrip}
-        >
-          {daysInMonth.map((day) => {
-            const isSelected = day.day === selectedDay;
-            const todayFlag = isToday(day.day);
-            return (
+            <View style={styles.monthNav}>
               <TouchableOpacity
-                key={day.day}
-                style={styles.dayCol}
-                onPress={() => setSelectedDay(day.day)}
+                style={styles.todayChip}
+                activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityLabel={t("learning.today", {
+                  defaultValue: "Aujourd'hui",
+                })}
+                onPress={goToday}
               >
-                <Text
-                  style={[
-                    styles.dayLabel,
-                    isSelected && { color: "#22BEC8" },
-                  ]}
-                >
-                  {day.label.toUpperCase()}
+                <Ionicons name="locate-outline" size={13} color="#0E7C86" />
+                <Text style={styles.todayChipText}>
+                  {t("learning.today", { defaultValue: "Aujourd'hui" })}
                 </Text>
-                <View
-                  style={[
-                    styles.dayNum,
-                    isSelected && styles.dayNumSelected,
-                    todayFlag && !isSelected && styles.dayNumToday,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.dayNumText,
-                      isSelected && styles.dayNumTextSelected,
-                      todayFlag && !isSelected && styles.dayNumTextToday,
-                    ]}
-                  >
-                    {day.day}
-                  </Text>
-                </View>
-                {todayFlag && !isSelected && (
-                  <View style={styles.todayDot} />
-                )}
-                {todayFlag && isSelected && (
-                  <View style={[styles.todayDot, styles.todayDotWhite]} />
-                )}
               </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+
+              <TouchableOpacity
+                style={styles.navArrow}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Mois précédent"
+                onPress={goPrevMonth}
+              >
+                <Ionicons name="chevron-back" size={16} color="#12A9B4" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.navArrow}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Mois suivant"
+                onPress={goNextMonth}
+              >
+                <Ionicons name="chevron-forward" size={16} color="#12A9B4" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <ScrollView
+            ref={stripRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.calendarStrip}
+            snapToInterval={DAY_STRIDE}
+            decelerationRate="fast"
+          >
+            {daysInMonth.map((day) => {
+              const isSelected = day.day === selectedDay;
+              const todayFlag = isToday(day.day);
+              const label = day.label.replace(".", "").toUpperCase();
+
+              if (isSelected) {
+                return (
+                  <TouchableOpacity
+                    key={day.day}
+                    activeOpacity={0.9}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: true }}
+                    accessibilityLabel={`${day.day} ${monthLabel}`}
+                    onPress={() => selectDay(day.day)}
+                  >
+                    <LinearGradient
+                      colors={["#3BD6DF", "#12A9B4"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={[styles.dayCell, styles.dayCellSelected]}
+                    >
+                      <Text
+                        style={[styles.dayCellLabel, styles.dayCellLabelOn]}
+                      >
+                        {label}
+                      </Text>
+                      <Text style={[styles.dayCellNum, styles.dayCellNumOn]}>
+                        {day.day}
+                      </Text>
+                      <View style={[styles.dayCellDot, styles.dayCellDotOn]} />
+                    </LinearGradient>
+                  </TouchableOpacity>
+                );
+              }
+
+              return (
+                <TouchableOpacity
+                  key={day.day}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: false }}
+                  accessibilityLabel={`${day.day} ${monthLabel}`}
+                  onPress={() => selectDay(day.day)}
+                >
+                  <View
+                    style={[styles.dayCell, todayFlag && styles.dayCellToday]}
+                  >
+                    <Text style={styles.dayCellLabel}>{label}</Text>
+                    <Text
+                      style={[
+                        styles.dayCellNum,
+                        todayFlag && styles.dayCellNumToday,
+                      ]}
+                    >
+                      {day.day}
+                    </Text>
+                    <View
+                      style={[
+                        styles.dayCellDot,
+                        todayFlag && styles.dayCellDotToday,
+                      ]}
+                    />
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
 
         {/* Map the Path card */}
         {/* <View style={styles.mapCard}>
@@ -777,101 +941,259 @@ export default function LearnCalendarScreen() {
           </View>
         </View> */}
 
-        {/* All matières — filter row */}
+        {/* Matières — chip filter + sheet trigger */}
         <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>{t("learning.all_subjects")}</Text>
-          <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterVisible(true)}>
-            <Ionicons name="options-outline" size={16} color="#1F2937" />
-            <Text style={styles.filterBtnText}>{t("learning.filter")}</Text>
+          <View style={styles.sectionTitleWrap}>
+            <Text style={styles.sectionTitle}>{t("learning.all_subjects")}</Text>
+            <Text style={styles.sectionCaption}>
+              {`${filteredSessions.length} matière${
+                filteredSessions.length > 1 ? "s" : ""
+              } disponible${filteredSessions.length > 1 ? "s" : ""}`}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.filterBtn, activeFilterCount > 0 && styles.filterBtnOn]}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel={t("learning.filter")}
+            onPress={() => setFilterVisible(true)}
+          >
+            <Ionicons
+              name="options-outline"
+              size={16}
+              color={activeFilterCount > 0 ? "#FFFFFF" : "#1F2937"}
+            />
+            <Text
+              style={[
+                styles.filterBtnText,
+                activeFilterCount > 0 && styles.filterBtnTextOn,
+              ]}
+            >
+              {t("learning.filter")}
+            </Text>
+            {activeFilterCount > 0 && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
-        {/* All matières swiper — horizontal cards */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.sessionsSwiperContent}
-          style={styles.sessionsSwiper}
+          contentContainerStyle={styles.chipsRow}
         >
-          {filteredSessions.map((s) => (
-            <View key={s.id} style={[styles.sessionCard, { width: 260 }]}>
-              <View style={styles.cardSubjectPillRow}>
-                <View style={[styles.cardSubjectPill, { backgroundColor: `${s.accent}18`, borderColor: `${s.accent}35` }]}>
-                  <Ionicons name="book-outline" size={12} color={s.accent} />
-                  <Text style={[styles.cardSubjectPillText, { color: s.accent }]}>{s.name}</Text>
-                </View>
-                <View style={[styles.cardSubjectPill, { backgroundColor: `${s.accent}12`, borderColor: `${s.accent}30` }]}>
-                  <Ionicons name="calendar-outline" size={12} color={s.accent} />
-                  <Text style={[styles.cardSubjectPillText, { color: s.accent }]}>{t("learning.sessions_count", { count: s.sessionsCount })}</Text>
-                </View>
-              </View>
-              <View style={styles.sessionPhotoWrap}>
-                <Image source={s.cover} style={styles.sessionPhoto} />
-                <View style={styles.coverScrim} />
-                <View style={styles.ratingBadge}>
-                  <Ionicons name="star" size={12} color="#FBBF24" />
-                  <Text style={styles.ratingBadgeText}>{s.rating.toFixed(1)}</Text>
-                  <Text style={styles.ratingBadgeCount}>({s.ratingCount})</Text>
-                </View>
-                <View style={styles.timeBadge}>
-                  <Ionicons name="time-outline" size={12} color="#FFFFFF" />
-                  <Text style={styles.timeBadgeText}>{s.time}</Text>
-                </View>
-              </View>
-              <View style={styles.sessionBody}>
-                <View style={styles.sessionTopRow}>
-                  <View style={styles.groupPill}>
-                    <Ionicons name="people" size={14} color={s.accent} />
-                    <Text style={styles.groupPillText}>{t("learning.groups_count", { count: s.groupsCount })}</Text>
-                  </View>
-                  <Text style={styles.sessionFreq}>{t("learning.days_per_week", { days: s.daysPerWeek })}</Text>
-                </View>
-                <View style={styles.dayPillsRow}>
-                  {s.days.map((day, i) => (
-                    <View key={i} style={[styles.dayPill, day.active ? styles.dayPillActive : styles.dayPillOff]}>
-                      <Text style={[styles.dayPillText, day.active ? styles.dayPillTextActive : styles.dayPillTextOff]}>{day.label}</Text>
-                    </View>
-                  ))}
-                </View>
-                <View style={styles.reserveRow}>
-                  <View style={styles.avatarStack}>
-                    {RESERVED_CHILDREN.map((src, i) => (
-                      <Image key={i} source={src} style={[styles.reserveAvatar, { marginLeft: i === 0 ? 0 : -10, zIndex: RESERVED_CHILDREN.length - i }]} />
-                    ))}
-                    <View style={[styles.reserveAvatar, styles.reserveMore, { marginLeft: -10 }]}>
-                      <Text style={styles.reserveMoreText}>+{s.reservedExtra}</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.reserveText}>{t("learning.reserved_children")}</Text>
-                </View>
-                <View style={styles.placesBar}>
-                  <View style={[styles.placesFill, { width: `${((s.placesTotal - s.placesLeft) / s.placesTotal) * 100}%` }]} />
-                </View>
-                <Text style={styles.placesCaption}>{t("learning.places_reserved", { filled: s.placesTotal - s.placesLeft, total: s.placesTotal })}</Text>
-                <View style={styles.sessionBottomRow}>
-                  <View style={styles.priceBlock}>
-                    <Text style={styles.priceFrom}>{t("learning.price_from")}</Text>
-                    <View style={styles.priceValueRow}>
-                      <Text style={styles.priceValue}>{s.price}</Text>
-                      <Text style={styles.priceUnit}>{t("learning.price_per_month")}</Text>
-                    </View>
-                  </View>
-                  <TouchableOpacity style={styles.detailsBtn} activeOpacity={0.85} onPress={() => navigation.navigate(PATHS.APP.DETAIL_PLAN_MEETING)}>
-                    <Text style={styles.detailsBtnText}>{t("learning.view_details")}</Text>
-                    <Ionicons name="arrow-forward" size={15} color="#FFFFFF" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          ))}
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              filterSubjects.length === 0 && styles.chipActiveNeutral,
+            ]}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityState={{ selected: filterSubjects.length === 0 }}
+            onPress={() => setFilterSubjects([])}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                filterSubjects.length === 0 && styles.chipTextActiveNeutral,
+              ]}
+            >
+              Toutes
+            </Text>
+          </TouchableOpacity>
+
+          {SUBJECT_SESSIONS.map((s) => {
+            const on = filterSubjects.includes(s.id);
+            return (
+              <TouchableOpacity
+                key={s.id}
+                style={[
+                  styles.chip,
+                  on && {
+                    backgroundColor: `${s.accent}16`,
+                    borderColor: `${s.accent}55`,
+                  },
+                ]}
+                activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityState={{ selected: on }}
+                onPress={() => toggleSubject(s.id)}
+              >
+                <View style={[styles.chipDot, { backgroundColor: s.accent }]} />
+                <Text style={[styles.chipText, on && { color: s.accent }]}>
+                  {s.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
+
+        {/* Populaires — compact rail */}
+        {filteredSessions.length > 0 && (
+          <>
+            <View style={styles.railHeader}>
+              <Ionicons name="flame" size={15} color="#F97316" />
+              <Text style={styles.railTitle}>Les plus demandées</Text>
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.sessionsSwiperContent}
+              snapToInterval={RAIL_CARD_W + 14}
+              decelerationRate="fast"
+            >
+              {filteredSessions.map((s) => (
+                <TouchableOpacity
+                  key={s.id}
+                  style={styles.railCard}
+                  activeOpacity={0.9}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${s.name}, ${s.price} DT par mois`}
+                  onPress={() =>
+                    navigation.navigate(PATHS.APP.DETAIL_PLAN_MEETING)
+                  }
+                >
+                  <View style={styles.railCoverWrap}>
+                    <Image source={s.cover} style={styles.railCover} />
+                    <LinearGradient
+                      colors={["rgba(9,29,54,0.02)", "rgba(9,29,54,0.78)"]}
+                      start={{ x: 0, y: 0.25 }}
+                      end={{ x: 0, y: 1 }}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <View
+                      style={[
+                        styles.railSubjectPill,
+                        { backgroundColor: s.accent },
+                      ]}
+                    >
+                      <Text style={styles.railSubjectText}>{s.name}</Text>
+                    </View>
+                    <View style={styles.railRating}>
+                      <Ionicons name="star" size={11} color="#FBBF24" />
+                      <Text style={styles.railRatingText}>
+                        {s.rating.toFixed(1)}
+                      </Text>
+                    </View>
+                    <View style={styles.railCoverFooter}>
+                      <Ionicons name="time-outline" size={11} color="#FFFFFF" />
+                      <Text style={styles.railCoverFooterText}>{s.time}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.railBody}>
+                    <View style={styles.railMetaRow}>
+                      <View style={styles.railMetaChip}>
+                        <Ionicons name="people" size={11} color="#0E7C86" />
+                        <Text style={styles.railMetaText}>
+                          {t("learning.groups_count", {
+                            count: s.groupsCount,
+                          })}
+                        </Text>
+                      </View>
+                      <View style={styles.railMetaChip}>
+                        <Ionicons
+                          name="repeat-outline"
+                          size={11}
+                          color="#0E7C86"
+                        />
+                        <Text style={styles.railMetaText}>
+                          {t("learning.days_per_week", {
+                            days: s.daysPerWeek,
+                          })}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.placesBar}>
+                      <View
+                        style={[
+                          styles.placesFill,
+                          {
+                            width: `${
+                              ((s.placesTotal - s.placesLeft) / s.placesTotal) *
+                              100
+                            }%`,
+                            backgroundColor: s.accent,
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text style={styles.railPlaces}>
+                      {t("learning.places_left", { count: s.placesLeft })}
+                    </Text>
+
+                    <View style={styles.railBottomRow}>
+                      <View style={styles.railPriceRow}>
+                        <Text style={styles.railPrice}>{s.price}</Text>
+                        <Text style={styles.railPriceUnit}>
+                          {t("learning.price_per_month")}
+                        </Text>
+                      </View>
+                      <View
+                        style={[styles.railGoBtn, { backgroundColor: s.accent }]}
+                      >
+                        <Ionicons
+                          name="arrow-forward"
+                          size={15}
+                          color="#FFFFFF"
+                        />
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </>
+        )}
+
+        {filteredSessions.length === 0 && (
+          <View style={styles.emptyBlock}>
+            <View style={styles.emptyIcon}>
+              <Ionicons name="search-outline" size={24} color="#12A9B4" />
+            </View>
+            <Text style={styles.emptyTitle}>Aucune matière trouvée</Text>
+            <Text style={styles.emptyText}>
+              Ajustez les filtres pour voir plus de séances.
+            </Text>
+            <TouchableOpacity
+              style={styles.emptyBtn}
+              activeOpacity={0.85}
+              onPress={resetFilters}
+            >
+              <Text style={styles.emptyBtnText}>{t("learning.reset")}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Featured session cards — full-width, one per subject */}
         {filteredSessions.map((s) => (
           <React.Fragment key={s.id}>
-            <View style={[styles.featuredTitleRow, { backgroundColor: `${s.accent}10` }]}>
-              <View style={[styles.featuredTitleDot, { backgroundColor: s.accent }]} />
-              <Text style={[styles.featuredTitleText, { color: s.accent }]}>{s.name}</Text>
+            <View style={styles.featuredTitleRow}>
+              <View
+                style={[styles.featuredTitleBar, { backgroundColor: s.accent }]}
+              />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.featuredTitleText}>{s.name}</Text>
+                <Text style={styles.featuredTitleSub} numberOfLines={1}>
+                  {`${t("learning.sessions_count", {
+                    count: s.sessionsCount,
+                  })} · ${s.time}`}
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.featuredPricePill,
+                  { backgroundColor: `${s.accent}14` },
+                ]}
+              >
+                <Text
+                  style={[styles.featuredPriceText, { color: s.accent }]}
+                >{`${s.price} DT`}</Text>
+              </View>
             </View>
             <View style={styles.sessionCard}>
             {/* Subject + session count pills */}
@@ -954,7 +1276,16 @@ export default function LearnCalendarScreen() {
                   </View>
                 </View>
 
-                <TouchableOpacity style={styles.detailsBtn} activeOpacity={0.85} onPress={() => navigation.navigate(PATHS.APP.DETAIL_PLAN_MEETING)}>
+                <TouchableOpacity
+                  style={[
+                    styles.detailsBtn,
+                    { backgroundColor: s.accent, shadowColor: s.accent },
+                  ]}
+                  activeOpacity={0.85}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t("learning.view_details")} — ${s.name}`}
+                  onPress={() => navigation.navigate(PATHS.APP.DETAIL_PLAN_MEETING)}
+                >
                   <Text style={styles.detailsBtnText}>{t("learning.view_details")}</Text>
                   <Ionicons name="arrow-forward" size={15} color="#FFFFFF" />
                 </TouchableOpacity>
@@ -972,39 +1303,94 @@ export default function LearnCalendarScreen() {
           onRequestClose={() => setFilterVisible(false)}
         >
           <View style={styles.modalOverlay}>
-            <View style={styles.modalSheet}>
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              activeOpacity={1}
+              accessibilityRole="button"
+              accessibilityLabel="Fermer les filtres"
+              onPress={() => setFilterVisible(false)}
+            />
+            <View style={[styles.modalSheet, { paddingBottom: insets.bottom + 18 }]}>
+              <View style={styles.sheetHandle} />
+
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{t("learning.filter")}</Text>
-                <TouchableOpacity onPress={() => setFilterVisible(false)}>
-                  <Ionicons name="close" size={22} color="#6B7280" />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.modalTitle}>{t("learning.filter")}</Text>
+                  <Text style={styles.modalSubtitle}>
+                    {`${filteredSessions.length} résultat${
+                      filteredSessions.length > 1 ? "s" : ""
+                    }`}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.modalCloseBtn}
+                  activeOpacity={0.85}
+                  accessibilityRole="button"
+                  accessibilityLabel="Fermer"
+                  onPress={() => setFilterVisible(false)}
+                >
+                  <Ionicons name="close" size={18} color="#475569" />
                 </TouchableOpacity>
               </View>
 
               {/* Subject filter */}
               <Text style={styles.filterLabel}>{t("learning.subject_label")}</Text>
-              {SUBJECT_SESSIONS.map((s) => {
-                const checked = filterSubjects.includes(s.id);
-                return (
-                  <TouchableOpacity
-                    key={s.id}
-                    style={styles.filterCheckRow}
-                    onPress={() => toggleSubject(s.id)}
-                  >
-                    <View style={[styles.checkbox, checked && { backgroundColor: s.accent, borderColor: s.accent }]}>
-                      {checked && <Ionicons name="checkmark" size={12} color="#FFFFFF" />}
-                    </View>
-                    <Text style={styles.filterCheckLabel}>{s.name}</Text>
-                  </TouchableOpacity>
-                );
-              })}
+              <View style={styles.filterChipsGrid}>
+                {SUBJECT_SESSIONS.map((s) => {
+                  const checked = filterSubjects.includes(s.id);
+                  return (
+                    <TouchableOpacity
+                      key={s.id}
+                      style={[
+                        styles.filterChip,
+                        checked && {
+                          backgroundColor: `${s.accent}14`,
+                          borderColor: s.accent,
+                        },
+                      ]}
+                      activeOpacity={0.85}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked }}
+                      onPress={() => toggleSubject(s.id)}
+                    >
+                      <View
+                        style={[
+                          styles.checkbox,
+                          checked && {
+                            backgroundColor: s.accent,
+                            borderColor: s.accent,
+                          },
+                        ]}
+                      >
+                        {checked && (
+                          <Ionicons name="checkmark" size={11} color="#FFFFFF" />
+                        )}
+                      </View>
+                      <Text
+                        style={[
+                          styles.filterCheckLabel,
+                          checked && { color: s.accent },
+                        ]}
+                      >
+                        {s.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
 
               {/* Price filter */}
-              <Text style={[styles.filterLabel, { marginTop: 20 }]}>{t("learning.max_price", { price: filterMaxPrice })}</Text>
+              <Text style={[styles.filterLabel, { marginTop: 20 }]}>
+                {t("learning.max_price", { price: filterMaxPrice })}
+              </Text>
               <View style={styles.priceChips}>
                 {[40, 55, 80, 100].map((p) => (
                   <TouchableOpacity
                     key={p}
                     style={[styles.priceChip, filterMaxPrice === p && styles.priceChipActive]}
+                    activeOpacity={0.85}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: filterMaxPrice === p }}
                     onPress={() => setFilterMaxPrice(p)}
                   >
                     <Text style={[styles.priceChipText, filterMaxPrice === p && styles.priceChipTextActive]}>
@@ -1015,11 +1401,23 @@ export default function LearnCalendarScreen() {
               </View>
 
               <View style={styles.modalActions}>
-                <TouchableOpacity style={styles.resetBtn} onPress={resetFilters}>
+                <TouchableOpacity
+                  style={styles.resetBtn}
+                  activeOpacity={0.85}
+                  accessibilityRole="button"
+                  onPress={resetFilters}
+                >
+                  <Ionicons name="refresh" size={15} color="#475569" />
                   <Text style={styles.resetBtnText}>{t("learning.reset")}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.applyBtn} onPress={() => setFilterVisible(false)}>
+                <TouchableOpacity
+                  style={styles.applyBtn}
+                  activeOpacity={0.9}
+                  accessibilityRole="button"
+                  onPress={() => setFilterVisible(false)}
+                >
                   <Text style={styles.applyBtnText}>{t("learning.apply")}</Text>
+                  <Ionicons name="arrow-forward" size={15} color="#FFFFFF" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -1142,14 +1540,33 @@ export default function LearnCalendarScreen() {
                     <Text style={styles.videoProgressText}>
                       {`${RECORDED_FEATURED.progress}%`}
                     </Text>
+                    <TouchableOpacity
+                      style={[
+                        styles.resumeBtn,
+                        { backgroundColor: RECORDED_FEATURED.accent },
+                      ]}
+                      activeOpacity={0.9}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Reprendre ${RECORDED_FEATURED.title}`}
+                      onPress={() => openPlayer(RECORDED_FEATURED.videoUrl)}
+                    >
+                      <Ionicons name="play" size={12} color="#FFFFFF" />
+                      <Text style={styles.resumeBtnText}>Reprendre</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </View>
             </View>
 
             <View style={[styles.sectionRow, styles.recordedHeader]}>
-              <Text style={styles.sectionTitle}>Séances enregistrées</Text>
+              <View style={styles.sectionTitleWrap}>
+                <Text style={styles.sectionTitle}>Séances enregistrées</Text>
+                <Text style={styles.sectionCaption}>
+                  Revoyez vos cours quand vous voulez
+                </Text>
+              </View>
               <View style={styles.recordedCount}>
+                <Ionicons name="albums-outline" size={12} color="#0E7C86" />
                 <Text style={styles.recordedCountText}>
                   {RECORDED_SESSIONS.length}
                 </Text>
@@ -1210,8 +1627,29 @@ export default function LearnCalendarScreen() {
                     decelerationRate="fast"
                     onMomentumScrollEnd={onRecordedScrollEnd(teacher.id)}
                   >
-                    {sessions.map((s) => (
-                      <View key={s.id} style={styles.recordedVideoCard}>
+                    {sessions.map((s) => {
+                      const watched = s.progress >= 100;
+                      const fresh = s.progress === 0;
+                      const stateLabel = watched
+                        ? "Vu"
+                        : fresh
+                          ? "Nouveau"
+                          : "En cours";
+                      const stateColor = watched
+                        ? "#44B556"
+                        : fresh
+                          ? "#F97316"
+                          : s.accent;
+
+                      return (
+                      <TouchableOpacity
+                        key={s.id}
+                        style={styles.recordedVideoCard}
+                        activeOpacity={0.92}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Revoir ${s.subject} — ${s.date}`}
+                        onPress={() => openPlayer(s.videoUrl)}
+                      >
                         <View style={styles.recordedVideoCoverWrap}>
                           <Image
                             source={s.cover}
@@ -1247,6 +1685,17 @@ export default function LearnCalendarScreen() {
                             <Ionicons name="time-outline" size={11} color="#FFFFFF" />
                             <Text style={styles.recordedVideoDurationText}>
                               {s.duration}
+                            </Text>
+                          </View>
+
+                          <View
+                            style={[
+                              styles.recordedState,
+                              { backgroundColor: `${stateColor}E6` },
+                            ]}
+                          >
+                            <Text style={styles.recordedStateText}>
+                              {stateLabel}
                             </Text>
                           </View>
                         </View>
@@ -1313,8 +1762,9 @@ export default function LearnCalendarScreen() {
                             </Text>
                           </View>
                         </View>
-                      </View>
-                    ))}
+                      </TouchableOpacity>
+                      );
+                    })}
                   </ScrollView>
 
                   <View style={styles.recordedDots}>
@@ -1424,14 +1874,14 @@ const shadowHeader = {
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#F4F6FB" },
-  scroll: { paddingHorizontal: 20, paddingBottom: 40 },
+  root: { flex: 1, backgroundColor: "#EEF3F8" },
+  scroll: { paddingHorizontal: GUTTER, paddingBottom: 48 },
 
   // ── Header (mirrors HomeScreen) ─────────────────────────────────
   headerShell: { paddingHorizontal: 0 },
   headerGradient: {
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 38,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
     minHeight: 80,
@@ -1475,34 +1925,104 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center", justifyContent: "center",
   },
-   monthRow: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginTop: 10, paddingHorizontal: 20, marginBottom: 16 },
-   monthTitle: { fontSize: 22, fontWeight: "800", color: "#1F2937", lineHeight: 28 },
-   monthYear: { fontSize: 13, fontWeight: "500", color: "#787774", marginTop: 2 },
-   monthNav: { flexDirection: "row", gap: 10 },
-   navArrow: {
-     width: 36, height: 36, borderRadius: 18,
-     backgroundColor: "#FFFFFF",
-     alignItems: "center", justifyContent: "center",
-     shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 3,
-   },
-   calendarStrip: { flexDirection: "row", gap: 6, paddingHorizontal: 20, marginBottom: 16, alignItems: "center" },
-   dayCol: { alignItems: "center", gap: 4, minWidth: 44 },
-   dayLabel: { fontSize: 11, fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.5 },
-   dayNum: {
-     width: 38, height: 38, borderRadius: 12,
-     alignItems: "center", justifyContent: "center",
-     borderWidth: 1.5, borderColor: "transparent",
-   },
-   dayNumSelected: {
-     backgroundColor: "#22BEC8",
-     shadowColor: "#22BEC8", shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 4,
-   },
-   dayNumToday: { borderColor: "#22BEC8" },
-   dayNumText: { fontSize: 13, fontWeight: "800", color: "#1F2937" },
-   dayNumTextSelected: { color: "#FFFFFF" },
-   dayNumTextToday: { color: "#22BEC8" },
-   todayDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: "#44B556", marginTop: 2 },
-   todayDotWhite: { backgroundColor: "#FFFFFF" },
+  // ── Planner card (month nav + day strip) ─────────────────────────
+  plannerCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    paddingTop: 16,
+    paddingBottom: 14,
+    marginTop: 16,
+    marginBottom: 20,
+    shadowColor: "#0D2A52",
+    shadowOpacity: 0.07,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+  monthRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    marginBottom: 14,
+    gap: 10,
+  },
+  monthTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#122A4E",
+    lineHeight: 25,
+    textTransform: "capitalize",
+  },
+  monthYear: { fontSize: 12, fontWeight: "600", color: "#8A94A6", marginTop: 1 },
+  monthNav: { flexDirection: "row", alignItems: "center", gap: 6 },
+  todayChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    height: 32,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: "#E9F9FA",
+    marginRight: 2,
+  },
+  todayChipText: { fontSize: 11.5, fontWeight: "800", color: "#0E7C86" },
+  navArrow: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    backgroundColor: "#F5F8FC",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  calendarStrip: {
+    flexDirection: "row",
+    gap: 6,
+    paddingHorizontal: 16,
+    alignItems: "center",
+  },
+  dayCell: {
+    width: 46,
+    paddingVertical: 9,
+    borderRadius: 18,
+    alignItems: "center",
+    backgroundColor: "#F7F9FC",
+    borderWidth: 1.5,
+    borderColor: "transparent",
+  },
+  dayCellSelected: {
+    backgroundColor: "transparent",
+    shadowColor: "#12A9B4",
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 5,
+  },
+  dayCellToday: { borderColor: "#9BE4EA", backgroundColor: "#FFFFFF" },
+  dayCellLabel: {
+    fontSize: 9.5,
+    fontWeight: "800",
+    color: "#9AA6B8",
+    letterSpacing: 0.6,
+  },
+  dayCellLabelOn: { color: "rgba(255,255,255,0.9)" },
+  dayCellNum: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#122A4E",
+    marginTop: 3,
+  },
+  dayCellNumOn: { color: "#FFFFFF" },
+  dayCellNumToday: { color: "#0E7C86" },
+  dayCellDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 999,
+    marginTop: 5,
+    backgroundColor: "transparent",
+  },
+  dayCellDotOn: { backgroundColor: "#FFFFFF" },
+  dayCellDotToday: { backgroundColor: "#22BEC8" },
   mapCard: { backgroundColor: "#FFFFFF", borderRadius: 20, padding: 16, marginBottom: 16, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   mapTop: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 },
   mapAvatarShell: {
@@ -1689,66 +2209,249 @@ const styles = StyleSheet.create({
   },
   detailsBtnText: { fontSize: 12.5, fontWeight: "800", color: "#FFFFFF" },
 
-  // ── Sessions swiper ──────────────────────────────────────────────
-  sectionRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
-  sectionTitle: { fontSize: 17, fontWeight: "800", color: "#1F2937" },
+  // ── Section headers ──────────────────────────────────────────────
+  sectionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+    gap: 10,
+  },
+  sectionTitleWrap: { flex: 1 },
+  sectionTitle: { fontSize: 17, fontWeight: "800", color: "#122A4E" },
+  sectionCaption: {
+    fontSize: 11.5,
+    fontWeight: "600",
+    color: "#8A94A6",
+    marginTop: 2,
+  },
+
+  // ── Subject chips ─────────────────────────────────────────────────
+  chipsRow: { flexDirection: "row", gap: 8, paddingRight: 20, marginBottom: 18 },
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    height: 34,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E7EDF5",
+  },
+  chipActiveNeutral: { backgroundColor: "#122A4E", borderColor: "#122A4E" },
+  chipDot: { width: 7, height: 7, borderRadius: 999 },
+  chipText: { fontSize: 12.5, fontWeight: "700", color: "#5A6577" },
+  chipTextActiveNeutral: { color: "#FFFFFF", fontWeight: "800" },
 
   // ── Featured card titles ──────────────────────────────────────────
   featuredTitleRow: {
-    flexDirection: "row", alignItems: "center", gap: 10,
-    marginBottom: 8, marginTop: 4,
-    paddingHorizontal: 14, paddingVertical: 10,
-    borderRadius: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 10,
+    marginTop: 6,
   },
-  featuredTitleDot: { width: 6, height: 22, borderRadius: 3 },
-  featuredTitleText: { fontSize: 18, fontWeight: "900", letterSpacing: 0.3 },
-  filterBtn: {
-    flexDirection: "row", alignItems: "center", gap: 4,
-    paddingHorizontal: 12, height: 32, borderRadius: 999,
-    backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E5E7EB",
+  featuredTitleBar: { width: 4, height: 34, borderRadius: 999 },
+  featuredTitleText: {
+    fontSize: 17,
+    fontWeight: "900",
+    color: "#122A4E",
+    letterSpacing: 0.2,
   },
-  filterBtnText: { fontSize: 13, fontWeight: "700", color: "#1F2937" },
-  sessionsSwiper: { marginBottom:0 },
-  sessionsSwiperContent: { gap: 14, paddingRight: 20 },
+  featuredTitleSub: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#8A94A6",
+    marginTop: 2,
+  },
+  featuredPricePill: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  featuredPriceText: { fontSize: 12, fontWeight: "800" },
 
-  // ── Segmented toggle (Réservation ↔ Calendrier ↔ Enregistrées) ──
-  segWrap: {
+  filterBtn: {
+    flexDirection: "row", alignItems: "center", gap: 5,
+    paddingHorizontal: 12, height: 36, borderRadius: 999,
+    backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E7EDF5",
+  },
+  filterBtnOn: { backgroundColor: "#122A4E", borderColor: "#122A4E" },
+  filterBtnText: { fontSize: 12.5, fontWeight: "700", color: "#1F2937" },
+  filterBtnTextOn: { color: "#FFFFFF" },
+  filterBadge: {
+    minWidth: 18,
+    height: 18,
+    borderRadius: 999,
+    paddingHorizontal: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#22BEC8",
+  },
+  filterBadgeText: { fontSize: 10, fontWeight: "800", color: "#FFFFFF" },
+
+  // ── "Les plus demandées" rail ─────────────────────────────────────
+  railHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 10,
+  },
+  railTitle: { fontSize: 13.5, fontWeight: "800", color: "#122A4E" },
+  sessionsSwiperContent: { gap: 14, paddingRight: 20, paddingBottom: 6 },
+  railCard: {
+    width: RAIL_CARD_W,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    overflow: "hidden",
+    shadowColor: "#0D2A52",
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
+  },
+  railCoverWrap: { width: "100%", height: 124, backgroundColor: "#DCE5EF" },
+  railCover: { width: "100%", height: "100%", resizeMode: "cover" },
+  railSubjectPill: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  railSubjectText: { fontSize: 11, fontWeight: "800", color: "#FFFFFF" },
+  railRating: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: "rgba(17,24,39,0.7)",
+  },
+  railRatingText: { fontSize: 11, fontWeight: "800", color: "#FFFFFF" },
+  railCoverFooter: {
+    position: "absolute",
+    left: 10,
+    bottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  railCoverFooterText: { fontSize: 11, fontWeight: "700", color: "#FFFFFF" },
+  railBody: { padding: 12 },
+  railMetaRow: { flexDirection: "row", gap: 6, marginBottom: 10 },
+  railMetaChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: "#EAFBFC",
+  },
+  railMetaText: { fontSize: 10.5, fontWeight: "800", color: "#0E7C86" },
+  railPlaces: {
+    fontSize: 10.5,
+    fontWeight: "700",
+    color: "#F97316",
+    marginBottom: 10,
+  },
+  railBottomRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  railPriceRow: { flexDirection: "row", alignItems: "flex-end", gap: 3 },
+  railPrice: { fontSize: 18, fontWeight: "900", color: "#122A4E" },
+  railPriceUnit: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#8A94A6",
+    marginBottom: 2,
+  },
+  railGoBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  // ── Empty state ───────────────────────────────────────────────────
+  emptyBlock: {
+    alignItems: "center",
+    paddingVertical: 34,
+    paddingHorizontal: 24,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 22,
+    marginBottom: 18,
+  },
+  emptyIcon: {
+    width: 54,
+    height: 54,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#E9F9FA",
+    marginBottom: 12,
+  },
+  emptyTitle: { fontSize: 14.5, fontWeight: "800", color: "#122A4E" },
+  emptyText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#8A94A6",
+    marginTop: 4,
+    textAlign: "center",
+  },
+  emptyBtn: {
+    marginTop: 14,
+    height: 38,
     paddingHorizontal: 20,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#122A4E",
+  },
+  emptyBtnText: { fontSize: 12.5, fontWeight: "800", color: "#FFFFFF" },
+
+  // ── View switch (Réserver ↔ Agenda ↔ Replays) ────────────────────
+  segWrap: {
+    paddingHorizontal: GUTTER,
+    zIndex: 5,
   },
   segControl: {
     flexDirection: "row",
     backgroundColor: "#FFFFFF",
     borderRadius: 999,
-    padding: 4,
-    gap: 4,
-    marginTop: 14,
+    padding: TAB_PAD,
+    marginTop: -24,
     marginBottom: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    shadowColor: "#0D2A52",
+    shadowOpacity: 0.14,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
   },
-  segBtn: {
-    flex: 1,
+  switchTab: {
+    height: 42,
+    borderRadius: 999,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    height: 38,
-    borderRadius: 999,
+    overflow: "hidden",
   },
-  segBtnActive: {
-    backgroundColor: "#111827",
-  },
-  segBtnText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#6B7280",
-    flexShrink: 1,
-  },
-  segBtnTextActive: {
+  switchLabel: {
+    marginLeft: 7,
+    fontSize: 13,
+    fontWeight: "800",
     color: "#FFFFFF",
+    letterSpacing: 0.2,
   },
 
   // ── Featured video card ──────────────────────────────────────────
@@ -1920,25 +2623,46 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#FFFFFF",
   },
+  resumeBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    height: 30,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    marginLeft: 2,
+  },
+  resumeBtnText: { fontSize: 11.5, fontWeight: "800", color: "#FFFFFF" },
 
   // ── Recorded sessions carousel ───────────────────────────────────
   recordedHeader: {
     marginTop: 0,
   },
   recordedCount: {
-    minWidth: 26,
-    height: 26,
-    paddingHorizontal: 8,
-    borderRadius: 999,
-    backgroundColor: "#111827",
+    flexDirection: "row",
     alignItems: "center",
+    gap: 5,
+    minWidth: 26,
+    height: 28,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: "#E9F9FA",
     justifyContent: "center",
   },
   recordedCountText: {
     fontSize: 12,
     fontWeight: "800",
-    color: "#FFFFFF",
+    color: "#0E7C86",
   },
+  recordedState: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+  },
+  recordedStateText: { fontSize: 10, fontWeight: "800", color: "#FFFFFF" },
   recordedTeacherRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -2216,38 +2940,100 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
 
-  // ── Filter Modal ─────────────────────────────────────────────────
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "flex-end" },
+  // ── Filter sheet ─────────────────────────────────────────────────
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(9,20,38,0.45)",
+    justifyContent: "flex-end",
+  },
   modalSheet: {
-    backgroundColor: "#FFFFFF", borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    paddingHorizontal: 24, paddingTop: 16, paddingBottom: 40,
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 22,
+    paddingTop: 10,
   },
-  modalHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 },
-  modalTitle: { fontSize: 18, fontWeight: "800", color: "#1F2937" },
-  filterLabel: { fontSize: 14, fontWeight: "700", color: "#374151", marginBottom: 10 },
-  filterCheckRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 8 },
+  sheetHandle: {
+    alignSelf: "center",
+    width: 42,
+    height: 4,
+    borderRadius: 999,
+    backgroundColor: "#DDE4EE",
+    marginBottom: 14,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 18,
+    gap: 10,
+  },
+  modalTitle: { fontSize: 18, fontWeight: "800", color: "#122A4E" },
+  modalSubtitle: {
+    fontSize: 11.5,
+    fontWeight: "600",
+    color: "#8A94A6",
+    marginTop: 2,
+  },
+  modalCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F1F5FA",
+  },
+  filterLabel: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#8A94A6",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+    marginBottom: 10,
+  },
+  filterChipsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  filterChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    height: 40,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#E7EDF5",
+    backgroundColor: "#FFFFFF",
+  },
   checkbox: {
-    width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: "#D1D5DB",
+    width: 18, height: 18, borderRadius: 6, borderWidth: 2, borderColor: "#D1D5DB",
     alignItems: "center", justifyContent: "center",
   },
-  filterCheckLabel: { fontSize: 15, fontWeight: "600", color: "#1F2937" },
-  priceChips: { flexDirection: "row", gap: 10 },
+  filterCheckLabel: { fontSize: 13, fontWeight: "700", color: "#122A4E" },
+  priceChips: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   priceChip: {
-    paddingHorizontal: 16, height: 36, borderRadius: 999,
-    backgroundColor: "#F3F4F6", alignItems: "center", justifyContent: "center",
+    paddingHorizontal: 16, height: 38, borderRadius: 999,
+    backgroundColor: "#F5F8FC", alignItems: "center", justifyContent: "center",
   },
-  priceChipActive: { backgroundColor: "#111827" },
-  priceChipText: { fontSize: 13, fontWeight: "700", color: "#6B7280" },
-  priceChipTextActive: { color: "#FFFFFF" },
-  modalActions: { flexDirection: "row", gap: 12, marginTop: 28 },
+  priceChipActive: { backgroundColor: "#122A4E" },
+  priceChipText: { fontSize: 13, fontWeight: "700", color: "#5A6577" },
+  priceChipTextActive: { color: "#FFFFFF", fontWeight: "800" },
+  modalActions: { flexDirection: "row", gap: 12, marginTop: 26 },
   resetBtn: {
-    flex: 1, height: 44, borderRadius: 14, backgroundColor: "#F3F4F6",
+    flexDirection: "row",
+    gap: 6,
+    flex: 1, height: 46, borderRadius: 16, backgroundColor: "#F5F8FC",
     alignItems: "center", justifyContent: "center",
   },
-  resetBtnText: { fontSize: 14, fontWeight: "700", color: "#6B7280" },
+  resetBtnText: { fontSize: 13.5, fontWeight: "800", color: "#475569" },
   applyBtn: {
-    flex: 1, height: 44, borderRadius: 14, backgroundColor: "#111827",
+    flexDirection: "row",
+    gap: 6,
+    flex: 1.4, height: 46, borderRadius: 16, backgroundColor: "#122A4E",
     alignItems: "center", justifyContent: "center",
+    shadowColor: "#122A4E",
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
   },
-  applyBtnText: { fontSize: 14, fontWeight: "700", color: "#FFFFFF" },
+  applyBtnText: { fontSize: 13.5, fontWeight: "800", color: "#FFFFFF" },
 });
