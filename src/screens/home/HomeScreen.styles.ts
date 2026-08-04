@@ -142,19 +142,29 @@ export function createHomeStyles(
       borderColor: colors.header,
     },
 
-    /* ── Daily streak pill (yellow/orange gradient) ──────────────────── */
+    /* ── Daily streak pill (metallic gold gradient) ───────────────────── */
 
     streakPill: {
       flexDirection: row,
       alignItems: "center",
+      justifyContent: "center",
       paddingHorizontal: 12,
       height: 30,
       borderRadius: 999,
-      shadowColor: "#F97316",
-      shadowOpacity: 0.35,
-      shadowRadius: 12,
-      shadowOffset: { width: 0, height: 6 },
-      elevation: 5,
+      overflow: "hidden",
+      shadowColor: "#F6C445",
+      shadowOpacity: 0.5,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 8,
+    },
+
+    streakShine: {
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      left: 0,
+      width: 64,
     },
 
     streakText: {
@@ -162,6 +172,8 @@ export function createHomeStyles(
       fontWeight: "900",
       color: "#FFFFFF",
       letterSpacing: 0.3,
+      textShadowColor: "rgba(0,0,0,0.25)",
+      textShadowRadius: 4,
     },
 
     /* ── Greeting + emoji quick actions (one shared line) ─────────────── */
@@ -194,7 +206,7 @@ export function createHomeStyles(
     },
 
     greetingName: {
-      fontSize: 21,
+      fontSize: 12,
       fontWeight: "900",
       letterSpacing: -0.4,
       color: "#FFFFFF",

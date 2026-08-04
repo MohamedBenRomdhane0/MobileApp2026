@@ -77,8 +77,8 @@ export const HOME_TOKENS = {
   subscribeGradient: ["#22BEC8", "#046b72"] as [string, string],
   heroGradientLight: ["#153A6B", "#1D3B65", "#091D36"] as [string, string, string],
   heroGradientDark: ["#0B1220", "#0B1B33", "#060B14"] as [string, string, string],
-  /** Yellow/orange gradient behind the daily streak pill. */
-  streakGradient: ["#F6A609", "#F97316"] as [string, string],
+  /** Metallic gold gradient behind the daily streak pill. */
+  streakGradient: ["#FFE9A8", "#F8D66D", "#D99A24"] as [string, string, string],
   /** Entrance + press motion, shared by every animated home card. */
   enterDuration: 420,
   enterStagger: 80,

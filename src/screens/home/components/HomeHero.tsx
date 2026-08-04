@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from "react";
-import { View, Text, TouchableOpacity, Animated, Pressable } from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { View, Text, TouchableOpacity, Animated, Easing, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
@@ -66,6 +66,124 @@ function EmojiButton({
   );
 }
 
+/** Metallic gold streak pill with a looping shine sweep and pulsing glow. */
+function GoldStreakPill({
+  label,
+  onPress,
+  styles,
+}: {
+  label: string;
+  onPress?: () => void;
+  styles: HomeHeroProps["styles"];
+}) {
+  const press = useHomeCardPress();
+  const shine = useRef(new Animated.Value(0)).current;
+  const glow = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const shineAnim = Animated.loop(
+      Animated.sequence([
+        Animated.delay(1400),
+        Animated.timing(shine, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.inOut(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(shine, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    const glowAnim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(glow, {
+          toValue: 1,
+          duration: 900,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(glow, {
+          toValue: 0,
+          duration: 900,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    shineAnim.start();
+    glowAnim.start();
+    return () => {
+      shineAnim.stop();
+      glowAnim.stop();
+    };
+  }, [glow, shine]);
+
+  const shineX = shine.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-140, 140],
+  });
+  const glowRadius = glow.interpolate({
+    inputRange: [0, 1],
+    outputRange: [8, 18],
+  });
+  const glowOpacity = glow.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 0.85],
+  });
+
+  return (
+    <Animated.View
+      style={{ marginTop: 4, transform: [{ scale: press.scale }] }}
+    >
+      <Pressable
+        onPressIn={press.onPressIn}
+        onPressOut={press.onPressOut}
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        hitSlop={4}
+      >
+        <Animated.View
+          style={{
+            borderRadius: 999,
+            shadowColor: "#F6C445",
+            shadowOffset: { width: 0, height: 4 },
+            shadowRadius: glowRadius,
+            shadowOpacity: glowOpacity,
+          }}
+        >
+          <LinearGradient
+            colors={HOME_TOKENS.streakGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.streakPill}
+          >
+            <Animated.View
+              pointerEvents="none"
+              style={[styles.streakShine, { transform: [{ translateX: shineX }] }]}
+            >
+              <LinearGradient
+                colors={[
+                  "rgba(255,255,255,0)",
+                  "rgba(255,255,255,0.5)",
+                  "rgba(255,255,255,0)",
+                ]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ flex: 1 }}
+              />
+            </Animated.View>
+            <Text style={styles.streakText}>{label}</Text>
+          </LinearGradient>
+        </Animated.View>
+      </Pressable>
+    </Animated.View>
+  );
+}
+
 /**
  * Curved navy hero: top row (avatar, glass search, language, notifications),
  * a daily-streak pill, a right-aligned greeting (welcome-back + child name)
@@ -84,7 +202,6 @@ export default function HomeHero({
   onStreak,
 }: HomeHeroProps) {
   const { t } = useTranslation();
-  const streakPress = useHomeCardPress();
   const [selectedEmoji, setSelectedEmoji] = useState<HeroEmoji | null>(null);
   const motivation = useHomeCardEntrance(0, 10);
 
@@ -113,27 +230,11 @@ export default function HomeHero({
         <View style={styles.heroTopRow}>
           <ActiveChildHeaderAvatar />
           {/* Daily streak pill — opens the wallet sheet on tap */}
-          <Animated.View
-            style={{ marginTop: 4, transform: [{ scale: streakPress.scale }] }}
-          >
-            <Pressable
-              onPressIn={streakPress.onPressIn}
-              onPressOut={streakPress.onPressOut}
-              onPress={onStreak}
-              accessibilityRole="button"
-              accessibilityLabel={t("home.streak_label")}
-              hitSlop={4}
-            >
-              <LinearGradient
-                colors={HOME_TOKENS.streakGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.streakPill}
-              >
-                <Text style={styles.streakText}>{t("home.streak_label")}</Text>
-              </LinearGradient>
-            </Pressable>
-          </Animated.View>
+          <GoldStreakPill
+            label={t("home.streak_label")}
+            onPress={onStreak}
+            styles={styles}
+          />
           <View style={styles.heroTopRight}>
             <TouchableOpacity
               style={styles.searchBtn}
