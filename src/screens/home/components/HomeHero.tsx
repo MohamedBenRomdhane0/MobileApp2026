@@ -140,29 +140,31 @@ export default function HomeHero({
 
        
 
-        {/* Greeting section */}
-        <View style={styles.greetingWrap}>
-          <Text style={styles.greetingSub} numberOfLines={1}>
-            {t("home.welcome_back")}
-          </Text>
-          <Text style={styles.greetingName} numberOfLines={1}>
-            {childName || t("home.hello_default")}
-          </Text>
-
-          <View style={styles.levelChip}>
-            <Ionicons name="school-outline" size={11} color="rgba(255,255,255,0.92)" />
-            <Text style={styles.levelChipText} numberOfLines={1}>
-              {levelLabel}
+        {/* Greeting + emoji quick actions on one line */}
+        <View style={styles.greetingLine}>
+          <View style={styles.greetingWrap}>
+            <Text style={styles.greetingSub} numberOfLines={1}>
+              {t("home.welcome_back")}
             </Text>
+            <View style={styles.greetingNameRow}>
+              <Text style={styles.greetingName} numberOfLines={1}>
+                {childName || t("home.hello_default")}
+              </Text>
+              <View style={styles.levelChip}>
+                <Ionicons name="school-outline" size={11} color="rgba(255,255,255,0.92)" />
+                <Text style={styles.levelChipText} numberOfLines={1}>
+                  {levelLabel}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.emojiRow}>
+            {HERO_EMOJIS.map((emoji, index) => (
+              <EmojiButton key={emoji} emoji={emoji} index={index} styles={styles} />
+            ))}
           </View>
         </View>
-
-        {/* Emoji quick actions */}
-        <BlurView intensity={18} tint="dark" style={styles.emojiGlass}>
-          {HERO_EMOJIS.map((emoji, index) => (
-            <EmojiButton key={emoji} emoji={emoji} index={index} styles={styles} />
-          ))}
-        </BlurView>
       </LinearGradient>
     </View>
   );

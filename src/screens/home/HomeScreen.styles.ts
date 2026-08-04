@@ -159,11 +159,19 @@ export function createHomeStyles(
       letterSpacing: 0.3,
     },
 
-    /* ── Greeting section (right-aligned, RTL-aware) ─────────────────── */
+    /* ── Greeting + emoji quick actions (one shared line) ─────────────── */
+
+    greetingLine: {
+      marginTop: 10,
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12,
+    },
 
     greetingWrap: {
-      marginTop: 8,
       alignItems: alignEnd,
+      flexShrink: 1,
     },
 
     greetingSub: {
@@ -173,21 +181,26 @@ export function createHomeStyles(
       textAlign: textEnd,
     },
 
-    greetingName: {
+    greetingNameRow: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 6,
       marginTop: 1,
+    },
+
+    greetingName: {
       fontSize: 21,
       fontWeight: "900",
       letterSpacing: -0.4,
       color: "#FFFFFF",
       textAlign: textEnd,
+      flexShrink: 1,
     },
 
     levelChip: {
-      marginTop: 4,
-      flexDirection: row,
+      flexDirection: "row",
       alignItems: "center",
       gap: 4,
-      alignSelf: alignEnd,
       paddingHorizontal: 7,
       height: 18,
       borderRadius: 999,
@@ -201,20 +214,10 @@ export function createHomeStyles(
       color: "rgba(255,255,255,0.92)",
     },
 
-    /* ── Emoji quick actions (glass row) ─────────────────────────────── */
-
-    emojiGlass: {
-      marginTop: 10,
-      flexDirection: row,
+    emojiRow: {
+      flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: 10,
-      paddingVertical: 8,
-      borderRadius: 18,
-      borderWidth: 1,
-      borderColor: "rgba(255,255,255,0.16)",
-      backgroundColor: "rgba(255,255,255,0.07)",
-      overflow: "hidden",
+      gap: 6,
     },
 
     emojiBtn: {
