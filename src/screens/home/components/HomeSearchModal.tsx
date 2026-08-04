@@ -8,6 +8,8 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   type ImageSourcePropType,
   type ListRenderItemInfo,
 } from "react-native";
@@ -205,7 +207,10 @@ export default function HomeSearchModal({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View style={styles.searchModalRoot}>
+      <KeyboardAvoidingView
+        style={styles.searchModalRoot}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         <Pressable style={styles.searchBackdrop} onPress={onClose} />
 
         <View style={styles.searchModalCard}>
@@ -314,10 +319,10 @@ export default function HomeSearchModal({
                 keyboardShouldPersistTaps="always"
                 contentContainerStyle={{ paddingBottom: 12 }}
               />
-            )}
-          </View>
+          )}
         </View>
       </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

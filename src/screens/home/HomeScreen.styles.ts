@@ -803,7 +803,7 @@ export function createHomeStyles(
         searchModalCard: {
             width: "94%",
             maxWidth: 420,
-            maxHeight: "74%",
+            height: "70%",
             borderRadius: 26,
             backgroundColor: C.surface,
             overflow: "hidden",
