@@ -64,7 +64,7 @@ export function createHomeStyles(
 
     headerGradient: {
       paddingHorizontal: 16,
-      paddingBottom: 18,
+      paddingBottom: 14,
       borderBottomLeftRadius: 30,
       borderBottomRightRadius: 30,
       overflow: "hidden",
@@ -105,8 +105,8 @@ export function createHomeStyles(
     heroTopRight: { flexDirection: row, alignItems: "center", gap: 8 },
 
     searchBtn: {
-      width: 42,
-      height: 42,
+      width: 38,
+      height: 38,
       borderRadius: 999,
       backgroundColor: "rgba(255,255,255,0.15)",
       borderWidth: 1,
@@ -116,8 +116,8 @@ export function createHomeStyles(
     },
 
     bellBtn: {
-      width: 42,
-      height: 42,
+      width: 38,
+      height: 38,
       borderRadius: 999,
       backgroundColor: "rgba(255,255,255,0.15)",
       alignItems: "center",
@@ -142,8 +142,8 @@ export function createHomeStyles(
     streakPill: {
       flexDirection: row,
       alignItems: "center",
-      paddingHorizontal: 14,
-      height: 34,
+      paddingHorizontal: 12,
+      height: 30,
       borderRadius: 999,
       shadowColor: "#F97316",
       shadowOpacity: 0.35,
@@ -153,7 +153,7 @@ export function createHomeStyles(
     },
 
     streakText: {
-      fontSize: 13,
+      fontSize: 12.5,
       fontWeight: "900",
       color: "#FFFFFF",
       letterSpacing: 0.3,
@@ -162,20 +162,20 @@ export function createHomeStyles(
     /* ── Greeting section (right-aligned, RTL-aware) ─────────────────── */
 
     greetingWrap: {
-      marginTop: 10,
+      marginTop: 8,
       alignItems: alignEnd,
     },
 
     greetingSub: {
-      fontSize: 13.5,
+      fontSize: 12,
       fontWeight: "600",
       color: "rgba(255,255,255,0.78)",
       textAlign: textEnd,
     },
 
     greetingName: {
-      marginTop: 2,
-      fontSize: 26,
+      marginTop: 1,
+      fontSize: 21,
       fontWeight: "900",
       letterSpacing: -0.4,
       color: "#FFFFFF",
@@ -183,19 +183,19 @@ export function createHomeStyles(
     },
 
     levelChip: {
-      marginTop: 6,
+      marginTop: 4,
       flexDirection: row,
       alignItems: "center",
       gap: 4,
       alignSelf: alignEnd,
-      paddingHorizontal: 8,
-      height: 20,
+      paddingHorizontal: 7,
+      height: 18,
       borderRadius: 999,
       backgroundColor: "rgba(255,255,255,0.14)",
     },
 
     levelChipText: {
-      fontSize: 10.5,
+      fontSize: 10,
       fontWeight: "800",
       letterSpacing: 0.2,
       color: "rgba(255,255,255,0.92)",
@@ -204,13 +204,13 @@ export function createHomeStyles(
     /* ── Emoji quick actions (glass row) ─────────────────────────────── */
 
     emojiGlass: {
-      marginTop: 12,
+      marginTop: 10,
       flexDirection: row,
       alignItems: "center",
       justifyContent: "space-between",
-      paddingHorizontal: 18,
-      paddingVertical: 14,
-      borderRadius: 24,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      borderRadius: 18,
       borderWidth: 1,
       borderColor: "rgba(255,255,255,0.16)",
       backgroundColor: "rgba(255,255,255,0.07)",
@@ -218,8 +218,8 @@ export function createHomeStyles(
     },
 
     emojiBtn: {
-      width: 50,
-      height: 50,
+      width: 40,
+      height: 40,
       borderRadius: 999,
       alignItems: "center",
       justifyContent: "center",
@@ -229,7 +229,7 @@ export function createHomeStyles(
       overflow: "hidden",
     },
 
-    emojiText: { fontSize: 22 },
+    emojiText: { fontSize: 18 },
 
     /* ── Quick actions (floating card over the hero curve) ───────────── */
 

@@ -91,7 +91,7 @@ export default function HomeHero({
           <ActiveChildHeaderAvatar />
           {/* Daily streak pill — opens the wallet sheet on tap */}
           <Animated.View
-            style={{ marginTop: 6, transform: [{ scale: streakPress.scale }] }}
+            style={{ marginTop: 4, transform: [{ scale: streakPress.scale }] }}
           >
             <Pressable
               onPressIn={streakPress.onPressIn}
@@ -141,7 +141,7 @@ export default function HomeHero({
        
 
         {/* Greeting section */}
-        {/* <View style={styles.greetingWrap}>
+        <View style={styles.greetingWrap}>
           <Text style={styles.greetingSub} numberOfLines={1}>
             {t("home.welcome_back")}
           </Text>
@@ -155,7 +155,7 @@ export default function HomeHero({
               {levelLabel}
             </Text>
           </View>
-        </View> */}
+        </View>
 
         {/* Emoji quick actions */}
         <BlurView intensity={18} tint="dark" style={styles.emojiGlass}>
