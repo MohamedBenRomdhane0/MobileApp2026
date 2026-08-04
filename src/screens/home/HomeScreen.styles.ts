@@ -60,7 +60,13 @@ export function createHomeStyles(
 
     /* ── Hero ────────────────────────────────────────────────────────── */
 
-    headerShell: { backgroundColor: colors.header },
+    headerShell: {
+      backgroundColor: colors.header,
+      borderBottomLeftRadius: 30,
+      borderBottomRightRadius: 30,
+      overflow: "hidden",
+      ...shadowHeader,
+    },
 
     headerGradient: {
       paddingHorizontal: 16,
@@ -69,7 +75,6 @@ export function createHomeStyles(
       borderBottomRightRadius: 30,
       overflow: "hidden",
       backgroundColor: colors.header,
-      ...shadowHeader,
     },
 
     headerGlowA: {
