@@ -64,7 +64,7 @@ export function createHomeStyles(
 
         headerGradient: {
             paddingHorizontal: 16,
-            paddingBottom: 26,
+            paddingBottom: 18,
             borderBottomLeftRadius: 30,
             borderBottomRightRadius: 30,
             overflow: "hidden",
@@ -140,7 +140,7 @@ export function createHomeStyles(
         /* ── Daily streak pill (yellow/orange gradient) ──────────────────── */
 
         streakWrap: {
-            marginTop: 18,
+            marginTop: 6,
             alignItems: alignEnd,
         },
 
@@ -167,7 +167,7 @@ export function createHomeStyles(
         /* ── Greeting section (right-aligned, RTL-aware) ─────────────────── */
 
         greetingWrap: {
-            marginTop: 18,
+            marginTop: 10,
             alignItems: alignEnd,
         },
 
@@ -180,15 +180,15 @@ export function createHomeStyles(
 
         greetingName: {
             marginTop: 2,
-            fontSize: 30,
+            fontSize: 26,
             fontWeight: "900",
-            letterSpacing: -0.5,
+            letterSpacing: -0.4,
             color: "#FFFFFF",
             textAlign: textEnd,
         },
 
         levelChip: {
-            marginTop: 8,
+            marginTop: 6,
             flexDirection: row,
             alignItems: "center",
             gap: 4,
@@ -209,7 +209,7 @@ export function createHomeStyles(
         /* ── Emoji quick actions (glass row) ─────────────────────────────── */
 
         emojiGlass: {
-            marginTop: 20,
+            marginTop: 12,
             flexDirection: row,
             alignItems: "center",
             justifyContent: "space-between",
