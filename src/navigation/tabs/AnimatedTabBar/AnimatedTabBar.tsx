@@ -101,34 +101,22 @@ const TabPill = React.memo(({
 
   const pillStyle = useAnimatedStyle(() => {
     const t = Math.max(0, 1 - Math.abs(pos.value - index));
-    return {
-      opacity: t,
-      transform: [{ scale: interpolate(t, [0, 1], [0.9, 1], "clamp") }],
-    };
+    return { opacity: t };
   });
 
   const activeIconStyle = useAnimatedStyle(() => {
     const t = Math.max(0, 1 - Math.abs(pos.value - index));
-    return {
-      opacity: t,
-      transform: [{ scale: interpolate(t, [0, 0.6, 1], [0.7, 1.16, 1], "clamp") }],
-    };
+    return { opacity: t };
   });
 
   const idleIconStyle = useAnimatedStyle(() => {
     const t = Math.max(0, 1 - Math.abs(pos.value - index));
-    return {
-      opacity: 1 - t,
-      transform: [{ scale: interpolate(t, [0, 1], [1, 0.8], "clamp") }],
-    };
+    return { opacity: 1 - t };
   });
 
   const labelStyle = useAnimatedStyle(() => {
     const t = Math.max(0, 1 - Math.abs(pos.value - index));
-    return {
-      opacity: interpolate(t, [0.35, 1], [0, 1], "clamp"),
-      transform: [{ translateX: interpolate(t, [0, 1], [12, 0], "clamp") }],
-    };
+    return { opacity: interpolate(t, [0.35, 1], [0, 1], "clamp") };
   });
 
   return (

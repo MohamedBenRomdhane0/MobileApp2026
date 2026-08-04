@@ -376,7 +376,7 @@ const GUTTER = 20;
 
 type ViewKey = "reservation" | "calendar" | "recorded";
 
-/** The three top-level views, rendered as an animated pill switch. */
+/** The three top-level views, rendered as a static segmented switch. */
 const VIEW_TABS: {
   key: ViewKey;
   label: string;
@@ -404,18 +404,8 @@ const VIEW_TABS: {
 ];
 
 /**
- * Geometry of the switch: inactive tabs collapse to an icon, the active one
- * springs open wide enough for its label. Widths always sum to the bar.
- */
-const TAB_PAD = 5;
-const TAB_BAR_W = W - GUTTER * 2;
-const TAB_COLLAPSED_W = 56;
-const TAB_ACTIVE_W =
-  TAB_BAR_W - TAB_PAD * 2 - TAB_COLLAPSED_W * (VIEW_TABS.length - 1);
-
-/**
- * One tab of the view switch. Owns its own spring so expanding and
- * collapsing run in parallel instead of waiting on a shared timeline.
+ * One tab of the view switch. Static segmented button: the active tab shows
+ * its icon + label filled on a dark gradient, inactive tabs are plain.
  */
 function ViewSwitchTab({
   tab,
@@ -426,36 +416,6 @@ function ViewSwitchTab({
   active: boolean;
   onPress: () => void;
 }) {
-  const anim = useRef(new Animated.Value(active ? 1 : 0)).current;
-
-  useEffect(() => {
-    Animated.spring(anim, {
-      toValue: active ? 1 : 0,
-      friction: 9,
-      tension: 90,
-      // width/flex can't run on the native thread
-      useNativeDriver: false,
-    }).start();
-  }, [active, anim]);
-
-  const width = anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [TAB_COLLAPSED_W, TAB_ACTIVE_W],
-  });
-  const labelOpacity = anim.interpolate({
-    inputRange: [0, 0.55, 1],
-    outputRange: [0, 0, 1],
-  });
-  const labelShift = anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [12, 0],
-  });
-  // Little pop as the icon takes the active state.
-  const iconScale = anim.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [1, 1.22, 1.05],
-  });
-
   return (
     <TouchableOpacity
       activeOpacity={0.9}
@@ -463,35 +423,29 @@ function ViewSwitchTab({
       accessibilityState={{ selected: active }}
       accessibilityLabel={tab.label}
       onPress={onPress}
+      style={styles.switchTab}
     >
-      <Animated.View style={[styles.switchTab, { width }]}>
-        {active && (
-          <LinearGradient
-            colors={["#16324F", "#0B1B2E"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
-        )}
+      {active && (
+        <LinearGradient
+          colors={["#16324F", "#0B1B2E"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      )}
 
-        <Animated.View style={{ transform: [{ scale: iconScale }] }}>
-          <Ionicons
-            name={active ? tab.iconActive : tab.icon}
-            size={18}
-            color={active ? "#5FE3EA" : "#8A94A6"}
-          />
-        </Animated.View>
+      <Ionicons
+        name={active ? tab.iconActive : tab.icon}
+        size={18}
+        color={active ? "#5FE3EA" : "#8A94A6"}
+      />
 
-        <Animated.Text
-          numberOfLines={1}
-          style={[
-            styles.switchLabel,
-            { opacity: labelOpacity, transform: [{ translateX: labelShift }] },
-          ]}
-        >
-          {tab.label}
-        </Animated.Text>
-      </Animated.View>
+      <Text
+        numberOfLines={1}
+        style={[styles.switchLabel, !active && styles.switchLabelIdle]}
+      >
+        {tab.label}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -747,7 +701,7 @@ export default function LearnCalendarScreen() {
             </View>
           </LinearGradient>
         </View>
-      {/* Réserver ↔ Agenda ↔ Replays — expanding pill switch */}
+      {/* Réserver ↔ Agenda ↔ Replays — segmented switch */}
       <View style={styles.segWrap}>
         <View style={styles.segControl} accessibilityRole="tablist">
           {VIEW_TABS.map((tab) => (
@@ -2429,7 +2383,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: "#FFFFFF",
     borderRadius: 999,
-    padding: TAB_PAD,
+    padding: 5,
     marginTop: -24,
     marginBottom: 6,
     shadowColor: "#0D2A52",
@@ -2439,6 +2393,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   switchTab: {
+    flex: 1,
     height: 42,
     borderRadius: 999,
     flexDirection: "row",
@@ -2452,6 +2407,9 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#FFFFFF",
     letterSpacing: 0.2,
+  },
+  switchLabelIdle: {
+    color: "#8A94A6",
   },
 
   // ── Featured video card ──────────────────────────────────────────
