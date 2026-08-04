@@ -53,8 +53,8 @@ export const walletStyles = StyleSheet.create({
   },
 
   content: {
-    paddingHorizontal: 20,
-    paddingBottom: 36,
+    paddingHorizontal: 18,
+    paddingBottom: 24,
   },
 
   /* ── Header ───────────────────────────────────────────────────────────── */
@@ -81,13 +81,13 @@ export const walletStyles = StyleSheet.create({
 
   balanceWrap: {
     alignItems: "center",
-    marginTop: 6,
-    marginBottom: 22,
+    marginTop: 2,
+    marginBottom: 16,
   },
 
   balanceLabel: {
     color: WALLET_SUB,
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: "700",
     letterSpacing: 0.4,
   },
@@ -95,21 +95,21 @@ export const walletStyles = StyleSheet.create({
   balanceRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    marginTop: 8,
+    gap: 8,
+    marginTop: 6,
   },
 
   balanceAmount: {
     color: WALLET_TEXT,
-    fontSize: 34,
+    fontSize: 26,
     fontWeight: "900",
     letterSpacing: 0.5,
   },
 
   balanceIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: WALLET_CYAN,
     alignItems: "center",
     justifyContent: "center",
@@ -124,10 +124,10 @@ export const walletStyles = StyleSheet.create({
 
   sectionLabel: {
     color: WALLET_SUB,
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: "800",
     letterSpacing: 0.6,
-    marginBottom: 12,
+    marginBottom: 10,
   },
 
   /* ── Recharge amount cards ────────────────────────────────────────────── */
@@ -139,8 +139,8 @@ export const walletStyles = StyleSheet.create({
 
   amountCard: {
     flex: 1,
-    height: 74,
-    borderRadius: 16,
+    height: 62,
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: WALLET_HAIRLINE,
     backgroundColor: WALLET_INPUT_BG,
@@ -175,16 +175,16 @@ export const walletStyles = StyleSheet.create({
   /* ── Custom amount ────────────────────────────────────────────────────── */
 
   customInput: {
-    height: 50,
-    borderRadius: 14,
+    height: 44,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: WALLET_HAIRLINE,
     backgroundColor: WALLET_INPUT_BG,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     color: WALLET_TEXT,
     fontSize: 15,
     fontWeight: "700",
-    marginTop: 12,
+    marginTop: 10,
   },
 
   /* ── Payment method cards ─────────────────────────────────────────────── */
@@ -196,12 +196,12 @@ export const walletStyles = StyleSheet.create({
 
   methodCard: {
     flex: 1,
-    minHeight: 92,
-    borderRadius: 16,
+    minHeight: 76,
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: WALLET_HAIRLINE,
     backgroundColor: WALLET_INPUT_BG,
-    padding: 14,
+    padding: 10,
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
@@ -217,7 +217,26 @@ export const walletStyles = StyleSheet.create({
     elevation: 6,
   },
 
-  methodIcon: { fontSize: 26 },
+  methodIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: WALLET_HAIRLINE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  methodIconBoxActive: {
+    backgroundColor: WALLET_CYAN,
+    borderColor: WALLET_CYAN,
+    shadowColor: WALLET_CYAN,
+    shadowOpacity: 0.6,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
 
   methodTitle: {
     color: WALLET_TEXT,
@@ -230,30 +249,30 @@ export const walletStyles = StyleSheet.create({
 
   inputRow: {
     flexDirection: "row",
-    gap: 10,
+    gap: 8,
   },
 
   fieldWrap: {
     flex: 1,
-    marginBottom: 12,
+    marginBottom: 10,
   },
 
   fieldLabel: {
     color: WALLET_SUB,
     fontSize: 11.5,
     fontWeight: "700",
-    marginBottom: 6,
+    marginBottom: 5,
   },
 
   fieldInput: {
-    height: 46,
+    height: 42,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: WALLET_HAIRLINE,
     backgroundColor: WALLET_INPUT_BG,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     color: WALLET_TEXT,
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: "700",
   },
 
@@ -261,7 +280,7 @@ export const walletStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    marginBottom: 18,
+    marginBottom: 14,
   },
 
   saveBox: {
@@ -286,24 +305,24 @@ export const walletStyles = StyleSheet.create({
   /* ── Bank transfer ────────────────────────────────────────────────────── */
 
   transferCard: {
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: WALLET_HAIRLINE,
     backgroundColor: WALLET_INPUT_BG,
-    padding: 14,
-    gap: 6,
-    marginBottom: 18,
+    padding: 12,
+    gap: 4,
+    marginBottom: 14,
   },
 
   transferHint: {
     color: WALLET_SUB,
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: "600",
   },
 
   transferAccount: {
     color: WALLET_TEXT,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "800",
     letterSpacing: 0.5,
   },
@@ -311,11 +330,11 @@ export const walletStyles = StyleSheet.create({
   /* ── Pay button ───────────────────────────────────────────────────────── */
 
   payBtn: {
-    height: 54,
-    borderRadius: 16,
+    height: 50,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 4,
+    marginTop: 2,
     shadowColor: WALLET_CYAN,
     shadowOpacity: 0.55,
     shadowRadius: 18,

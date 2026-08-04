@@ -90,7 +90,7 @@ export default function WalletBottomSheet({
   const [cvv, setCvv] = useState("");
   const [saveCard, setSaveCard] = useState(true);
 
-  const snapPoints = useMemo(() => ["55%", "90%"], []);
+  const snapPoints = useMemo(() => ["48%", "88%"], []);
 
   const payScale = useSharedValue(1);
   const payStyle = useAnimatedStyle(() => ({
@@ -202,26 +202,26 @@ export default function WalletBottomSheet({
         />
 
         {/* Payment method */}
-        <View style={{ height: 24 }} />
+        <View style={{ height: 16 }} />
         <Text style={walletStyles.sectionLabel}>
           {t("wallet.payment_method")}
         </Text>
         <View style={[walletStyles.methodRow, { flexDirection: row }]}>
           <PaymentMethodCard
-            icon="💳"
+            icon="card-outline"
             title={t("wallet.credit_card")}
             selected={method === "card"}
             onPress={() => setMethod("card")}
           />
           <PaymentMethodCard
-            icon="📄"
+            icon="business-outline"
             title={t("wallet.bank_transfer")}
             selected={method === "transfer"}
             onPress={() => setMethod("transfer")}
           />
         </View>
 
-        <View style={{ height: 20 }} />
+        <View style={{ height: 14 }} />
 
         {method === "card" ? (
           <View>
@@ -275,7 +275,7 @@ export default function WalletBottomSheet({
             <Text style={walletStyles.transferHint}>
               {t("wallet.bank_transfer_hint")}
             </Text>
-            <Text style={walletStyles.transferAccount}>🏦 98 123 456 789</Text>
+            <Text style={walletStyles.transferAccount}>98 123 456 789</Text>
             <Text style={walletStyles.transferHint}>
               {t("wallet.bank_transfer_note")}
             </Text>

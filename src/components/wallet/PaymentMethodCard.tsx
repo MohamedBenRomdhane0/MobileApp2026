@@ -1,21 +1,23 @@
-import React from "react";
-import { Pressable, Text } from "react-native";
+import React, { type ComponentProps } from "react";
+import { Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
+import { WALLET_CYAN } from "./wallet.constants";
 import { walletStyles } from "./wallet.styles";
 
+type IconName = ComponentProps<typeof Ionicons>["name"];
+
 type PaymentMethodCardProps = {
-  icon: string;
+  icon: IconName;
   title: string;
-  subtitle?: string;
   selected: boolean;
   onPress: () => void;
 };
 
-/** Large selectable payment-method card (credit card / bank transfer). */
+/** Large selectable payment-method card with a circular icon badge. */
 export default function PaymentMethodCard({
   icon,
   title,
-  subtitle,
   selected,
   onPress,
 }: PaymentMethodCardProps) {
@@ -29,7 +31,18 @@ export default function PaymentMethodCard({
       accessibilityRole="button"
       accessibilityState={{ selected }}
     >
-      <Text style={walletStyles.methodIcon}>{icon}</Text>
+      <View
+        style={[
+          walletStyles.methodIconBox,
+          selected && walletStyles.methodIconBoxActive,
+        ]}
+      >
+        <Ionicons
+          name={icon}
+          size={22}
+          color={selected ? "#FFFFFF" : WALLET_CYAN}
+        />
+      </View>
       <Text style={walletStyles.methodTitle} numberOfLines={2}>
         {title}
       </Text>
