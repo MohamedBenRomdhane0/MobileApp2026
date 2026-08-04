@@ -49,13 +49,16 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
         <View style={styles.tabsRow}>
           {tabs.map(
             (item: (typeof LIQUID.tabs)[number], i: number) => (
-              <LiquidGlassTab
-                key={item.name}
-                item={item}
-                index={i}
-                isActive={activeIndex === i}
-                onPress={() => handleTabPress(item.name)}
-              />
+              <View key={item.name} style={styles.tabSlot}>
+                {/* Blue ball indicator for active tab */}
+                {activeIndex === i && <View style={styles.activeBall} />}
+                <LiquidGlassTab
+                  item={item}
+                  index={i}
+                  isActive={activeIndex === i}
+                  onPress={() => handleTabPress(item.name)}
+                />
+              </View>
             )
           )}
         </View>
@@ -87,8 +90,25 @@ const styles = StyleSheet.create({
   tabsRow: {
     flex: 1,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     paddingHorizontal: 8,
+    paddingTop: 4,
+  },
+  tabSlot: {
+    flex: 1,
+    alignItems: "center",
+  },
+  activeBall: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#22BEC8",
+    marginBottom: 4,
+    shadowColor: "#22BEC8",
+    shadowOpacity: 0.6,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
   },
 });
 
