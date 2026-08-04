@@ -318,13 +318,13 @@ export function createHomeStyles(
 
     body: { paddingHorizontal: 16 },
 
-    section: { marginTop: 24 },
+    section: { marginTop: 18 },
 
     sectionHeaderRow: {
       flexDirection: row,
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: 12,
+      marginBottom: 10,
       gap: 8,
     },
 
