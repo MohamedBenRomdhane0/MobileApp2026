@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
   interpolate,
   Easing,
+  runOnJS,
 } from "react-native-reanimated";
 import { BlurView } from "expo-blur";
 import { LIQUID } from "@styles/liquidTheme";
@@ -19,6 +20,8 @@ function FloatingActionButton({ onPress }: FloatingActionButtonProps) {
   const press = useSharedValue(1);
   const ripple = useSharedValue(0);
   const glow = useSharedValue(0);
+  const halfCircleScale = useSharedValue(0);
+  const halfCircleOpacity = useSharedValue(0);
 
   const handlePressIn = () => {
     "worklet";
@@ -33,12 +36,21 @@ function FloatingActionButton({ onPress }: FloatingActionButtonProps) {
       ripple.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.quad) });
     });
     glow.value = withSpring(1, LIQUID.spring);
+    halfCircleScale.value = withSpring(1, LIQUID.spring);
+    halfCircleOpacity.value = withTiming(1, { duration: 120, easing: Easing.out(Easing.quad) });
   };
 
   const handlePressOut = () => {
     "worklet";
     press.value = withSpring(1, LIQUID.spring);
     glow.value = withSpring(0, LIQUID.spring);
+    halfCircleScale.value = withSpring(0, { ...LIQUID.spring, damping: 20 });
+    halfCircleOpacity.value = withTiming(0, { duration: 200, easing: Easing.in(Easing.quad) });
+  };
+
+  const handlePress = () => {
+    "worklet";
+    runOnJS(onPress)();
   };
 
   const pressAnimatedStyle = useAnimatedStyle(() => ({
@@ -55,9 +67,14 @@ function FloatingActionButton({ onPress }: FloatingActionButtonProps) {
     shadowRadius: interpolate(glow.value, [0, 1], [16, 32]),
   }));
 
+  const halfCircleStyle = useAnimatedStyle(() => ({
+    opacity: halfCircleOpacity.value,
+    transform: [{ scale: halfCircleScale.value }],
+  }));
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       style={styles.fab}
@@ -75,6 +92,12 @@ function FloatingActionButton({ onPress }: FloatingActionButtonProps) {
         <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFillObject} />
         {/* Cyan accent border */}
         <View style={styles.fabBorder} pointerEvents="none" />
+
+        {/* Demi-cercle (half-circle) animation on click */}
+        <Animated.View style={[styles.halfCircle, halfCircleStyle]} pointerEvents="none">
+          <View style={styles.halfCircleInner} />
+        </Animated.View>
+
         {/* Ripple effect */}
         <Animated.View style={[styles.ripple, rippleStyle]} pointerEvents="none" />
         {/* Glow ring */}
@@ -100,6 +123,21 @@ const styles = StyleSheet.create({
     borderRadius: LIQUID.fabSize / 2,
     alignItems: "center",
     justifyContent: "center",
+  },
+  halfCircle: {
+    position: "absolute",
+    bottom: -(LIQUID.fabSize / 2) + 2,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    transformOrigin: "bottom center",
+  },
+  halfCircleInner: {
+    width: LIQUID.fabSize * 1.5,
+    height: LIQUID.fabSize * 0.75,
+    borderBottomLeftRadius: (LIQUID.fabSize * 1.5) / 2,
+    borderBottomRightRadius: (LIQUID.fabSize * 1.5) / 2,
+    backgroundColor: LIQUID.cyanColor,
   },
   ripple: {
     ...StyleSheet.absoluteFillObject,

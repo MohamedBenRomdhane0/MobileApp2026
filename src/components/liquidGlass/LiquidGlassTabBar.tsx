@@ -65,8 +65,8 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
         </View>
     </Animated.View>
 
-      {/* Floating Action Button positioned at center, overlapping the bar */}
-      <View style={{ position: "absolute", top: 0, left: 0, right: 0, alignItems: "center" }}>
+      {/* Floating Action Button - centered exactly, overlapping the bar */}
+      <View style={[styles.fabContainer, { width: barWidth }]}>
         <FloatingActionButton onPress={() => handleTabPress("Home")} />
       </View>
     </View>
@@ -115,6 +115,13 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
     elevation: 4,
+  },
+  fabContainer: {
+    position: "absolute",
+    bottom: 0,
+    height: LIQUID.barHeight,
+    justifyContent: "center",
+    pointerEvents: "box-none",
   },
 });
 
