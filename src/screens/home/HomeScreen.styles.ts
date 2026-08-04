@@ -148,8 +148,8 @@ export function createHomeStyles(
       flexDirection: row,
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: 12,
-      height: 30,
+      paddingHorizontal: 14,
+      height: 38,
       borderRadius: 999,
       overflow: "hidden",
       shadowColor: "#F6C445",
@@ -164,16 +164,16 @@ export function createHomeStyles(
       top: 0,
       bottom: 0,
       left: 0,
-      width: 64,
+      width: 80,
     },
 
     streakText: {
-      fontSize: 12.5,
+      fontSize: 15,
       fontWeight: "900",
-      color: "#FFFFFF",
+      color: "#4A2E00",
       letterSpacing: 0.3,
-      textShadowColor: "rgba(0,0,0,0.25)",
-      textShadowRadius: 4,
+      textShadowColor: "rgba(255,255,255,0.45)",
+      textShadowRadius: 2,
     },
 
     /* ── Greeting + emoji quick actions (one shared line) ─────────────── */

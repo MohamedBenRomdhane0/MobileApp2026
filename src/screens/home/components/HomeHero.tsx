@@ -123,7 +123,7 @@ function GoldStreakPill({
 
   const shineX = shine.interpolate({
     inputRange: [0, 1],
-    outputRange: [-140, 140],
+    outputRange: [-180, 180],
   });
   const glowRadius = glow.interpolate({
     inputRange: [0, 1],
