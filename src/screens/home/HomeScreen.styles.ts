@@ -571,16 +571,16 @@ export function createHomeStyles(
     materialCardPress: { alignItems: "center", gap: 5, width: "100%" },
 
     materialCardIconWrap: {
-      width: 40,
-      height: 40,
-      borderRadius: 16,
+      width: 44,
+      height: 44,
+      borderRadius: 18,
       alignItems: "center",
       justifyContent: "center",
       overflow: "hidden",
       borderWidth: 1,
     },
 
-    materialCardImg: { width: 28, height: 28, resizeMode: "contain" },
+    materialCardImg: { width: 30, height: 30, resizeMode: "contain" },
 
     materialCardLabel: {
       fontSize: 10.5,
