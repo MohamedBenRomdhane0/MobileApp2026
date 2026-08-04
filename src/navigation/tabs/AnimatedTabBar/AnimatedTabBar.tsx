@@ -62,7 +62,7 @@ type TabDef = {
 const TABS: TabDef[] = [
   { name: PATHS.TABS.SETTINGS as keyof TabsParamList, label: "Profil",  icon: "person-outline",     iconFocused: "person"      },
   // { name: PATHS.TABS.MEETINGS as keyof TabsParamList, label: "Live", icon: "videocam-outline",   iconFocused: "videocam"    },
-  { name: PATHS.TABS.RESERVED_MEETINGS as keyof TabsParamList, label: "Séances", icon: "calendar-outline", iconFocused: "calendar" },
+  // { name: PATHS.TABS.RESERVED_MEETINGS as keyof TabsParamList, label: "Séances", icon: "calendar-outline", iconFocused: "calendar" },
   { name: PATHS.TABS.HOME     as keyof TabsParamList, label: "Accueil", icon: "home-outline",       iconFocused: "home"        },
   // { name: PATHS.TABS.COURSES  as keyof TabsParamList, label: "Cours", icon: "library-outline",    iconFocused: "library"     },
   { name: PATHS.TABS.BOOKS    as keyof TabsParamList, label: "Livres",  icon: "book-outline",       iconFocused: "book"        },
