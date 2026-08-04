@@ -6,6 +6,7 @@ import Animated, {
   useSharedValue,
   withTiming,
   interpolate,
+  Easing,
 } from "react-native-reanimated";
 import { LIQUID } from "@styles/liquidTheme";
 
@@ -13,7 +14,7 @@ function AnimatedGlassBackground({ style }: { style?: object }) {
   const shimmer = useSharedValue(0);
 
   React.useEffect(() => {
-    shimmer.value = withTiming(1, { duration: 3000, easing: (t) => t });
+    shimmer.value = withTiming(1, { duration: 3000, easing: Easing.linear });
   }, [shimmer]);
 
   const shimmerStyle = useAnimatedStyle(() => {
