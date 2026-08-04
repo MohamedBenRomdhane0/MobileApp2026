@@ -1,4 +1,4 @@
-import React, { ComponentProps, useMemo, useState } from "react";
+import React, { ComponentProps, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -92,6 +92,7 @@ export default function HomeSearchModal({
   const { t } = useTranslation();
   const [tab, setTab] = useState<SearchTab>("materials");
   const [query, setQuery] = useState("");
+  const inputRef = useRef<TextInput>(null);
 
   const activeColor = isDark ? "#FFFFFF" : palette.ink;
   const hintColor = isDark ? "rgba(255,255,255,0.45)" : "rgba(15,46,87,0.45)";
@@ -205,6 +206,7 @@ export default function HomeSearchModal({
       transparent
       animationType="fade"
       statusBarTranslucent
+      onShow={() => inputRef.current?.focus()}
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
@@ -227,6 +229,7 @@ export default function HomeSearchModal({
               <View style={styles.searchField}>
                 <Ionicons name="search-outline" size={18} color={palette.teal} />
                 <TextInput
+                  ref={inputRef}
                   value={query}
                   onChangeText={setQuery}
                   placeholder={t("common.search_placeholder")}
