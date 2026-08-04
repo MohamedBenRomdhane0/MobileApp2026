@@ -36,7 +36,6 @@ import SectionState from "@screens/home/components/SectionState";
 import {
   HOME_UI,
   HOME_COMMON_UI,
-  HOME_STATS,
   HOME_QUICK_ACTIONS,
   MOCK_TEACHERS,
   getHomePalette,
@@ -47,7 +46,10 @@ import {
   toValidId,
 } from "./HomeScreen.helpers";
 import { pickLevelIdFromChild } from "@utils/helpers/level.helper";
-import type { HomeStat, HomeQuickAction } from "./HomeScreen.type";
+import type { HomeQuickAction } from "./HomeScreen.type";
+
+/** Books kept in the home carousel — the rest live on the Books tab. */
+const HOME_BOOKS_LIMIT = 12;
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
@@ -66,7 +68,12 @@ export default function HomeScreen() {
     [colors, isDark]
   );
 
-  const booksScrollToEndRef = useRef<(() => void) | null>(null);
+  // Every block takes the same styling trio — bundle it once instead of
+  // repeating three props on ten components.
+  const block = useMemo(
+    () => ({ styles, palette, isRTL }),
+    [styles, palette, isRTL]
+  );
 
   const headerData = useActiveChildHeaderData();
   const levelId = useMemo(
@@ -87,6 +94,7 @@ export default function HomeScreen() {
   const needsChildToken = !childAccessToken;
   const lastSwitchChildIdRef = useRef<number | null>(null);
 
+  // Exchange the parent token for a child token before any child-scoped query.
   useEffect(() => {
     if (!needsChildToken) {
       lastSwitchChildIdRef.current = null;
@@ -128,10 +136,6 @@ export default function HomeScreen() {
     () => (Array.isArray(materialsData) ? materialsData : []),
     [materialsData]
   );
-  const displayMaterials = useMemo(
-    () => (isRTL ? [...materials].reverse() : materials),
-    [materials, isRTL]
-  );
   const showMaterialsLoader = isMaterialsLoading || isMaterialsFetching;
 
   const {
@@ -149,32 +153,45 @@ export default function HomeScreen() {
     () => (Array.isArray(booksData?.data) ? booksData.data : []),
     [booksData]
   );
-  const homeBooks = useMemo(() => books.slice(0, 12), [books]);
+  const homeBooks = useMemo(() => books.slice(0, HOME_BOOKS_LIMIT), [books]);
+  const showBooksLoader = isBooksLoading || isBooksFetching;
+
+  // Carousels are laid out LTR by the platform, so in Arabic the arrays are
+  // reversed and the swiper is parked at its end — that puts the first item
+  // at the natural reading start (the right edge).
+  const displayMaterials = useMemo(
+    () => (isRTL ? [...materials].reverse() : materials),
+    [materials, isRTL]
+  );
   const displayBooks = useMemo(
     () => (isRTL ? [...homeBooks].reverse() : homeBooks),
     [homeBooks, isRTL]
   );
-  const showBooksLoader = isBooksLoading || isBooksFetching;
+
+  const parkBooksAtStart = useCallback(
+    (scrollToEnd: () => void) => {
+      if (!isRTL) return;
+      requestAnimationFrame(scrollToEnd);
+    },
+    [isRTL]
+  );
 
   const resume = useMemo(() => pickResumeBook(homeBooks, t), [homeBooks, t]);
 
-  const onLayoutReady = useCallback((scrollToEnd: () => void) => {
-    if (isRTL && displayBooks.length > 0) scrollToEnd();
-    booksScrollToEndRef.current = scrollToEnd;
-  }, [isRTL, displayBooks.length]);
+  // Pull-to-refresh: the spinner is tied to a user gesture, so background
+  // refetches (locale switch, cache invalidation) don't flash it.
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const isFetchingAny = isMaterialsFetching || isBooksFetching;
 
-  const greeting = headerData?.name
-    ? t("home.hello_name", { name: headerData.name })
-    : t("home.hello_default");
+  useEffect(() => {
+    if (isRefreshing && !isFetchingAny) setIsRefreshing(false);
+  }, [isRefreshing, isFetchingAny]);
 
-  const stats: HomeStat[] = useMemo(
-    () => [
-      { ...HOME_STATS[0], value: homeBooks.length },
-      { ...HOME_STATS[1], value: materials.length },
-      { ...HOME_STATS[2], value: 1 },
-    ],
-    [homeBooks.length, materials.length]
-  );
+  const onRefresh = useCallback(() => {
+    setIsRefreshing(true);
+    if (toValidId(levelId)) refetchMaterials();
+    if (isChildReady) refetchBooks();
+  }, [levelId, isChildReady, refetchMaterials, refetchBooks]);
 
   const goSubscribe = useCallback(
     () => navigation.navigate(PATHS.TABS.PLANS as never),
@@ -231,12 +248,12 @@ export default function HomeScreen() {
     [navigation]
   );
 
-  const onRefresh = useCallback(() => {
-    refetchMaterials();
-    refetchBooks();
-  }, [refetchMaterials, refetchBooks]);
+  const materialLabel = useCallback(
+    (m: MaterialUI) => getMaterialLabel(t, m),
+    [t]
+  );
 
-  const refreshing = isMaterialsFetching || isBooksFetching;
+  const seeAllLabel = t(HOME_COMMON_UI.seeAll);
 
   return (
     <View style={styles.root}>
@@ -248,140 +265,84 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            refreshing={refreshing}
+            refreshing={isRefreshing}
             onRefresh={onRefresh}
-            tintColor={colors.primary}
-            colors={[colors.primary]}
+            tintColor={palette.teal}
+            colors={[palette.teal]}
           />
         }
       >
         <HomeHero
-          styles={styles}
-          palette={palette}
-          isRTL={isRTL}
+          {...block}
           isDark={isDark}
-          greeting={greeting}
+          childName={headerData?.name ?? ""}
           levelLabel={levelLabel || t("home.level_default")}
-          stats={stats}
           topInset={insets.top}
           notificationsLabel={t(HOME_COMMON_UI.notifications)}
           onNotifications={goNotifications}
+          onSearch={goBooks}
+        />
+
+        {/* Floats over the hero curve — kept outside `body` so its own
+            horizontal margin isn't doubled by the body padding. */}
+        <QuickActions
+          {...block}
+          actions={HOME_QUICK_ACTIONS}
+          onPressAction={onPressQuickAction}
         />
 
         <View style={styles.body}>
-          <QuickActions
-            styles={styles}
-            palette={palette}
-            isRTL={isRTL}
-            actions={HOME_QUICK_ACTIONS}
-            onPressAction={onPressQuickAction}
-          />
-
-          {resume && (
-            <View style={styles.section}>
-              <ContinueCard
-                styles={styles}
-                palette={palette}
-                isRTL={isRTL}
-                resume={resume}
-                title={t(HOME_UI.continueTitle)}
-                ctaLabel={t(HOME_UI.continueCta)}
-                progressLabel={t(HOME_UI.progressLabel)}
-                onPress={() => openBook(resume.book.id)}
-              />
-            </View>
+          {/* Continue learning — only once something has been started */}
+          {!!resume && (
+            <ContinueCard
+              {...block}
+              resume={resume}
+              title={t(HOME_UI.continueTitle)}
+              ctaLabel={t(HOME_UI.continueCta)}
+              progressLabel={t(HOME_UI.progressLabel, { percent: resume.progress })}
+              onPress={() => openBook(resume.book.id)}
+            />
           )}
 
           {/* Subjects */}
           <View style={styles.section}>
             <SectionHeader
-              styles={styles}
-              palette={palette}
-              isRTL={isRTL}
+              {...block}
               title={t(HOME_UI.subjectsTitle)}
               count={materials.length}
             />
+
             {showMaterialsLoader ? (
-              <SectionState styles={styles} palette={palette} isRTL={isRTL} status="loading" />
+              <SectionState {...block} status="loading" />
             ) : isMaterialsError ? (
               <SectionState
-                styles={styles}
-                palette={palette}
-                isRTL={isRTL}
+                {...block}
                 status="error"
                 message={t(HOME_COMMON_UI.tapToRetry)}
                 onRetry={refetchMaterials}
               />
-            ) : displayMaterials.length > 0 ? (
+            ) : (
               <MaterialsRow
-                styles={styles}
-                palette={palette}
-                isRTL={isRTL}
+                {...block}
                 isDark={isDark}
                 materials={displayMaterials}
-                getLabel={(m) => getMaterialLabel(t, m)}
+                getLabel={materialLabel}
                 onPressMaterial={openMaterial}
-              />
-            ) : null}
-          </View>
-
-          {/* School books */}
-          <View style={styles.section}>
-            <SectionHeader
-              styles={styles}
-              palette={palette}
-              isRTL={isRTL}
-              title={t(HOME_UI.schoolBooks)}
-              count={homeBooks.length}
-              seeAllLabel={t(HOME_COMMON_UI.seeAll)}
-              onSeeAll={goBooks}
-            />
-            {showBooksLoader ? (
-              <SectionState styles={styles} palette={palette} isRTL={isRTL} status="loading" />
-            ) : isBooksError ? (
-              <SectionState
-                styles={styles}
-                palette={palette}
-                isRTL={isRTL}
-                status="error"
-                message={t(HOME_COMMON_UI.tapToRetry)}
-                onRetry={refetchBooks}
-              />
-            ) : displayBooks.length === 0 ? (
-              <SectionState
-                styles={styles}
-                palette={palette}
-                isRTL={isRTL}
-                status="empty"
-                message={t(HOME_UI.booksEmpty)}
-              />
-            ) : (
-              <BooksRow
-                styles={styles}
-                palette={palette}
-                isRTL={isRTL}
-                books={displayBooks}
-                unnamedLabel={t("common.unnamed")}
-                onPressBook={openBook}
-                onLayoutReady={onLayoutReady}
               />
             )}
           </View>
 
-          {/* Live now */}
+          {/* Live classes — time-sensitive, so it sits above browse content */}
           <View style={styles.section}>
             <SectionHeader
-              styles={styles}
-              palette={palette}
-              isRTL={isRTL}
+              {...block}
               title={t(HOME_UI.liveMeetings)}
-              seeAllLabel={t(HOME_COMMON_UI.seeAll)}
+              seeAllLabel={seeAllLabel}
               onSeeAll={goMeetings}
             />
+
             <LiveNowCard
-              styles={styles}
-              palette={palette}
-              isRTL={isRTL}
+              {...block}
               title={t("home.live_title_mock")}
               meta={t("home.live_meta_mock")}
               liveLabel={t(HOME_COMMON_UI.live)}
@@ -390,19 +351,50 @@ export default function HomeScreen() {
             />
           </View>
 
+          {/* School books */}
+          <View style={styles.section}>
+            <SectionHeader
+              {...block}
+              title={t(HOME_UI.schoolBooks)}
+              count={homeBooks.length}
+              seeAllLabel={seeAllLabel}
+              onSeeAll={goBooks}
+            />
+
+            {showBooksLoader ? (
+              <SectionState {...block} status="loading" />
+            ) : isBooksError ? (
+              <SectionState
+                {...block}
+                status="error"
+                message={t(HOME_COMMON_UI.tapToRetry)}
+                onRetry={refetchBooks}
+              />
+            ) : displayBooks.length === 0 ? (
+              <SectionState {...block} status="empty" message={t(HOME_UI.booksEmpty)} />
+            ) : (
+              <BooksRow
+                {...block}
+                books={displayBooks}
+                unnamedLabel={t("common.unnamed")}
+                onPressBook={openBook}
+                onLayoutReady={parkBooksAtStart}
+              />
+            )}
+          </View>
+
           {/* Teachers */}
           <View style={styles.section}>
             <SectionHeader
-              styles={styles}
-              palette={palette}
-              isRTL={isRTL}
+              {...block}
               title={t(HOME_UI.availableTeachers)}
               count={MOCK_TEACHERS.length}
+              seeAllLabel={seeAllLabel}
+              onSeeAll={goMeetings}
             />
+
             <TeachersRow
-              styles={styles}
-              palette={palette}
-              isRTL={isRTL}
+              {...block}
               teachers={MOCK_TEACHERS}
               onPressTeacher={openTeacher}
             />
@@ -411,9 +403,7 @@ export default function HomeScreen() {
           {/* Subscribe */}
           <View style={styles.section}>
             <SubscribeBanner
-              styles={styles}
-              palette={palette}
-              isRTL={isRTL}
+              {...block}
               title={t(HOME_UI.subscribeTitle)}
               subtitle={t(HOME_UI.subscribeSub)}
               ctaLabel={t(HOME_UI.subscribeCta)}

@@ -1,5 +1,6 @@
 export const home = {
   hello_presence: "👋 مرحبا بوجودك",
+  welcome_back: "👋 مرحباً بعودتك",
   hello_name: "مرحبا، {{name}}",
   hello_default: "مرحبا",
   level_default: "ارتقِ",
@@ -24,15 +25,11 @@ export const home = {
   continue_cta: "متابعة",
   progress_label: "التقدم",
   no_live_now: "لا توجد حصص مباشرة الآن",
-  stats: {
-    books: "كتب",
-    subjects: "مواد",
-    live: "حصص مباشرة",
-  },
   quick: {
     books: "كتبي",
     live: "مباشر",
     reserved: "حجوزاتي",
     plans: "الباقات",
   },
+  streak_label: "⭐ + 5 د.ت",
 };

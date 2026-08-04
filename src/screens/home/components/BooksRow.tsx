@@ -111,11 +111,13 @@ export default function BooksRow({
 }: BooksRowProps) {
   const scrollRef = useRef<ScrollView>(null);
 
-  if (books.length === 0) return null;
-
   const handleLayout = useCallback(() => {
     onLayoutReady?.(() => scrollRef.current?.scrollToEnd({ animated: false }));
   }, [onLayoutReady]);
+
+  // Hooks stay above this guard so the order never changes when the list
+  // flips between empty and loaded.
+  if (books.length === 0) return null;
 
   return (
     <ScrollView

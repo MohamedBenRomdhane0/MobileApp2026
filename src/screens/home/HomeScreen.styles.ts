@@ -94,40 +94,25 @@ export function createHomeStyles(
             left: isRTL ? -100 : undefined,
         },
 
-        header: {
+        /* ── Hero top row: avatar + search + language + notifications ────── */
+
+        heroTopRow: {
             flexDirection: row,
             alignItems: "center",
             justifyContent: "space-between",
         },
 
-        headerLeft: { flexDirection: row, alignItems: "center", gap: 10, flex: 1, minWidth: 0 },
-        headerTextWrap: { flex: 1, minWidth: 0, alignItems: alignEnd },
-        headerRight: { flexDirection: row, alignItems: "center", gap: 8 },
+        heroTopRight: { flexDirection: row, alignItems: "center", gap: 8 },
 
-        hello: {
-            fontSize: 16,
-            fontWeight: "800",
-            color: "#FFFFFF",
-            textAlign: textEnd,
-        },
-
-        levelChip: {
-            marginTop: 4,
-            flexDirection: row,
-            alignItems: "center",
-            gap: 4,
-            alignSelf: alignEnd,
-            paddingHorizontal: 8,
-            height: 20,
+        searchBtn: {
+            width: 42,
+            height: 42,
             borderRadius: 999,
-            backgroundColor: "rgba(255,255,255,0.14)",
-        },
-
-        levelChipText: {
-            fontSize: 10.5,
-            fontWeight: "800",
-            letterSpacing: 0.2,
-            color: "rgba(255,255,255,0.92)",
+            backgroundColor: "rgba(255,255,255,0.15)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.22)",
+            alignItems: "center",
+            justifyContent: "center",
         },
 
         bellBtn: {
@@ -152,41 +137,104 @@ export function createHomeStyles(
             borderColor: colors.header,
         },
 
-        /* ── Hero stat strip ─────────────────────────────────────────────── */
+        /* ── Daily streak pill (yellow/orange gradient) ──────────────────── */
 
-        statStrip: {
-            marginTop: 16,
-            flexDirection: row,
-            gap: 10,
-        },
-
-        statTile: {
-            flex: 1,
-            paddingVertical: 10,
-            paddingHorizontal: 10,
-            borderRadius: 16,
-            backgroundColor: "rgba(255,255,255,0.12)",
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.18)",
+        streakWrap: {
+            marginTop: 18,
             alignItems: alignEnd,
         },
 
-        statTileTop: { flexDirection: row, alignItems: "center", gap: 6 },
+        streakPill: {
+            flexDirection: row,
+            alignItems: "center",
+            paddingHorizontal: 14,
+            height: 34,
+            borderRadius: 999,
+            shadowColor: "#F97316",
+            shadowOpacity: 0.35,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 6 },
+            elevation: 5,
+        },
 
-        statValue: {
-            fontSize: 16,
+        streakText: {
+            fontSize: 13,
             fontWeight: "900",
             color: "#FFFFFF",
+            letterSpacing: 0.3,
         },
 
-        statLabel: {
-            marginTop: 2,
-            fontSize: 10,
-            fontWeight: "700",
-            letterSpacing: 0.4,
-            color: "rgba(255,255,255,0.72)",
+        /* ── Greeting section (right-aligned, RTL-aware) ─────────────────── */
+
+        greetingWrap: {
+            marginTop: 18,
+            alignItems: alignEnd,
+        },
+
+        greetingSub: {
+            fontSize: 13.5,
+            fontWeight: "600",
+            color: "rgba(255,255,255,0.78)",
             textAlign: textEnd,
         },
+
+        greetingName: {
+            marginTop: 2,
+            fontSize: 30,
+            fontWeight: "900",
+            letterSpacing: -0.5,
+            color: "#FFFFFF",
+            textAlign: textEnd,
+        },
+
+        levelChip: {
+            marginTop: 8,
+            flexDirection: row,
+            alignItems: "center",
+            gap: 4,
+            alignSelf: alignEnd,
+            paddingHorizontal: 8,
+            height: 20,
+            borderRadius: 999,
+            backgroundColor: "rgba(255,255,255,0.14)",
+        },
+
+        levelChipText: {
+            fontSize: 10.5,
+            fontWeight: "800",
+            letterSpacing: 0.2,
+            color: "rgba(255,255,255,0.92)",
+        },
+
+        /* ── Emoji quick actions (glass row) ─────────────────────────────── */
+
+        emojiGlass: {
+            marginTop: 20,
+            flexDirection: row,
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingHorizontal: 18,
+            paddingVertical: 14,
+            borderRadius: 24,
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.16)",
+            backgroundColor: "rgba(255,255,255,0.07)",
+            overflow: "hidden",
+        },
+
+        emojiBtn: {
+            width: 50,
+            height: 50,
+            borderRadius: 999,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(255,255,255,0.12)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.2)",
+            overflow: "hidden",
+        },
+
+        emojiText: { fontSize: 22 },
 
         /* ── Quick actions (floating card over the hero curve) ───────────── */
 

@@ -4,7 +4,6 @@ import type {
   DailySnippet,
   HomePalette,
   HomeQuickAction,
-  HomeStatMeta,
   LevelVideoCard,
   MeetingCard,
   TeacherCard,
@@ -78,20 +77,18 @@ export const HOME_TOKENS = {
   subscribeGradient: ["#22BEC8", "#046b72"] as [string, string],
   heroGradientLight: ["#153A6B", "#1D3B65", "#091D36"] as [string, string, string],
   heroGradientDark: ["#0B1220", "#0B1B33", "#060B14"] as [string, string, string],
+  /** Yellow/orange gradient behind the daily streak pill. */
+  streakGradient: ["#F6A609", "#F97316"] as [string, string],
   /** Entrance + press motion, shared by every animated home card. */
   enterDuration: 420,
   enterStagger: 80,
   pressScale: 0.96,
 } as const;
 
-export const SUBSCRIBE_GRADIENT: [string, string] = ["#22BEC8", "#046b72"];
+/** Reactions shown as circular glass emoji quick actions in the hero. */
+export const HERO_EMOJIS = ["😍", "😊", "😳", "🥳", "😲"] as const;
 
-/** Hero stat tiles — values are injected by the screen from live data. */
-export const HOME_STATS: HomeStatMeta[] = [
-  { id: "books", labelKey: "home.stats.books", icon: "book" },
-  { id: "subjects", labelKey: "home.stats.subjects", icon: "shapes" },
-  { id: "live", labelKey: "home.stats.live", icon: "radio" },
-];
+export const SUBSCRIBE_GRADIENT: [string, string] = ["#22BEC8", "#046b72"];
 
 /** Quick-action shortcuts sitting on the card that overlaps the hero curve. */
 export const HOME_QUICK_ACTIONS: HomeQuickAction[] = [

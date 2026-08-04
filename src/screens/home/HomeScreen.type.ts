@@ -36,16 +36,6 @@ export type HomeBlockBaseProps = {
   isRTL: boolean;
 };
 
-export type HomeStatMeta = {
-  id: "books" | "subjects" | "live";
-  labelKey: string;
-  icon: IoniconName;
-};
-
-export type HomeStat = HomeStatMeta & {
-  value: number;
-};
-
 export type HomeQuickAction = {
   id: "books" | "live" | "reserved" | "plans";
   labelKey: string;
@@ -71,13 +61,13 @@ export type SectionStateProps = HomeBlockBaseProps & {
 };
 
 export type HomeHeroProps = HomeBlockBaseProps & {
-  greeting: string;
+  childName: string;
   levelLabel: string;
-  stats: HomeStat[];
   isDark: boolean;
   topInset: number;
   notificationsLabel: string;
   onNotifications?: () => void;
+  onSearch?: () => void;
 };
 
 export type QuickActionsProps = HomeBlockBaseProps & {

@@ -1,28 +1,71 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Animated, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { useTranslation } from "react-i18next";
 
 import ActiveChildHeaderAvatar from "@components/header/ActiveChildHeaderAvatar";
 import LanguageSwitcher from "@components/header/LanguageSwitcher";
-import { HOME_TOKENS } from "@screens/home/HomeScreen.constants";
+import { HOME_TOKENS, HERO_EMOJIS } from "@screens/home/HomeScreen.constants";
+import {
+  useHomeCardEntrance,
+  useHomeCardPress,
+} from "@hooks/useHomeCardMotion";
 import type { HomeHeroProps } from "@screens/home/HomeScreen.type";
 
+/** One circular glass reaction button with a press-scale animation. */
+function EmojiButton({
+  emoji,
+  index,
+  styles,
+}: {
+  emoji: string;
+  index: number;
+  styles: HomeHeroProps["styles"];
+}) {
+  const entrance = useHomeCardEntrance(index);
+  const press = useHomeCardPress();
+
+  return (
+    <Animated.View
+      style={{
+        opacity: entrance.opacity,
+        transform: [
+          { translateY: entrance.translateY },
+          { scale: press.scale },
+        ],
+      }}
+    >
+      <Pressable
+        onPressIn={press.onPressIn}
+        onPressOut={press.onPressOut}
+        accessibilityRole="button"
+        hitSlop={4}
+      >
+        <BlurView intensity={16} tint="light" style={styles.emojiBtn}>
+          <Text style={styles.emojiText}>{emoji}</Text>
+        </BlurView>
+      </Pressable>
+    </Animated.View>
+  );
+}
+
 /**
- * Curved navy hero: greeting + level chip on one side, language and
- * notifications on the other, with a glass stat strip underneath.
+ * Curved navy hero: top row (avatar, glass search, language, notifications),
+ * a daily-streak pill, a right-aligned greeting (welcome-back + child name)
+ * and a glass row of circular emoji reactions.
  */
 export default function HomeHero({
   styles,
   isRTL,
   isDark,
-  greeting,
+  childName,
   levelLabel,
-  stats,
   topInset,
   notificationsLabel,
   onNotifications,
+  onSearch,
 }: HomeHeroProps) {
   const { t } = useTranslation();
 
@@ -41,25 +84,21 @@ export default function HomeHero({
         <View style={styles.headerGlowA} pointerEvents="none" />
         <View style={styles.headerGlowB} pointerEvents="none" />
 
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <ActiveChildHeaderAvatar />
+        {/* Top row */}
+        <View style={styles.heroTopRow}>
+          <ActiveChildHeaderAvatar />
 
-            <View style={styles.headerTextWrap}>
-              <Text style={styles.hello} numberOfLines={1}>
-                {greeting}
-              </Text>
+          <View style={styles.heroTopRight}>
+            <TouchableOpacity
+              style={styles.searchBtn}
+              onPress={onSearch}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel={t("common.search")}
+            >
+              <Ionicons name="search" size={18} color="#FFFFFF" />
+            </TouchableOpacity>
 
-              <View style={styles.levelChip}>
-                <Ionicons name="school-outline" size={11} color="rgba(255,255,255,0.92)" />
-                <Text style={styles.levelChipText} numberOfLines={1}>
-                  {levelLabel}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.headerRight}>
             <LanguageSwitcher />
 
             <TouchableOpacity
@@ -75,21 +114,41 @@ export default function HomeHero({
           </View>
         </View>
 
-        {stats.length > 0 && (
-          <View style={styles.statStrip}>
-            {stats.map((stat) => (
-              <View key={stat.id} style={styles.statTile}>
-                <View style={styles.statTileTop}>
-                  <Ionicons name={stat.icon} size={13} color="rgba(255,255,255,0.85)" />
-                  <Text style={styles.statValue}>{stat.value}</Text>
-                </View>
-                <Text style={styles.statLabel} numberOfLines={1}>
-                  {t(stat.labelKey)}
-                </Text>
-              </View>
-            ))}
+        {/* Daily streak pill */}
+        <View style={styles.streakWrap}>
+          <LinearGradient
+            colors={HOME_TOKENS.streakGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.streakPill}
+          >
+            <Text style={styles.streakText}>{t("home.streak_label")}</Text>
+          </LinearGradient>
+        </View>
+
+        {/* Greeting section */}
+        <View style={styles.greetingWrap}>
+          <Text style={styles.greetingSub} numberOfLines={1}>
+            {t("home.welcome_back")}
+          </Text>
+          <Text style={styles.greetingName} numberOfLines={1}>
+            {childName || t("home.hello_default")}
+          </Text>
+
+          <View style={styles.levelChip}>
+            <Ionicons name="school-outline" size={11} color="rgba(255,255,255,0.92)" />
+            <Text style={styles.levelChipText} numberOfLines={1}>
+              {levelLabel}
+            </Text>
           </View>
-        )}
+        </View>
+
+        {/* Emoji quick actions */}
+        <BlurView intensity={18} tint="dark" style={styles.emojiGlass}>
+          {HERO_EMOJIS.map((emoji, index) => (
+            <EmojiButton key={emoji} emoji={emoji} index={index} styles={styles} />
+          ))}
+        </BlurView>
       </LinearGradient>
     </View>
   );

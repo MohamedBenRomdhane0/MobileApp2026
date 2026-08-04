@@ -1,5 +1,6 @@
 export const home = {
   hello_presence: "👋 Heureux de te voir ici",
+  welcome_back: "👋 Heureux de te revoir",
   hello_name: "Bonjour, {{name}}",
   hello_default: "Bonjour",
   level_default: "Niveau supérieur",
@@ -24,15 +25,11 @@ export const home = {
   continue_cta: "Continuer",
   progress_label: "progression",
   no_live_now: "Aucun cours en direct pour le moment",
-  stats: {
-    books: "Livres",
-    subjects: "Matières",
-    live: "Cours en direct",
-  },
   quick: {
     books: "Mes livres",
     live: "Direct",
     reserved: "Réservations",
     plans: "Forfaits",
   },
+  streak_label: "⭐ + 5 DT",
 };
