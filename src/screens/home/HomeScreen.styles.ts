@@ -6,9 +6,9 @@ import type { ThemeColors } from "./HomeScreen.type";
 const { width: W } = Dimensions.get("window");
 
 /** Book cards sit just under half-screen so the next one peeks in. */
-const BOOK_SWIPE_W = Math.min(168, (W - 16 * 2 - 12) / 2.35);
-/** Subject cards: ~3.6 per screen, so the 4th invites a swipe. */
-const MAT_SWIPE_W = Math.max(92, Math.min(108, (W - 16 * 2 - 12 * 3) / 3.6));
+const BOOK_SWIPE_W = Math.min(176, (W - 16 * 2 - 12) / 2.25);
+/** Subject cards: ~3.1 per screen, so the 4th invites a swipe. */
+const MAT_SWIPE_W = Math.max(88, Math.min(106, (W - 16 * 2 - 10 * 3) / 3.2));
 
 /**
  * Elevation scale (see `.claude/skills/frontend-design`):
@@ -330,30 +330,59 @@ export function createHomeStyles(
 
     body: { paddingHorizontal: 16 },
 
-    section: { marginTop: 18 },
+    section: { marginTop: 22 },
+
+    /* ── Section header: accent tile + title + "see all" chip ─────────── */
 
     sectionHeaderRow: {
       flexDirection: row,
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: 10,
-      gap: 8,
+      marginBottom: 12,
+      gap: 10,
     },
 
     sectionTitleWrap: {
       flexDirection: row,
       alignItems: "center",
-      gap: 8,
+      gap: 10,
       flex: 1,
       minWidth: 0,
     },
 
+    /** Tinted square carrying the section's own accent hue. */
+    sectionIconTile: {
+      width: 34,
+      height: 34,
+      borderRadius: 13,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+    },
+
+    sectionTitleBlock: {
+      flexShrink: 1,
+      minWidth: 0,
+      alignItems: alignEnd,
+      gap: 4,
+    },
+
+    sectionTitleLine: { flexDirection: row, alignItems: "center", gap: 7 },
+
     sectionTitle: {
       color: C.ink,
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: "900",
       letterSpacing: -0.3,
       textAlign: textEnd,
+      flexShrink: 1,
+    },
+
+    /** 3px accent underline — a quiet echo of the icon tile hue. */
+    sectionTitleRule: {
+      width: 26,
+      height: 3,
+      borderRadius: 999,
     },
 
     sectionCountPill: {
@@ -368,9 +397,17 @@ export function createHomeStyles(
 
     sectionCountText: { color: C.teal, fontSize: 11, fontWeight: "900" },
 
-    sectionSeeAll: { flexDirection: row, alignItems: "center", gap: 2 },
+    sectionSeeAll: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 3,
+      paddingHorizontal: 11,
+      height: 30,
+      borderRadius: 999,
+      borderWidth: 1,
+    },
 
-    sectionLink: { color: C.teal, fontSize: 13, fontWeight: "900" },
+    sectionLink: { color: C.teal, fontSize: 12, fontWeight: "900" },
 
     /* ── Shared section states ───────────────────────────────────────── */
 
@@ -495,51 +532,76 @@ export function createHomeStyles(
       flexDirection: "row",
       paddingHorizontal: 16,
       paddingVertical: 4,
-      gap: 12,
+      gap: 10,
     },
 
     materialCard: {
       width: MAT_SWIPE_W,
-      borderRadius: 20,
-      paddingVertical: 14,
-      paddingHorizontal: 8,
-      alignItems: "center",
-      gap: 8,
+      borderRadius: 18,
       overflow: "hidden",
-      shadowColor: "#000",
-      shadowOpacity: isDark ? 0.25 : 0.07,
-      shadowRadius: 12,
+      borderWidth: 1,
+      shadowRadius: 10,
       shadowOffset: { width: 0, height: 6 },
-      elevation: 3,
+      shadowOpacity: isDark ? 0.3 : 0.18,
+      elevation: 4,
     },
 
-    materialCardPress: { alignItems: "center", gap: 8, width: "100%" },
+    /** Tinted gradient face — the subject hue fades top-left to bottom-right. */
+    materialCardFace: {
+      paddingTop: 10,
+      paddingBottom: 8,
+      paddingHorizontal: 6,
+      alignItems: "center",
+    },
+
+    /** Soft light bloom in the upper corner, so the tint never reads flat. */
+    materialCardBloom: {
+      position: "absolute",
+      width: 72,
+      height: 72,
+      borderRadius: 999,
+      top: -36,
+      right: isRTL ? undefined : -24,
+      left: isRTL ? -24 : undefined,
+    },
+
+    materialCardPress: { alignItems: "center", gap: 7, width: "100%" },
 
     materialCardIconWrap: {
-      width: 52,
-      height: 52,
+      width: 46,
+      height: 46,
       borderRadius: 18,
       alignItems: "center",
       justifyContent: "center",
       overflow: "hidden",
+      borderWidth: 1,
     },
 
-    materialCardImg: { width: 42, height: 42, resizeMode: "contain" },
+    materialCardImg: { width: 32, height: 32, resizeMode: "contain" },
 
     materialCardLabel: {
-      fontSize: 11.5,
+      fontSize: 11,
       fontWeight: "900",
       textAlign: "center",
-      lineHeight: 15,
+      lineHeight: 14,
+      minHeight: 28,
+    },
+
+    /** Accent underline anchoring the label to the subject color. */
+    materialCardRule: {
+      width: 16,
+      height: 2.5,
+      borderRadius: 999,
+      marginTop: 1,
     },
 
     /* ── Live session ────────────────────────────────────────────────── */
 
     liveCard: {
-      borderRadius: 22,
+      borderRadius: 24,
       backgroundColor: C.navy,
-      borderWidth: isDark ? 1 : 0,
-      borderColor: C.hairline,
+      borderWidth: 1,
+      borderColor: isDark ? C.hairline : "rgba(255,255,255,0.06)",
       paddingHorizontal: 14,
       paddingVertical: 14,
       overflow: "hidden",
@@ -548,13 +610,25 @@ export function createHomeStyles(
 
     liveGlow: {
       position: "absolute",
-      width: 180,
-      height: 180,
+      width: 200,
+      height: 200,
       borderRadius: 999,
-      backgroundColor: "rgba(239,68,68,0.16)",
-      top: -90,
-      right: isRTL ? undefined : -50,
-      left: isRTL ? -50 : undefined,
+      backgroundColor: "rgba(239,68,68,0.18)",
+      top: -100,
+      right: isRTL ? undefined : -56,
+      left: isRTL ? -56 : undefined,
+    },
+
+    /** Red rail on the reading-start edge — the card's "on air" marker. */
+    liveRail: {
+      position: "absolute",
+      top: 14,
+      bottom: 14,
+      width: 3,
+      borderRadius: 999,
+      left: isRTL ? undefined : 0,
+      right: isRTL ? 0 : undefined,
+      backgroundColor: C.live,
     },
 
     liveTopRow: {
@@ -568,17 +642,26 @@ export function createHomeStyles(
 
     liveTitle: {
       color: "#FFFFFF",
-      fontSize: 15.5,
+      fontSize: 16,
       fontWeight: "900",
       textAlign: textEnd,
+      letterSpacing: -0.2,
+    },
+
+    liveMetaRow: {
+      marginTop: 6,
+      flexDirection: row,
+      alignItems: "center",
+      gap: 5,
+      alignSelf: alignEnd,
     },
 
     liveMeta: {
-      marginTop: 4,
-      color: "rgba(255,255,255,0.75)",
+      color: "rgba(255,255,255,0.72)",
       fontSize: 11.5,
       fontWeight: "700",
       textAlign: textEnd,
+      flexShrink: 1,
     },
 
     liveBadge: {
@@ -588,9 +671,9 @@ export function createHomeStyles(
       paddingHorizontal: 12,
       height: 30,
       borderRadius: 999,
-      backgroundColor: "rgba(255,255,255,0.14)",
+      backgroundColor: "rgba(239,68,68,0.22)",
       borderWidth: 1,
-      borderColor: "rgba(255,255,255,0.18)",
+      borderColor: "rgba(255,255,255,0.22)",
     },
 
     liveBadgeText: {
@@ -609,6 +692,9 @@ export function createHomeStyles(
 
     liveBottomRow: {
       marginTop: 14,
+      paddingTop: 12,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: "rgba(255,255,255,0.14)",
       flexDirection: row,
       alignItems: "center",
       justifyContent: "space-between",
@@ -616,13 +702,23 @@ export function createHomeStyles(
     },
 
     liveJoinBtn: {
+      flex: 1,
+      borderRadius: 15,
+      overflow: "hidden",
+      shadowColor: "#F43F5E",
+      shadowOpacity: 0.45,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 6,
+    },
+
+    liveJoinInner: {
       flexDirection: row,
       alignItems: "center",
+      justifyContent: "center",
       gap: 6,
-      backgroundColor: "#F43F5E",
       paddingHorizontal: 20,
-      height: 38,
-      borderRadius: 14,
+      height: 42,
     },
 
     liveJoinText: { color: "#FFFFFF", fontSize: 13, fontWeight: "900" },
@@ -634,17 +730,17 @@ export function createHomeStyles(
     booksSwiperContent: {
       flexDirection: "row",
       paddingHorizontal: 16,
-      paddingVertical: 4,
-      gap: 12,
+      paddingVertical: 0,
+      gap: 10,
     },
 
     bookCardOuter: {
       width: BOOK_SWIPE_W,
-      borderRadius: 20,
+      borderRadius: 24,
       backgroundColor: C.surface,
       padding: 8,
       borderWidth: 1,
-      borderColor: isDark ? C.hairline : "rgba(34,190,200,0.14)",
+      borderColor: isDark ? C.hairline : "rgba(34,190,200,0.16)",
       ...restShadow(isDark),
     },
 
@@ -653,8 +749,8 @@ export function createHomeStyles(
     bookCoverShell: {
       position: "relative",
       width: "100%",
-      height: 164,
-      borderRadius: 14,
+      height: 166,
+      borderRadius: 18,
       overflow: "hidden",
       backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#ECE7DF",
       alignItems: "center",
@@ -676,56 +772,70 @@ export function createHomeStyles(
       left: 0,
       right: 0,
       bottom: 0,
-      height: 72,
+      height: 48,
+    },
+
+    /** Both cover badges share one row so they never collide on narrow cards. */
+    bookBadgeRow: {
+      position: "absolute",
+      left: 8,
+      right: 8,
+      bottom: 8,
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 6,
     },
 
     bookBadgeOverlay: {
-      position: "absolute",
-      right: isRTL ? undefined : 8,
-      left: isRTL ? 8 : undefined,
-      bottom: 8,
       flexDirection: row,
       alignItems: "center",
       gap: 3,
       paddingHorizontal: 8,
-      height: 22,
+      height: 23,
       borderRadius: 999,
-      backgroundColor: "rgba(15,23,42,0.55)",
+      backgroundColor: "rgba(9,17,33,0.62)",
       borderWidth: 1,
-      borderColor: "rgba(255,255,255,0.20)",
+      borderColor: "rgba(255,255,255,0.22)",
     },
 
     bookVideoBadge: {
-      position: "absolute",
-      left: isRTL ? undefined : 8,
-      right: isRTL ? 8 : undefined,
-      bottom: 8,
       flexDirection: row,
       alignItems: "center",
       gap: 3,
       paddingHorizontal: 8,
-      height: 22,
+      height: 23,
       borderRadius: 999,
-      backgroundColor: "rgba(124,92,252,0.75)",
+      backgroundColor: "rgba(124,92,252,0.82)",
       borderWidth: 1,
-      borderColor: "rgba(255,255,255,0.20)",
+      borderColor: "rgba(255,255,255,0.24)",
     },
 
     bookBadgeText: { color: "#FFFFFF", fontSize: 10, fontWeight: "900" },
 
-    bookProgressTrack: {
+    /** "Started" ribbon in the top corner — reads before the progress bar. */
+    bookResumeChip: {
       position: "absolute",
-      left: 0,
-      right: 0,
-      bottom: 0,
-      height: 4,
-      backgroundColor: "rgba(15,23,42,0.35)",
+      top: 8,
+      left: isRTL ? undefined : 8,
+      right: isRTL ? 8 : undefined,
       flexDirection: row,
+      alignItems: "center",
+      gap: 3,
+      paddingHorizontal: 7,
+      height: 21,
+      borderRadius: 999,
+      backgroundColor: "rgba(34,190,200,0.92)",
     },
 
-    bookProgressFill: { height: 4, backgroundColor: C.teal },
+    bookResumeChipText: { color: "#FFFFFF", fontSize: 9.5, fontWeight: "900" },
 
-    bookMetaWrap: { width: "100%", paddingTop: 8, alignItems: "center" },
+    bookMetaWrap: {
+      width: "100%",
+      paddingTop: 9,
+      paddingHorizontal: 2,
+      gap: 7,
+    },
 
     bookTitle: {
       color: C.ink,
@@ -735,6 +845,28 @@ export function createHomeStyles(
       lineHeight: 16,
       minHeight: 32,
     },
+
+    /** Reserved strip so started and untouched cards keep the same height. */
+    bookProgressSlot: {
+      width: "100%",
+      minHeight: 14,
+      flexDirection: row,
+      alignItems: "center",
+      gap: 7,
+    },
+
+    bookProgressTrack: {
+      flex: 1,
+      height: 5,
+      borderRadius: 999,
+      overflow: "hidden",
+      backgroundColor: isDark ? "rgba(255,255,255,0.10)" : "#E6EDF6",
+      flexDirection: row,
+    },
+
+    bookProgressFill: { height: 5, borderRadius: 999, backgroundColor: C.teal },
+
+    bookProgressLabel: { color: C.teal, fontSize: 10, fontWeight: "900" },
 
     /* ── Teachers ────────────────────────────────────────────────────── */
 
@@ -748,21 +880,31 @@ export function createHomeStyles(
     },
 
     teacherCard: {
-      width: 104,
-      borderRadius: 20,
+      width: 112,
+      borderRadius: 24,
       paddingVertical: 14,
       paddingHorizontal: 8,
       backgroundColor: C.surface,
       borderWidth: 1,
       borderColor: C.hairline,
       alignItems: "center",
-      gap: 6,
+      gap: 7,
+      overflow: "hidden",
       ...neutralShadow(isDark),
     },
 
+    /** Accent wash behind the avatar, tinted per teacher. */
+    teacherCardWash: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 56,
+    },
+
     teacherAvatarRing: {
-      width: 64,
-      height: 64,
+      width: 66,
+      height: 66,
       borderRadius: 999,
       alignItems: "center",
       justifyContent: "center",
@@ -811,20 +953,53 @@ export function createHomeStyles(
     /* ── Subscribe CTA ───────────────────────────────────────────────── */
 
     subscribeOuter: {
-      borderRadius: 22,
+      borderRadius: 24,
       overflow: "hidden",
       ...restShadow(isDark),
     },
 
-    subscribeBanner: { borderRadius: 22, overflow: "hidden" },
+    subscribeBanner: { borderRadius: 24, overflow: "hidden" },
+
+    /** Two offset blooms give the flat gradient some depth. */
+    subscribeBloom: {
+      position: "absolute",
+      width: 170,
+      height: 170,
+      borderRadius: 999,
+      backgroundColor: "rgba(255,255,255,0.12)",
+      top: -96,
+      left: isRTL ? undefined : -40,
+      right: isRTL ? -40 : undefined,
+    },
+
+    subscribeBloomAlt: {
+      position: "absolute",
+      width: 130,
+      height: 130,
+      borderRadius: 999,
+      backgroundColor: "rgba(255,255,255,0.08)",
+      bottom: -80,
+      right: isRTL ? undefined : -30,
+      left: isRTL ? -30 : undefined,
+    },
 
     subscribeContent: {
       paddingHorizontal: 14,
       paddingVertical: 16,
-      flexDirection: row,
+      gap: 14,
+    },
+
+    subscribeTopRow: { flexDirection: row, alignItems: "center", gap: 12 },
+
+    subscribeIconTile: {
+      width: 44,
+      height: 44,
+      borderRadius: 16,
       alignItems: "center",
-      justifyContent: "space-between",
-      gap: 10,
+      justifyContent: "center",
+      backgroundColor: "rgba(255,255,255,0.2)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.28)",
     },
 
     subscribeTextBlock: { flex: 1, minWidth: 0, alignItems: alignEnd },
@@ -847,99 +1022,142 @@ export function createHomeStyles(
     subscribeBtn: {
       flexDirection: row,
       alignItems: "center",
+      justifyContent: "center",
       gap: 6,
-      backgroundColor: "rgba(255,255,255,0.18)",
+      backgroundColor: "rgba(255,255,255,0.22)",
       borderWidth: 1,
-      borderColor: "rgba(255,255,255,0.22)",
+      borderColor: "rgba(255,255,255,0.3)",
       paddingHorizontal: 16,
-      height: 38,
-      borderRadius: 14,
+      height: 42,
+      borderRadius: 15,
     },
 
-    subscribeBtnText: { color: "#FFFFFF", fontSize: 12.5, fontWeight: "900" },
+    subscribeBtnText: { color: "#FFFFFF", fontSize: 13, fontWeight: "900" },
 
     /* ── Search modal ──────────────────────────────────────────────────── */
 
-    searchModalRoot: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-    },
+    /* Bottom sheet: the search owns the screen instead of floating mid-air. */
+    searchModalRoot: { flex: 1, justifyContent: "flex-end" },
 
     searchBackdrop: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: "rgba(4,10,22,0.62)",
+      backgroundColor: "rgba(4,10,22,0.66)",
     },
 
-    searchModalCard: {
-      width: "94%",
-      maxWidth: 420,
-      height: "66%",
-      borderRadius: 26,
-      backgroundColor: C.surface,
+    searchSheet: {
+      height: "90%",
+      borderTopLeftRadius: 30,
+      borderTopRightRadius: 30,
+      backgroundColor: C.canvas,
       overflow: "hidden",
       ...neutralShadow(isDark),
     },
 
-    /* Navy band mirrors the home hero so the popup reads as one system. */
+    /* Navy band mirrors the home hero so the sheet reads as one system. */
     searchBand: {
       paddingHorizontal: 16,
-      paddingTop: 14,
-      paddingBottom: 14,
-      gap: 10,
+      paddingTop: 10,
+      paddingBottom: 18,
+      gap: 14,
     },
+
+    searchBandGlow: {
+      position: "absolute",
+      width: 240,
+      height: 240,
+      borderRadius: 999,
+      backgroundColor: "rgba(34,190,200,0.18)",
+      top: -140,
+      right: isRTL ? undefined : -70,
+      left: isRTL ? -70 : undefined,
+    },
+
+    searchHandle: {
+      alignSelf: "center",
+      width: 44,
+      height: 5,
+      borderRadius: 999,
+      backgroundColor: "rgba(255,255,255,0.28)",
+    },
+
+    searchBandTopRow: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12,
+    },
+
+    searchBandTitles: { flex: 1, minWidth: 0, alignItems: alignEnd },
 
     searchBandTitle: {
-      fontSize: 13,
-      fontWeight: "800",
-      letterSpacing: 0.4,
-      color: "#8FE3E8",
+      fontSize: 18,
+      fontWeight: "900",
+      letterSpacing: -0.3,
+      color: "#FFFFFF",
+      textAlign: textEnd,
     },
 
-    searchFieldRow: {
+    searchBandSub: {
+      marginTop: 3,
+      fontSize: 11.5,
+      fontWeight: "600",
+      color: "rgba(255,255,255,0.62)",
+      textAlign: textEnd,
+    },
+
+    searchCloseBtn: {
+      width: 38,
+      height: 38,
+      borderRadius: 999,
+      backgroundColor: "rgba(255,255,255,0.14)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.2)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+
+    /* Glass field on the navy band — white text in both themes. */
+    searchField: {
+      height: 50,
       flexDirection: row,
       alignItems: "center",
       gap: 10,
+      paddingHorizontal: 14,
+      borderRadius: 18,
+      backgroundColor: "rgba(255,255,255,0.13)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.2)",
     },
 
-    searchField: {
-      flex: 1,
-      height: 44,
-      flexDirection: row,
-      alignItems: "center",
-      gap: 8,
-      paddingHorizontal: 12,
-      borderRadius: 14,
-      backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "#FFFFFF",
+    searchFieldFocused: {
+      borderColor: "rgba(34,190,200,0.85)",
+      backgroundColor: "rgba(34,190,200,0.16)",
     },
 
     searchInput: {
       flex: 1,
       fontSize: 14.5,
       fontWeight: "700",
-      color: C.ink,
+      color: "#FFFFFF",
       textAlign: textEnd,
       paddingVertical: 0,
     },
 
-    searchCloseBtn: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: "rgba(255,255,255,0.14)",
-      borderWidth: 1,
-      borderColor: "rgba(255,255,255,0.18)",
+    searchClearBtn: {
+      width: 22,
+      height: 22,
+      borderRadius: 999,
       alignItems: "center",
       justifyContent: "center",
+      backgroundColor: "rgba(255,255,255,0.18)",
     },
 
     searchTabsRow: {
       flexDirection: row,
       gap: 8,
       paddingHorizontal: 14,
-      paddingVertical: 10,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: C.hairline,
+      paddingTop: 14,
+      paddingBottom: 10,
     },
 
     searchTabBtn: {
@@ -948,13 +1166,21 @@ export function createHomeStyles(
       alignItems: "center",
       justifyContent: "center",
       gap: 6,
-      paddingVertical: 9,
-      borderRadius: 12,
-      backgroundColor: C.surfaceAlt,
+      height: 40,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: C.hairline,
+      backgroundColor: C.surface,
     },
 
     searchTabBtnActive: {
       backgroundColor: C.teal,
+      borderColor: C.teal,
+      shadowColor: C.teal,
+      shadowOpacity: 0.4,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 5,
     },
 
     searchTabLabel: {
@@ -962,30 +1188,50 @@ export function createHomeStyles(
       fontWeight: "800",
       color: C.sub,
       textAlign: "center",
+      flexShrink: 1,
     },
 
-    searchTabLabelActive: {
-      color: "#FFFFFF",
+    searchTabLabelActive: { color: "#FFFFFF" },
+
+    searchTabCount: {
+      minWidth: 19,
+      height: 19,
+      paddingHorizontal: 5,
+      borderRadius: 999,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: C.surfaceAlt,
     },
 
-    searchResultsList: { flex: 1, paddingHorizontal: 6 },
+    searchTabCountActive: { backgroundColor: "rgba(255,255,255,0.28)" },
+
+    searchTabCountText: { fontSize: 9.5, fontWeight: "900", color: C.sub },
+
+    searchTabCountTextActive: { color: "#FFFFFF" },
+
+    searchResultsList: { flex: 1, paddingHorizontal: 14 },
+
+    searchResultsContent: { paddingTop: 4, paddingBottom: 28 },
 
     searchResultRow: {
       flexDirection: row,
       alignItems: "center",
       gap: 12,
-      paddingVertical: 10,
-      paddingHorizontal: 8,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: C.hairline,
+      padding: 10,
+      marginBottom: 10,
+      borderRadius: 20,
+      backgroundColor: C.surface,
+      borderWidth: 1,
+      borderColor: C.hairline,
+      ...neutralShadow(isDark),
     },
 
-    searchResultBody: { flex: 1, minWidth: 0, gap: 2 },
+    searchResultBody: { flex: 1, minWidth: 0, gap: 3, alignItems: alignEnd },
 
     searchResultThumb: {
-      width: 44,
-      height: 44,
-      borderRadius: 14,
+      width: 52,
+      height: 52,
+      borderRadius: 18,
       overflow: "hidden",
       backgroundColor: C.surfaceAlt,
       alignItems: "center",
@@ -999,35 +1245,47 @@ export function createHomeStyles(
       fontWeight: "800",
       color: C.ink,
       minWidth: 0,
+      textAlign: textEnd,
     },
 
     searchResultSub: {
       fontSize: 11,
       fontWeight: "600",
       color: C.sub,
+      textAlign: textEnd,
+    },
+
+    searchResultGo: {
+      width: 30,
+      height: 30,
+      borderRadius: 999,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: C.tealSoft,
     },
 
     searchEmptyWrap: {
       alignItems: "center",
       justifyContent: "center",
-      paddingVertical: 36,
-      paddingHorizontal: 20,
-      gap: 12,
+      paddingVertical: 48,
+      paddingHorizontal: 24,
+      gap: 14,
     },
 
     searchEmptyIcon: {
-      width: 56,
-      height: 56,
-      borderRadius: 28,
+      width: 72,
+      height: 72,
+      borderRadius: 999,
       alignItems: "center",
       justifyContent: "center",
     },
 
     searchEmptyText: {
-      fontSize: 12.5,
+      fontSize: 13,
       fontWeight: "700",
       color: C.sub,
       textAlign: "center",
+      lineHeight: 19,
     },
   });
 }
