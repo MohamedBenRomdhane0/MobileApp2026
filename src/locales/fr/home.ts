@@ -36,4 +36,26 @@ export const home = {
     plans: "Forfaits",
   },
   streak_label: "⭐ + 5 DT",
+  emoji: {
+    love: {
+      title: "Ton amour pour l'apprentissage inspire ! 💖",
+      text: "Chaque leçon te rapproche de ton rêve — apprends avec passion 🚀",
+    },
+    happy: {
+      title: "Journée ordinaire ? Rends-la spéciale ! ⭐",
+      text: "« La régularité bat l'inspiration » — lance ta première leçon et tu sentiras la différence 🎯",
+    },
+    shy: {
+      title: "Pas de souci si tu hésites — le premier pas suffit ! 🌱",
+      text: "Commence par une petite leçon aujourd'hui, tu seras étonné de ton chemin plus tard ✨",
+    },
+    party: {
+      title: "Ton succès mérite d'être célébré ! 🎉",
+      text: "Garde l'élan — chaque petite victoire te rapproche du sommet 🏆",
+    },
+    wow: {
+      title: "Waouh ! Tu es en pleine concentration 👀",
+      text: "Profite de cette énergie — une leçon aujourd'hui change demain ⚡",
+    },
+  },
 };

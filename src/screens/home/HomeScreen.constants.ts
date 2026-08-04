@@ -88,6 +88,20 @@ export const HOME_TOKENS = {
 /** Reactions shown as circular glass emoji quick actions in the hero. */
 export const HERO_EMOJIS = ["😍", "😊", "😳", "🥳", "😲"] as const;
 
+export type HeroEmoji = (typeof HERO_EMOJIS)[number];
+
+/** Motivational message shown when a hero emoji is tapped (i18n keys). */
+export const HERO_EMOJI_MESSAGES: Record<
+  HeroEmoji,
+  { titleKey: string; textKey: string }
+> = {
+  "😍": { titleKey: "home.emoji.love.title", textKey: "home.emoji.love.text" },
+  "😊": { titleKey: "home.emoji.happy.title", textKey: "home.emoji.happy.text" },
+  "😳": { titleKey: "home.emoji.shy.title", textKey: "home.emoji.shy.text" },
+  "🥳": { titleKey: "home.emoji.party.title", textKey: "home.emoji.party.text" },
+  "😲": { titleKey: "home.emoji.wow.title", textKey: "home.emoji.wow.text" },
+};
+
 export const SUBSCRIBE_GRADIENT: [string, string] = ["#22BEC8", "#046b72"];
 
 /** Quick-action shortcuts sitting on the card that overlaps the hero curve. */

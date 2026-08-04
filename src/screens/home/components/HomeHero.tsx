@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { View, Text, TouchableOpacity, Animated, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -7,7 +7,12 @@ import { useTranslation } from "react-i18next";
 
 import ActiveChildHeaderAvatar from "@components/header/ActiveChildHeaderAvatar";
 import LanguageSwitcher from "@components/header/LanguageSwitcher";
-import { HOME_TOKENS, HERO_EMOJIS } from "@screens/home/HomeScreen.constants";
+import {
+  HOME_TOKENS,
+  HERO_EMOJIS,
+  HERO_EMOJI_MESSAGES,
+  type HeroEmoji,
+} from "@screens/home/HomeScreen.constants";
 import {
   useHomeCardEntrance,
   useHomeCardPress,
@@ -19,10 +24,14 @@ function EmojiButton({
   emoji,
   index,
   styles,
+  selected,
+  onPress,
 }: {
-  emoji: string;
+  emoji: HeroEmoji;
   index: number;
   styles: HomeHeroProps["styles"];
+  selected: boolean;
+  onPress: () => void;
 }) {
   const entrance = useHomeCardEntrance(index);
   const press = useHomeCardPress();
@@ -40,10 +49,16 @@ function EmojiButton({
       <Pressable
         onPressIn={press.onPressIn}
         onPressOut={press.onPressOut}
+        onPress={onPress}
         accessibilityRole="button"
+        accessibilityState={{ selected }}
         hitSlop={4}
       >
-        <BlurView intensity={16} tint="light" style={styles.emojiBtn}>
+        <BlurView
+          intensity={16}
+          tint="light"
+          style={[styles.emojiBtn, selected && styles.emojiBtnActive]}
+        >
           <Text style={styles.emojiText}>{emoji}</Text>
         </BlurView>
       </Pressable>
@@ -70,6 +85,14 @@ export default function HomeHero({
 }: HomeHeroProps) {
   const { t } = useTranslation();
   const streakPress = useHomeCardPress();
+  const [selectedEmoji, setSelectedEmoji] = useState<HeroEmoji | null>(null);
+  const motivation = useHomeCardEntrance(0, 10);
+
+  const onEmojiPress = useCallback((emoji: HeroEmoji) => {
+    setSelectedEmoji((prev) => (prev === emoji ? null : emoji));
+  }, []);
+
+  const message = selectedEmoji ? HERO_EMOJI_MESSAGES[selectedEmoji] : null;
 
   const gradientColors = isDark
     ? HOME_TOKENS.heroGradientDark
@@ -161,10 +184,38 @@ export default function HomeHero({
 
           <View style={styles.emojiRow}>
             {HERO_EMOJIS.map((emoji, index) => (
-              <EmojiButton key={emoji} emoji={emoji} index={index} styles={styles} />
+              <EmojiButton
+                key={emoji}
+                emoji={emoji}
+                index={index}
+                styles={styles}
+                selected={selectedEmoji === emoji}
+                onPress={() => onEmojiPress(emoji)}
+              />
             ))}
           </View>
         </View>
+
+        {/* Motivational message for the selected emoji */}
+        {message && selectedEmoji ? (
+          <Animated.View
+            key={selectedEmoji}
+            style={{
+              opacity: motivation.opacity,
+              transform: [{ translateY: motivation.translateY }],
+            }}
+          >
+            <View style={styles.motivationCard}>
+              <Text style={styles.motivationEmoji}>{selectedEmoji}</Text>
+              <View style={styles.motivationBody}>
+                <Text style={styles.motivationTitle}>
+                  {t(message.titleKey)}
+                </Text>
+                <Text style={styles.motivationText}>{t(message.textKey)}</Text>
+              </View>
+            </View>
+          </Animated.View>
+        ) : null}
       </LinearGradient>
     </View>
   );

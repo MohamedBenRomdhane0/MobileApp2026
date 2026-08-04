@@ -232,7 +232,49 @@ export function createHomeStyles(
       overflow: "hidden",
     },
 
+    emojiBtnActive: {
+      borderColor: "rgba(34,190,200,0.95)",
+      backgroundColor: "rgba(34,190,200,0.28)",
+      shadowColor: "#22BEC8",
+      shadowOpacity: 0.6,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 6,
+    },
+
     emojiText: { fontSize: 18 },
+
+    /* ── Motivational message card ───────────────────────────────────── */
+
+    motivationCard: {
+      marginTop: 12,
+      flexDirection: row,
+      alignItems: "flex-start",
+      gap: 10,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: "rgba(34,190,200,0.4)",
+      backgroundColor: "rgba(255,255,255,0.08)",
+      padding: 12,
+    },
+
+    motivationEmoji: { fontSize: 24 },
+
+    motivationBody: { flex: 1 },
+
+    motivationTitle: {
+      color: "#FFFFFF",
+      fontSize: 13.5,
+      fontWeight: "800",
+      marginBottom: 2,
+    },
+
+    motivationText: {
+      color: "rgba(255,255,255,0.75)",
+      fontSize: 12,
+      fontWeight: "600",
+      lineHeight: 18,
+    },
 
     /* ── Quick actions (floating card over the hero curve) ───────────── */
 

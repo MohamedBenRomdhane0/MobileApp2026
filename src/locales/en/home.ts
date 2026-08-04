@@ -36,4 +36,26 @@ export const home = {
     plans: "Plans",
   },
   streak_label: "⭐ + DT 5",
+  emoji: {
+    love: {
+      title: "Your love for learning is inspiring! 💖",
+      text: "Every lesson brings you closer to your dream — keep learning with passion 🚀",
+    },
+    happy: {
+      title: "An ordinary day? Make it special! ⭐",
+      text: "“Consistency beats inspiration” — start your first lesson and feel the difference 🎯",
+    },
+    shy: {
+      title: "Feeling unsure is fine — the first step is enough! 🌱",
+      text: "Start with one small lesson today; you'll be amazed at where it leads ✨",
+    },
+    party: {
+      title: "Your success deserves a celebration! 🎉",
+      text: "Keep the momentum — every small win pushes you toward the top 🏆",
+    },
+    wow: {
+      title: "Wow! You're in deep focus mode 👀",
+      text: "Channel this energy — one lesson today makes tomorrow different ⚡",
+    },
+  },
 };
