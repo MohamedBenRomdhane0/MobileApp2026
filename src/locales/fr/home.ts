@@ -19,4 +19,20 @@ export const home = {
   live_title_mock: "Maths - Fractions",
   live_meta_mock: "M. Mohamed • 142 participants",
   available_teachers: "Enseignants disponibles",
+  subjects_title: "Matières",
+  continue_title: "Continuer l’apprentissage",
+  continue_cta: "Continuer",
+  progress_label: "progression",
+  no_live_now: "Aucun cours en direct pour le moment",
+  stats: {
+    books: "Livres",
+    subjects: "Matières",
+    live: "Cours en direct",
+  },
+  quick: {
+    books: "Mes livres",
+    live: "Direct",
+    reserved: "Réservations",
+    plans: "Forfaits",
+  },
 };

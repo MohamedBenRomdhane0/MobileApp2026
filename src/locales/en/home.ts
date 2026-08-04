@@ -19,4 +19,20 @@ export const home = {
   live_title_mock: "Math - Fractions",
   live_meta_mock: "Mr. Mohamed • 142 participants",
   available_teachers: "Available Teachers",
+  subjects_title: "Subjects",
+  continue_title: "Continue learning",
+  continue_cta: "Continue",
+  progress_label: "progress",
+  no_live_now: "No live classes right now",
+  stats: {
+    books: "Books",
+    subjects: "Subjects",
+    live: "Live classes",
+  },
+  quick: {
+    books: "My books",
+    live: "Live",
+    reserved: "Reservations",
+    plans: "Plans",
+  },
 };

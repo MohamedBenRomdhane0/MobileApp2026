@@ -93,4 +93,5 @@ export const common = {
   hours: "ساعات",
   currency_tnd: "د.ت",
   generic_error: "حدث خطأ. الرجاء المحاولة مرة أخرى.",
+  unnamed: "بدون عنوان",
 };

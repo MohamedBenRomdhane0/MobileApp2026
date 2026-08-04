@@ -19,4 +19,20 @@ export const home = {
   live_title_mock: "رياضيات - الكسور",
   live_meta_mock: "أ. محمد • 142 مشارك",
   available_teachers: "المعلمون المتاحون",
+  subjects_title: "المواد",
+  continue_title: "واصل التعلم",
+  continue_cta: "متابعة",
+  progress_label: "التقدم",
+  no_live_now: "لا توجد حصص مباشرة الآن",
+  stats: {
+    books: "كتب",
+    subjects: "مواد",
+    live: "حصص مباشرة",
+  },
+  quick: {
+    books: "كتبي",
+    live: "مباشر",
+    reserved: "حجوزاتي",
+    plans: "الباقات",
+  },
 };

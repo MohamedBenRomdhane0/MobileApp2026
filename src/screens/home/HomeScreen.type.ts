@@ -1,4 +1,138 @@
 import type { ImageSourcePropType } from "react-native";
+import type { Ionicons } from "@expo/vector-icons";
+import type { AppColors } from "@theme/types";
+import type { BookListItemUI } from "@redux/apis/books/bookApi.type";
+import type { MaterialUI } from "@redux/apis/materials/materialsApi.type";
+
+export type ThemeColors = AppColors;
+
+export type IoniconName = keyof typeof Ionicons.glyphMap;
+
+/** Styles produced by `createHomeStyles` — shared by every home block. */
+export type HomeStyles = ReturnType<
+  typeof import("./HomeScreen.styles").createHomeStyles
+>;
+
+/** Resolved home surface palette (light or dark). */
+export type HomePalette = {
+  canvas: string;
+  surface: string;
+  surfaceAlt: string;
+  ink: string;
+  sub: string;
+  muted: string;
+  hairline: string;
+  teal: string;
+  tealSoft: string;
+  live: string;
+  liveSoft: string;
+  navy: string;
+};
+
+/** Props every home block receives so it can style itself consistently. */
+export type HomeBlockBaseProps = {
+  styles: HomeStyles;
+  palette: HomePalette;
+  isRTL: boolean;
+};
+
+export type HomeStatMeta = {
+  id: "books" | "subjects" | "live";
+  labelKey: string;
+  icon: IoniconName;
+};
+
+export type HomeStat = HomeStatMeta & {
+  value: number;
+};
+
+export type HomeQuickAction = {
+  id: "books" | "live" | "reserved" | "plans";
+  labelKey: string;
+  icon: IoniconName;
+  tint: string;
+  route: string;
+};
+
+export type SectionHeaderProps = HomeBlockBaseProps & {
+  title: string;
+  count?: number;
+  seeAllLabel?: string;
+  onSeeAll?: () => void;
+};
+
+/** Which state a data-driven section is in. */
+export type SectionStatus = "loading" | "error" | "empty";
+
+export type SectionStateProps = HomeBlockBaseProps & {
+  status: SectionStatus;
+  message?: string;
+  onRetry?: () => void;
+};
+
+export type HomeHeroProps = HomeBlockBaseProps & {
+  greeting: string;
+  levelLabel: string;
+  stats: HomeStat[];
+  isDark: boolean;
+  topInset: number;
+  notificationsLabel: string;
+  onNotifications?: () => void;
+};
+
+export type QuickActionsProps = HomeBlockBaseProps & {
+  actions: HomeQuickAction[];
+  onPressAction: (action: HomeQuickAction) => void;
+};
+
+/** A book the child already started, with the label to resume it. */
+export type HomeResume = {
+  book: BookListItemUI;
+  lessonTitle: string;
+  progress: number;
+};
+
+export type ContinueCardProps = HomeBlockBaseProps & {
+  resume: HomeResume;
+  title: string;
+  ctaLabel: string;
+  progressLabel: string;
+  onPress: () => void;
+};
+
+export type MaterialsRowProps = HomeBlockBaseProps & {
+  materials: MaterialUI[];
+  isDark: boolean;
+  getLabel: (material: MaterialUI) => string;
+  onPressMaterial: (material: MaterialUI) => void;
+};
+
+export type BooksRowProps = HomeBlockBaseProps & {
+  books: BookListItemUI[];
+  unnamedLabel: string;
+  onPressBook: (bookId: number) => void;
+  onLayoutReady?: (scrollToEnd: () => void) => void;
+};
+
+export type LiveNowCardProps = HomeBlockBaseProps & {
+  title: string;
+  meta: string;
+  liveLabel: string;
+  joinLabel: string;
+  onJoin: () => void;
+};
+
+export type TeachersRowProps = HomeBlockBaseProps & {
+  teachers: TeacherCard[];
+  onPressTeacher: (teacherId: number) => void;
+};
+
+export type SubscribeBannerProps = HomeBlockBaseProps & {
+  title: string;
+  subtitle: string;
+  ctaLabel: string;
+  onPress: () => void;
+};
 
 export type TeacherCard = {
   id: number;
@@ -37,7 +171,7 @@ export type LevelVideoCard = {
 export type DailySnippet = {
   id: "adhkar" | "hadith" | "hikma";
   labelKey: string;
-  icon: any;
+  icon: IoniconName;
   textKey: string;
   sourceKey?: string;
 };
