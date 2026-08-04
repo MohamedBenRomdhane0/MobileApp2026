@@ -206,7 +206,6 @@ export default function HomeSearchModal({
       transparent
       animationType="fade"
       statusBarTranslucent
-      onShow={() => inputRef.current?.focus()}
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
@@ -236,7 +235,6 @@ export default function HomeSearchModal({
                   placeholderTextColor={fieldHintColor}
                   style={[styles.searchInput, { color: activeColor }]}
                   textAlign={isRTL ? "right" : "left"}
-                  autoFocus
                 />
                 {query.length > 0 && (
                   <TouchableOpacity
