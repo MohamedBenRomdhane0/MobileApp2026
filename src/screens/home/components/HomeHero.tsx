@@ -66,8 +66,10 @@ export default function HomeHero({
   notificationsLabel,
   onNotifications,
   onSearch,
+  onStreak,
 }: HomeHeroProps) {
   const { t } = useTranslation();
+  const streakPress = useHomeCardPress();
 
   const gradientColors = isDark
     ? HOME_TOKENS.heroGradientDark
@@ -87,17 +89,28 @@ export default function HomeHero({
         {/* Top row */}
         <View style={styles.heroTopRow}>
           <ActiveChildHeaderAvatar />
-          {/* Daily streak pill */}
-                  <View style={styles.streakWrap}>
-                    <LinearGradient
-                      colors={HOME_TOKENS.streakGradient}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.streakPill}
-                    >
-                      <Text style={styles.streakText}>{t("home.streak_label")}</Text>
-                    </LinearGradient>
-                  </View>
+          {/* Daily streak pill — opens the wallet sheet on tap */}
+          <Animated.View
+            style={{ marginTop: 6, transform: [{ scale: streakPress.scale }] }}
+          >
+            <Pressable
+              onPressIn={streakPress.onPressIn}
+              onPressOut={streakPress.onPressOut}
+              onPress={onStreak}
+              accessibilityRole="button"
+              accessibilityLabel={t("home.streak_label")}
+              hitSlop={4}
+            >
+              <LinearGradient
+                colors={HOME_TOKENS.streakGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.streakPill}
+              >
+                <Text style={styles.streakText}>{t("home.streak_label")}</Text>
+              </LinearGradient>
+            </Pressable>
+          </Animated.View>
           <View style={styles.heroTopRight}>
             <TouchableOpacity
               style={styles.searchBtn}

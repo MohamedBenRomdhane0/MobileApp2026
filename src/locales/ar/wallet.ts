@@ -1,0 +1,15 @@
+export const wallet = {
+  current_balance: "الرصيد الحالي",
+  recharge_amount: "مبلغ إعادة الشحن",
+  custom_amount: "أو أدخل المبلغ",
+  payment_method: "طريقة الدفع",
+  credit_card: "بطاقة بنكية",
+  bank_transfer: "تحويل بنكي",
+  card_number: "رقم البطاقة",
+  expiry: "MM/YY",
+  cvv: "CVV",
+  save_card: "حفظ البطاقة",
+  pay_now: "ادفع الآن",
+  bank_transfer_note: "ستصلك تفاصيل التحويل البنكي عبر الهاتف.",
+  bank_transfer_hint: "أرسل المبلغ إلى الحساب التالي:",
+};

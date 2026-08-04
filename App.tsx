@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Provider } from "react-redux";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import {
   Audio,
@@ -42,14 +43,16 @@ function AppBootstrap() {
   if (!isReady) return null;
 
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <NavigationContainer>
-          <StatusBar style="auto" />
-          <RouteNavigator />
-        </NavigationContainer>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <NavigationContainer>
+            <StatusBar style="auto" />
+            <RouteNavigator />
+          </NavigationContainer>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 

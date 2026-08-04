@@ -1,0 +1,15 @@
+export const wallet = {
+  current_balance: "Solde actuel",
+  recharge_amount: "Montant à recharger",
+  custom_amount: "Ou entrez le montant",
+  payment_method: "Mode de paiement",
+  credit_card: "Carte bancaire",
+  bank_transfer: "Virement bancaire",
+  card_number: "Numéro de carte",
+  expiry: "MM/AA",
+  cvv: "CVV",
+  save_card: "Enregistrer la carte",
+  pay_now: "Payer maintenant",
+  bank_transfer_note: "Les détails du virement bancaire vous seront envoyés par téléphone.",
+  bank_transfer_hint: "Envoyez le montant au compte suivant :",
+};

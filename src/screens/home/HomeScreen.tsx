@@ -33,6 +33,7 @@ import SubscribeBanner from "@screens/home/components/SubscribeBanner";
 import SectionHeader from "@screens/home/components/SectionHeader";
 import SectionState from "@screens/home/components/SectionState";
 import HomeSearchModal from "@screens/home/components/HomeSearchModal";
+import WalletBottomSheet from "@components/wallet/WalletBottomSheet";
 
 import {
   HOME_UI,
@@ -91,6 +92,7 @@ export default function HomeScreen() {
   const childAccessToken = useAppSelector((s) => s.auth.childAccessToken);
   const [keyword] = useState("");
   const [searchVisible, setSearchVisible] = useState(false);
+  const [walletVisible, setWalletVisible] = useState(false);
   const [switchToChild, switchState] = useSwitchToChildMutation();
 
   const canSwitch = typeof activeChildId === "number" && activeChildId > 0;
@@ -282,17 +284,18 @@ export default function HomeScreen() {
           levelLabel={levelLabel || t("home.level_default")}
           topInset={insets.top}
           notificationsLabel={t(HOME_COMMON_UI.notifications)}
-          onNotifications={goNotifications}
+           onNotifications={goNotifications}
            onSearch={() => setSearchVisible(true)}
+           onStreak={() => setWalletVisible(true)}
         />
 
         {/* Floats over the hero curve — kept outside `body` so its own
             horizontal margin isn't doubled by the body padding. */}
-        <QuickActions
+        {/* <QuickActions
           {...block}
           actions={HOME_QUICK_ACTIONS}
           onPressAction={onPressQuickAction}
-        />
+        /> */}
 
         <View style={styles.body}>
           {/* Continue learning — only once something has been started */}
@@ -335,25 +338,6 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {/* Live classes — time-sensitive, so it sits above browse content */}
-          <View style={styles.section}>
-            <SectionHeader
-              {...block}
-              title={t(HOME_UI.liveMeetings)}
-              seeAllLabel={seeAllLabel}
-              onSeeAll={goMeetings}
-            />
-
-            <LiveNowCard
-              {...block}
-              title={t("home.live_title_mock")}
-              meta={t("home.live_meta_mock")}
-              liveLabel={t(HOME_COMMON_UI.live)}
-              joinLabel={t(HOME_UI.join)}
-              onJoin={goMeetings}
-            />
-          </View>
-
           {/* School books */}
           <View style={styles.section}>
             <SectionHeader
@@ -386,6 +370,25 @@ export default function HomeScreen() {
             )}
           </View>
 
+          {/* Live classes — time-sensitive, so it sits above browse content */}
+          <View style={styles.section}>
+            <SectionHeader
+              {...block}
+              title={t(HOME_UI.liveMeetings)}
+              seeAllLabel={seeAllLabel}
+              onSeeAll={goMeetings}
+            />
+
+            <LiveNowCard
+              {...block}
+              title={t("home.live_title_mock")}
+              meta={t("home.live_meta_mock")}
+              liveLabel={t(HOME_COMMON_UI.live)}
+              joinLabel={t(HOME_UI.join)}
+              onJoin={goMeetings}
+            />
+          </View>
+
           {/* Teachers */}
           <View style={styles.section}>
             <SectionHeader
@@ -416,22 +419,29 @@ export default function HomeScreen() {
          </View>
        </ScrollView>
 
-       <HomeSearchModal
-         styles={styles}
-         palette={palette}
-         isRTL={isRTL}
-         isDark={isDark}
-         visible={searchVisible}
-         onClose={() => setSearchVisible(false)}
-         materials={materials}
-         labelForMaterial={(m) => getMaterialLabel(t, m)}
-         onSelectMaterial={openMaterial}
-         books={books}
-         unnamedLabel={t("common.unnamed")}
-         onSelectBook={openBook}
-         liveSessions={MOCK_MEETINGS}
-         onSelectLive={goMeetings}
-       />
-     </View>
+        <HomeSearchModal
+          styles={styles}
+          palette={palette}
+          isRTL={isRTL}
+          isDark={isDark}
+          visible={searchVisible}
+          onClose={() => setSearchVisible(false)}
+          materials={materials}
+          labelForMaterial={(m) => getMaterialLabel(t, m)}
+          onSelectMaterial={openMaterial}
+          books={books}
+          unnamedLabel={t("common.unnamed")}
+          onSelectBook={openBook}
+          liveSessions={MOCK_MEETINGS}
+          onSelectLive={goMeetings}
+        />
+
+        <WalletBottomSheet
+          visible={walletVisible}
+          balance={5}
+          currency="DT"
+          onClose={() => setWalletVisible(false)}
+        />
+      </View>
    );
 }

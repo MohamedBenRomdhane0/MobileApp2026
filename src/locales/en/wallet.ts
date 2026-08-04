@@ -1,0 +1,15 @@
+export const wallet = {
+  current_balance: "Current Balance",
+  recharge_amount: "Recharge Amount",
+  custom_amount: "Or enter the amount",
+  payment_method: "Payment Method",
+  credit_card: "Credit Card",
+  bank_transfer: "Bank Transfer",
+  card_number: "Card Number",
+  expiry: "MM/YY",
+  cvv: "CVV",
+  save_card: "Save card",
+  pay_now: "Pay Now",
+  bank_transfer_note: "Bank transfer details will be sent to you by phone.",
+  bank_transfer_hint: "Send the amount to the following account:",
+};

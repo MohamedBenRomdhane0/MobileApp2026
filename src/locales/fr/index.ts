@@ -16,6 +16,7 @@ import { teacher } from './teacher'
 import { hub } from './hub'
 import { meetings } from './meetings'
 import { learning } from './learning'
+import { wallet } from './wallet'
 
 const fr = {
   topbar,
@@ -36,5 +37,6 @@ const fr = {
   hub,
   meetings,
   learning,
+  wallet,
 }
 export default fr

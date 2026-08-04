@@ -68,6 +68,8 @@ export type HomeHeroProps = HomeBlockBaseProps & {
   notificationsLabel: string;
   onNotifications?: () => void;
   onSearch?: () => void;
+  /** Tapping the daily-streak pill opens the wallet bottom sheet. */
+  onStreak?: () => void;
 };
 
 export type QuickActionsProps = HomeBlockBaseProps & {
