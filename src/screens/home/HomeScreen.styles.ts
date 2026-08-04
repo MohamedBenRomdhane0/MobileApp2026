@@ -797,68 +797,93 @@ export function createHomeStyles(
 
         searchBackdrop: {
             ...StyleSheet.absoluteFillObject,
-            backgroundColor: "rgba(0,0,0,0.54)",
+            backgroundColor: "rgba(4,10,22,0.62)",
         },
 
         searchModalCard: {
-            width: "100%",
-            maxHeight: "66%",
-            borderRadius: 22,
+            width: "94%",
+            maxWidth: 420,
+            maxHeight: "74%",
+            borderRadius: 26,
             backgroundColor: C.surface,
-            borderWidth: 1,
-            borderColor: C.hairline,
-            ...neutralShadow(isDark),
             overflow: "hidden",
+            ...neutralShadow(isDark),
         },
 
-        searchModalHeader: {
+        /* Navy band mirrors the home hero so the popup reads as one system. */
+        searchBand: {
+            paddingHorizontal: 16,
+            paddingTop: 18,
+            paddingBottom: 16,
+            gap: 12,
+        },
+
+        searchBandTitle: {
+            fontSize: 13,
+            fontWeight: "800",
+            letterSpacing: 0.4,
+            color: "#8FE3E8",
+        },
+
+        searchFieldRow: {
+            flexDirection: row,
+            alignItems: "center",
+            gap: 10,
+        },
+
+        searchField: {
+            flex: 1,
+            height: 46,
             flexDirection: row,
             alignItems: "center",
             gap: 8,
             paddingHorizontal: 12,
-            paddingVertical: 10,
-            borderBottomWidth: 1,
-            borderBottomColor: C.hairline,
+            borderRadius: 14,
+            backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "#FFFFFF",
         },
 
         searchInput: {
             flex: 1,
-            fontSize: 15,
+            fontSize: 14.5,
             fontWeight: "700",
             color: C.ink,
             textAlign: textEnd,
+            paddingVertical: 0,
         },
 
-        searchTabToggle: {
-            flexDirection: row,
+        searchCloseBtn: {
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: "rgba(255,255,255,0.14)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.18)",
             alignItems: "center",
-            gap: 4,
-            paddingHorizontal: 14,
-            paddingVertical: 8,
-            borderRadius: 999,
-            backgroundColor: C.tealSoft,
+            justifyContent: "center",
         },
 
         searchTabsRow: {
             flexDirection: row,
-            gap: 6,
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-            borderBottomWidth: 1,
+            gap: 8,
+            paddingHorizontal: 14,
+            paddingVertical: 12,
+            borderBottomWidth: StyleSheet.hairlineWidth,
             borderBottomColor: C.hairline,
         },
 
         searchTabBtn: {
             flex: 1,
-            paddingVertical: 8,
-            borderRadius: 12,
+            flexDirection: row,
             alignItems: "center",
             justifyContent: "center",
+            gap: 6,
+            paddingVertical: 9,
+            borderRadius: 12,
             backgroundColor: C.surfaceAlt,
         },
 
         searchTabBtnActive: {
-            backgroundColor: C.tealSoft,
+            backgroundColor: C.teal,
         },
 
         searchTabLabel: {
@@ -869,25 +894,27 @@ export function createHomeStyles(
         },
 
         searchTabLabelActive: {
-            color: C.teal,
+            color: "#FFFFFF",
         },
 
-        searchResultsList: { flex: 1, paddingHorizontal: 8 },
+        searchResultsList: { flex: 1, paddingHorizontal: 6 },
 
         searchResultRow: {
             flexDirection: row,
             alignItems: "center",
-            gap: 10,
-            paddingVertical: 9,
-            paddingHorizontal: 6,
+            gap: 12,
+            paddingVertical: 10,
+            paddingHorizontal: 8,
             borderBottomWidth: StyleSheet.hairlineWidth,
             borderBottomColor: C.hairline,
         },
 
+        searchResultBody: { flex: 1, minWidth: 0, gap: 2 },
+
         searchResultThumb: {
-            width: 36,
-            height: 36,
-            borderRadius: 10,
+            width: 44,
+            height: 44,
+            borderRadius: 14,
             overflow: "hidden",
             backgroundColor: C.surfaceAlt,
             alignItems: "center",
@@ -896,26 +923,36 @@ export function createHomeStyles(
 
         searchResultImg: { width: "100%", height: "100%", resizeMode: "cover" },
 
-        searchResultEmoji: { fontSize: 20 },
-
         searchResultTitle: {
-            flex: 1,
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: "800",
             color: C.ink,
-            textAlign: textEnd,
             minWidth: 0,
         },
 
         searchResultSub: {
-            fontSize: 10.5,
-            fontWeight: "700",
+            fontSize: 11,
+            fontWeight: "600",
             color: C.sub,
-            textAlign: "right",
+        },
+
+        searchEmptyWrap: {
+            alignItems: "center",
+            justifyContent: "center",
+            paddingVertical: 36,
+            paddingHorizontal: 20,
+            gap: 12,
+        },
+
+        searchEmptyIcon: {
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            alignItems: "center",
+            justifyContent: "center",
         },
 
         searchEmptyText: {
-            padding: 22,
             fontSize: 12.5,
             fontWeight: "700",
             color: C.sub,
