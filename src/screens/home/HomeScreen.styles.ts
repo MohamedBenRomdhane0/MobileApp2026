@@ -792,19 +792,19 @@ export function createHomeStyles(
         searchBackdrop: {
             flex: 1,
             backgroundColor: "rgba(0,0,0,0.54)",
-            justifyContent: "flex-start",
-            alignItems: "stretch",
+            justifyContent: "center",
+            alignItems: "center",
         },
 
         searchModalCard: {
-            marginTop: 26,
-            marginHorizontal: 16,
+            width: "100%",
             maxHeight: "66%",
             borderRadius: 22,
             backgroundColor: C.surface,
             borderWidth: 1,
             borderColor: C.hairline,
             ...neutralShadow(isDark),
+            overflow: "hidden",
         },
 
         searchModalHeader: {
