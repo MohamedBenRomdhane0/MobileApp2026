@@ -264,16 +264,44 @@ export const walletStyles = StyleSheet.create({
     marginBottom: 5,
   },
 
-  fieldInput: {
+  fieldInputBox: {
     height: 42,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: WALLET_HAIRLINE,
     backgroundColor: WALLET_INPUT_BG,
     paddingHorizontal: 12,
+    alignItems: "center",
+    gap: 8,
+  },
+
+  fieldIcon: { marginRight: 0 },
+
+  fieldInput: {
+    flex: 1,
+    paddingVertical: 0,
     color: WALLET_TEXT,
     fontSize: 14,
     fontWeight: "700",
+  },
+
+  brandBadge: {
+    height: 20,
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  brandBadgeVisa: { backgroundColor: "#1A1F71" },
+
+  brandBadgeMastercard: { backgroundColor: "#17171A" },
+
+  brandBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 9.5,
+    fontWeight: "900",
+    letterSpacing: 0.4,
   },
 
   saveRow: {
@@ -309,22 +337,76 @@ export const walletStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: WALLET_HAIRLINE,
     backgroundColor: WALLET_INPUT_BG,
-    padding: 12,
-    gap: 4,
-    marginBottom: 14,
+    padding: 14,
   },
 
-  transferHint: {
+  transferLabel: {
     color: WALLET_SUB,
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: 10.5,
+    fontWeight: "800",
+    letterSpacing: 0.4,
+    marginBottom: 4,
   },
 
-  transferAccount: {
+  transferValueRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  transferValue: {
     color: WALLET_TEXT,
     fontSize: 14,
     fontWeight: "800",
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
+  },
+
+  transferDivider: {
+    height: 1,
+    backgroundColor: WALLET_HAIRLINE,
+    marginVertical: 14,
+  },
+
+  /* ── Receipt upload ───────────────────────────────────────────────────── */
+
+  receiptBox: {
+    marginTop: 10,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    borderColor: "rgba(34,190,200,0.55)",
+    backgroundColor: "rgba(34,190,200,0.06)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    gap: 4,
+  },
+
+  receiptIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: WALLET_CYAN_SOFT,
+    borderWidth: 1,
+    borderColor: "rgba(34,190,200,0.4)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 2,
+  },
+
+  receiptTitle: {
+    color: WALLET_TEXT,
+    fontSize: 13,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+
+  receiptHint: {
+    color: WALLET_SUB,
+    fontSize: 11,
+    fontWeight: "600",
+    textAlign: "center",
   },
 
   /* ── Pay button ───────────────────────────────────────────────────────── */

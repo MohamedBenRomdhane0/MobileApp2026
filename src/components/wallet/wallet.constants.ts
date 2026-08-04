@@ -16,6 +16,17 @@ export const WALLET_INPUT_BG = "rgba(255,255,255,0.07)";
 /** The four quick recharge amounts shown as selectable cards. */
 export const RECHARGE_AMOUNTS = [5, 10, 20, 50] as const;
 
+/** Recognized card networks for the live brand badge. */
+export type CardBrand = "visa" | "mastercard" | null;
+
+/** Detect the card network from the first digits of the card number. */
+export function getCardBrand(value: string): CardBrand {
+  const digits = value.replace(/[^0-9]/g, "");
+  if (digits.startsWith("4")) return "visa";
+  if (/^5[1-5]|^2[2-7]/.test(digits)) return "mastercard";
+  return null;
+}
+
 /** Cyan gradient used by the "Pay now" primary button. */
 export const WALLET_BTN_GRADIENT = ["#2AD4DF", "#0E8E9B"] as [string, string];
 

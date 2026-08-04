@@ -28,7 +28,9 @@ import RechargeAmountCard from "./RechargeAmountCard";
 import {
   RECHARGE_AMOUNTS,
   WALLET_BTN_GRADIENT,
+  WALLET_CYAN,
   WALLET_SPRING,
+  getCardBrand,
 } from "./wallet.constants";
 import { walletStyles } from "./wallet.styles";
 
@@ -229,27 +231,51 @@ export default function WalletBottomSheet({
               label={t("wallet.card_number")}
               value={cardNumber}
               onChangeText={setCardNumber}
+              placeholder={t("wallet.card_number_placeholder")}
               keyboardType="number-pad"
               maxLength={19}
               isRTL={isRTL}
+              icon="card-outline"
+              suffix={
+                getCardBrand(cardNumber) ? (
+                  <View
+                    style={[
+                      walletStyles.brandBadge,
+                      getCardBrand(cardNumber) === "visa"
+                        ? walletStyles.brandBadgeVisa
+                        : walletStyles.brandBadgeMastercard,
+                    ]}
+                  >
+                    <Text style={walletStyles.brandBadgeText}>
+                      {getCardBrand(cardNumber) === "visa"
+                        ? "VISA"
+                        : "Mastercard"}
+                    </Text>
+                  </View>
+                ) : null
+              }
             />
             <View style={[walletStyles.inputRow, { flexDirection: row }]}>
               <CardInput
                 label={t("wallet.expiry")}
                 value={expiry}
                 onChangeText={setExpiry}
+                placeholder={t("wallet.expiry")}
                 keyboardType="number-pad"
                 maxLength={5}
                 isRTL={isRTL}
+                icon="calendar-outline"
               />
               <CardInput
                 label={t("wallet.cvv")}
                 value={cvv}
                 onChangeText={setCvv}
+                placeholder="***"
                 keyboardType="number-pad"
                 maxLength={4}
                 secureTextEntry
                 isRTL={isRTL}
+                icon="lock-closed-outline"
               />
             </View>
 
@@ -272,13 +298,41 @@ export default function WalletBottomSheet({
           </View>
         ) : (
           <View style={walletStyles.transferCard}>
-            <Text style={walletStyles.transferHint}>
-              {t("wallet.bank_transfer_hint")}
+            <Text style={walletStyles.transferLabel}>
+              {t("wallet.iban_label")}
             </Text>
-            <Text style={walletStyles.transferAccount}>98 123 456 789</Text>
-            <Text style={walletStyles.transferHint}>
-              {t("wallet.bank_transfer_note")}
+            <View style={[walletStyles.transferValueRow, { flexDirection: row }]}>
+              <Ionicons name="business-outline" size={14} color={WALLET_CYAN} />
+              <Text style={walletStyles.transferValue}>
+                TN59 1000 0321 4567 8901 23
+              </Text>
+            </View>
+
+            <Text
+              style={[walletStyles.transferLabel, { marginTop: 12 }]}
+            >
+              {t("wallet.beneficiary")}
             </Text>
+            <Text style={walletStyles.transferValue}>Abajim EdTech SARL</Text>
+
+            <View style={walletStyles.transferDivider} />
+
+            <Pressable
+              style={walletStyles.receiptBox}
+              onPress={() => {}}
+              accessibilityRole="button"
+              accessibilityLabel={t("wallet.upload_receipt")}
+            >
+              <View style={walletStyles.receiptIcon}>
+                <Ionicons name="image-outline" size={22} color={WALLET_CYAN} />
+              </View>
+              <Text style={walletStyles.receiptTitle}>
+                {t("wallet.upload_receipt")}
+              </Text>
+              <Text style={walletStyles.receiptHint}>
+                {t("wallet.receipt_types")}
+              </Text>
+            </Pressable>
           </View>
         )}
 
