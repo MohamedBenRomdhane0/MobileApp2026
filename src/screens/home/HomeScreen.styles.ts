@@ -849,8 +849,8 @@ export function createHomeStyles(
     /** Reserved strip so started and untouched cards keep the same height. */
     bookProgressSlot: {
       width: "100%",
-      minHeight: 14,
-      flexDirection: row,
+      minHeight: 0,
+      flexDirection: "row",
       alignItems: "center",
       gap: 7,
     },
