@@ -6,9 +6,11 @@ import type { ThemeColors } from "./HomeScreen.type";
 const { width: W } = Dimensions.get("window");
 
 /** Book cards sit just under half-screen so the next one peeks in. */
-const BOOK_SWIPE_W = Math.min(160, (W - 16 * 2 - 12) / 2.25);
+const BOOK_SWIPE_W = Math.min(157, (W - 16 * 2 - 12) / 2.25);
 /** Subject cards: ~3.1 per screen, so the 4th invites a swipe. */
-const MAT_SWIPE_W = Math.max(88, Math.min(106, (W - 16 * 2 - 10 * 3) / 3.2));
+const MAT_SWIPE_W = Math.max(88, Math.min(88, (W - 16 * 2 - 10 * 3) / 3.2));
+/** Responsive subject card height — 90 on large screens, scales down on small ones. */
+const MAT_CARD_H = Math.max(72, Math.min(90, Math.round(W * 0.23)));
 
 /**
  * Elevation scale (see `.claude/skills/frontend-design`):
@@ -537,6 +539,7 @@ export function createHomeStyles(
 
     materialCard: {
       width: MAT_SWIPE_W,
+      height: MAT_CARD_H,
       borderRadius: 18,
       overflow: "hidden",
       borderWidth: 1,
@@ -548,8 +551,8 @@ export function createHomeStyles(
 
     /** Tinted gradient face — the subject hue fades top-left to bottom-right. */
     materialCardFace: {
-      paddingTop: 10,
-      paddingBottom: 8,
+      paddingTop: 8,
+      paddingBottom: 6,
       paddingHorizontal: 6,
       alignItems: "center",
     },
@@ -557,42 +560,42 @@ export function createHomeStyles(
     /** Soft light bloom in the upper corner, so the tint never reads flat. */
     materialCardBloom: {
       position: "absolute",
-      width: 72,
-      height: 72,
+      width: 64,
+      height: 64,
       borderRadius: 999,
-      top: -36,
-      right: isRTL ? undefined : -24,
-      left: isRTL ? -24 : undefined,
+      top: -32,
+      right: isRTL ? undefined : -20,
+      left: isRTL ? -20 : undefined,
     },
 
-    materialCardPress: { alignItems: "center", gap: 7, width: "100%" },
+    materialCardPress: { alignItems: "center", gap: 5, width: "100%" },
 
     materialCardIconWrap: {
-      width: 46,
-      height: 46,
-      borderRadius: 18,
+      width: 40,
+      height: 40,
+      borderRadius: 16,
       alignItems: "center",
       justifyContent: "center",
       overflow: "hidden",
       borderWidth: 1,
     },
 
-    materialCardImg: { width: 32, height: 32, resizeMode: "contain" },
+    materialCardImg: { width: 28, height: 28, resizeMode: "contain" },
 
     materialCardLabel: {
-      fontSize: 11,
+      fontSize: 10.5,
       fontWeight: "900",
       textAlign: "center",
-      lineHeight: 14,
-      minHeight: 28,
+      lineHeight: 13,
+      minHeight: 22,
     },
 
     /** Accent underline anchoring the label to the subject color. */
     materialCardRule: {
-      width: 16,
-      height: 2.5,
+      width: 14,
+      height: 2,
       borderRadius: 999,
-      marginTop: 1,
+      marginTop: 0,
     },
 
     /* ── Live session ────────────────────────────────────────────────── */
@@ -843,7 +846,7 @@ export function createHomeStyles(
       fontWeight: "800",
       textAlign: "center",
       lineHeight: 16,
-      minHeight: 32,
+      minHeight: 20,
     },
 
     /** Reserved strip so started and untouched cards keep the same height. */
