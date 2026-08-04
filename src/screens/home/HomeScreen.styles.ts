@@ -168,12 +168,12 @@ export function createHomeStyles(
     },
 
     streakText: {
-      fontSize: 15,
+      fontSize: 13.5,
       fontWeight: "900",
-      color: "#4A2E00",
+      color: "#FFFFFF",
       letterSpacing: 0.3,
-      textShadowColor: "rgba(255,255,255,0.45)",
-      textShadowRadius: 2,
+      textShadowColor: "rgba(74,46,0,0.55)",
+      textShadowRadius: 3,
     },
 
     /* ── Greeting + emoji quick actions (one shared line) ─────────────── */
