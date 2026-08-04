@@ -26,6 +26,9 @@ export const LIQUID = {
   spring: { damping: 18, stiffness: 180, mass: 0.9, overshootClamping: false, energyThreshold: 0.01 } as const,
   transitionMs: 380,
   tabCount: 4,
+  fabSize: 66,
+  fabPressScale: 0.95,
+  fabOverlap: 24,
   tabs: [
     { name: "Settings", label: "Profil", icon: "person-outline", iconFocused: "person" },
     { name: "Home", label: "Accueil", icon: "home-outline", iconFocused: "home" },

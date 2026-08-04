@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LIQUID } from "@styles/liquidTheme";
 import AnimatedGlassBackground from "./AnimatedGlassBackground";
 import LiquidGlassTab from "./LiquidGlassTab";
+import FloatingActionButton from "./FloatingActionButton";
 
 interface LiquidGlassTabBarProps {
   state: { index: number; routes: Array<{ key: string; name: string }> };
@@ -47,7 +48,7 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
         <View style={styles.cyanBorder} pointerEvents="none" />
 
         <View style={styles.tabsRow}>
-          {tabs.map(
+           {tabs.map(
             (item: (typeof LIQUID.tabs)[number], i: number) => (
               <View key={item.name} style={styles.tabSlot}>
                 {/* Blue ball indicator for active tab */}
@@ -62,7 +63,12 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
             )
           )}
         </View>
-      </Animated.View>
+    </Animated.View>
+
+      {/* Floating Action Button positioned at center, overlapping the bar */}
+      <View style={{ position: "absolute", top: 0, left: 0, right: 0, alignItems: "center" }}>
+        <FloatingActionButton onPress={() => handleTabPress("Home")} />
+      </View>
     </View>
   );
 }
