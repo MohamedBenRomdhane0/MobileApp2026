@@ -19,7 +19,7 @@ export const LIQUID = {
   // Cyan accent color
   cyanColor: "#22BEC8",
   // Inactive icon/label color - dark navy
-  inactiveColor: "rgba(9,17,33,0.62)",
+  inactiveColor: "rgb(31, 59, 100)",
   inactiveOpacity: 0.7,
   activeIconScale: 1.15,
   pressScale: 0.95,

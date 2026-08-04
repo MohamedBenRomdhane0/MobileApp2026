@@ -24,15 +24,18 @@ function LiquidGlassTab({
 }: LiquidGlassTabProps) {
   const press = useSharedValue(1);
   const iconScale = useSharedValue(isActive ? LIQUID.activeIconScale : 1);
-  const labelOpacity = useSharedValue(isActive ? 1 : 0);
+  const labelColor = useSharedValue(isActive ? LIQUID.cyanColor : LIQUID.inactiveColor);
 
   useEffect(() => {
     iconScale.value = withSpring(
       isActive ? LIQUID.activeIconScale : 1,
       LIQUID.spring
     );
-    labelOpacity.value = withSpring(isActive ? 1 : 0, LIQUID.spring);
-  }, [isActive, iconScale, labelOpacity]);
+    labelColor.value = withSpring(
+      isActive ? LIQUID.cyanColor : LIQUID.inactiveColor,
+      LIQUID.spring
+    );
+  }, [isActive, iconScale, labelColor]);
 
   const handlePressIn = () => {
     press.value = withSpring(LIQUID.pressScale, {
@@ -53,17 +56,12 @@ function LiquidGlassTab({
     opacity: interpolate(
       iconScale.value,
       [1, LIQUID.activeIconScale],
-      [LIQUID.inactiveOpacity, 1]
+      [0.7, 1]
     ),
   }));
 
   const labelAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: labelOpacity.value,
-    transform: [
-      {
-        translateY: interpolate(labelOpacity.value, [0, 1], [6, 0]),
-      },
-    ],
+    color: labelColor.value,
   }));
 
   return (
@@ -111,7 +109,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 10,
     fontWeight: "800",
-    color: LIQUID.inactiveColor,
     letterSpacing: 0.2,
   },
 });
