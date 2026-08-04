@@ -58,17 +58,13 @@ function LiquidGlassTab({
   }));
 
   const labelAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: 1,
+    opacity: labelOpacity.value,
     transform: [
       {
-        translateY: interpolate(labelOpacity.value, [0, 1], [4, 0]),
+        translateY: interpolate(labelOpacity.value, [0, 1], [6, 0]),
       },
     ],
   }));
-
-  // Requested color: rgba(9,17,33,0.62) for inactive
-  const INACTIVE_COLOR = "rgba(9,17,33,0.62)";
-  const ACTIVE_COLOR = LIQUID.cyanColor;
 
   return (
     <Pressable
@@ -86,8 +82,8 @@ function LiquidGlassTab({
         <Animated.View style={iconAnimatedStyle}>
           <Ionicons
             name={isActive ? item.iconFocused : item.icon}
-            size={26}
-            color={isActive ? ACTIVE_COLOR : INACTIVE_COLOR}
+            size={24}
+            color={isActive ? LIQUID.cyanColor : LIQUID.inactiveColor}
           />
         </Animated.View>
       </Animated.View>
@@ -104,18 +100,18 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 3,
+    gap: 2,
   },
   iconWrap: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     alignItems: "center",
     justifyContent: "center",
   },
   label: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "800",
-    color: "rgba(9,17,33,0.85)",
+    color: LIQUID.inactiveColor,
     letterSpacing: 0.2,
   },
 });

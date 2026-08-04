@@ -1,8 +1,8 @@
 export const LIQUID = {
   barWidthRatio: 0.9,
-  barHeight: 78,
-  bottomSpacing: 22,
-  borderRadius: 40,
+  barHeight: 68,
+  bottomSpacing: 16,
+  borderRadius: 36,
   backdropBlur: 40,
   // Abajim blue (cyan) with very low opacity for the glass base
   bg: "rgba(34,190,200,0.08)",
@@ -18,7 +18,9 @@ export const LIQUID = {
   shadow: "rgba(34,190,200,0.12)",
   // Cyan accent color
   cyanColor: "#22BEC8",
-  inactiveOpacity: 0.5,
+  // Inactive icon/label color - dark navy
+  inactiveColor: "rgba(9,17,33,0.62)",
+  inactiveOpacity: 0.7,
   activeIconScale: 1.15,
   pressScale: 0.95,
   spring: { damping: 18, stiffness: 180, mass: 0.9, overshootClamping: false, energyThreshold: 0.01 } as const,
