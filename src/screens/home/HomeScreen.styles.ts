@@ -803,7 +803,7 @@ export function createHomeStyles(
         searchModalCard: {
             width: "94%",
             maxWidth: 420,
-            height: "70%",
+            height: "66%",
             borderRadius: 26,
             backgroundColor: C.surface,
             overflow: "hidden",
@@ -813,9 +813,9 @@ export function createHomeStyles(
         /* Navy band mirrors the home hero so the popup reads as one system. */
         searchBand: {
             paddingHorizontal: 16,
-            paddingTop: 18,
-            paddingBottom: 16,
-            gap: 12,
+            paddingTop: 14,
+            paddingBottom: 14,
+            gap: 10,
         },
 
         searchBandTitle: {
@@ -833,7 +833,7 @@ export function createHomeStyles(
 
         searchField: {
             flex: 1,
-            height: 46,
+            height: 44,
             flexDirection: row,
             alignItems: "center",
             gap: 8,
@@ -866,7 +866,7 @@ export function createHomeStyles(
             flexDirection: row,
             gap: 8,
             paddingHorizontal: 14,
-            paddingVertical: 12,
+            paddingVertical: 10,
             borderBottomWidth: StyleSheet.hairlineWidth,
             borderBottomColor: C.hairline,
         },
