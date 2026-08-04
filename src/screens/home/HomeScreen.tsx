@@ -120,7 +120,7 @@ export default function HomeScreen() {
     isError: isMaterialsError,
     refetch: refetchMaterials,
   } = useGetMaterialsByLevelQuery(
-    { levelId: toValidId(levelId) },
+    { levelId: toValidId(levelId), locale: i18n.language ?? "fr" },
     { skip: !toValidId(levelId) }
   );
 
@@ -325,28 +325,6 @@ export default function HomeScreen() {
             ) : null}
           </View>
 
-          {/* Live now */}
-          <View style={styles.section}>
-            <SectionHeader
-              styles={styles}
-              palette={palette}
-              isRTL={isRTL}
-              title={t(HOME_UI.liveMeetings)}
-              seeAllLabel={t(HOME_COMMON_UI.seeAll)}
-              onSeeAll={goMeetings}
-            />
-            <LiveNowCard
-              styles={styles}
-              palette={palette}
-              isRTL={isRTL}
-              title={t("home.live_title_mock")}
-              meta={t("home.live_meta_mock")}
-              liveLabel={t(HOME_COMMON_UI.live)}
-              joinLabel={t(HOME_UI.join)}
-              onJoin={goMeetings}
-            />
-          </View>
-
           {/* School books */}
           <View style={styles.section}>
             <SectionHeader
@@ -388,6 +366,28 @@ export default function HomeScreen() {
                 onLayoutReady={onLayoutReady}
               />
             )}
+          </View>
+
+          {/* Live now */}
+          <View style={styles.section}>
+            <SectionHeader
+              styles={styles}
+              palette={palette}
+              isRTL={isRTL}
+              title={t(HOME_UI.liveMeetings)}
+              seeAllLabel={t(HOME_COMMON_UI.seeAll)}
+              onSeeAll={goMeetings}
+            />
+            <LiveNowCard
+              styles={styles}
+              palette={palette}
+              isRTL={isRTL}
+              title={t("home.live_title_mock")}
+              meta={t("home.live_meta_mock")}
+              liveLabel={t(HOME_COMMON_UI.live)}
+              joinLabel={t(HOME_UI.join)}
+              onJoin={goMeetings}
+            />
           </View>
 
           {/* Teachers */}

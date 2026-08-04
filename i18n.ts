@@ -16,7 +16,7 @@ const resources = {
   ar: { translation: ar },
 } as const;
 
-const DEFAULT_LANG = GLOBAL_VARIABLES.LANGUAGES.SHORT.AR;
+const DEFAULT_LANG = GLOBAL_VARIABLES.LANGUAGES.SHORT.FR;
 const SUPPORTED_LANGS = Object.keys(resources);
 
 export function isRTL(lang: string): boolean {

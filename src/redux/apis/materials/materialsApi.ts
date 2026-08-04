@@ -9,14 +9,14 @@ export const materialsApi = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ["MaterialsByLevel"],
     endpoints: (build) => ({
-        getMaterialsByLevel: build.query<MaterialUI[], { levelId: number }>({
+        getMaterialsByLevel: build.query<MaterialUI[], { levelId: number; locale?: string }>({
             query: ({ levelId }) => ({
                 url: `/levels/${levelId}/level-materials`,
                 method: "GET",
             }),
 
-            transformResponse: (raw: unknown): MaterialUI[] =>
-                transformMaterialsByLevel(raw, i18n.language ?? "ar"),
+            transformResponse: (raw: unknown, _meta, arg) =>
+                transformMaterialsByLevel(raw, arg.locale ?? i18n.language ?? "fr"),
             providesTags: (_res, _err, arg) => [
                 { type: "MaterialsByLevel", id: arg.levelId },
             ],
