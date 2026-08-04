@@ -43,6 +43,9 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
       >
         <AnimatedGlassBackground />
 
+        {/* Cyan accent border */}
+        <View style={styles.cyanBorder} pointerEvents="none" />
+
         <View style={styles.tabsRow}>
           {tabs.map(
             (item: (typeof LIQUID.tabs)[number], i: number) => (
@@ -73,6 +76,13 @@ const styles = StyleSheet.create({
     height: LIQUID.barHeight,
     borderRadius: LIQUID.borderRadius,
     overflow: "hidden",
+  },
+  cyanBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: LIQUID.borderRadius,
+    borderWidth: 1.5,
+    borderColor: LIQUID.border,
+    pointerEvents: "none",
   },
   tabsRow: {
     flex: 1,

@@ -4,14 +4,23 @@ export const LIQUID = {
   bottomSpacing: 22,
   borderRadius: 40,
   backdropBlur: 40,
-  bg: "rgba(255,255,255,0.55)",
-  border: "rgba(0,0,0,0.12)",
-  highlight: "rgba(255,255,255,0.60)",
-  shadow: "rgba(0,0,0,0.15)",
+  // Abajim blue (cyan) with very low opacity for the glass base
+  bg: "rgba(34,190,200,0.08)",
+  // White-based glass layers
+  glassBase: "rgba(255,255,255,0.12)",
+  glassHighlight: "rgba(255,255,255,0.20)",
+  glassEdge: "rgba(255,255,255,0.35)",
+  // Cyan accent layers
+  cyanBase: "rgba(34,190,200,0.06)",
+  cyanGlow: "rgba(34,190,200,0.15)",
+  // Border & shadow
+  border: "rgba(34,190,200,0.25)",
+  shadow: "rgba(34,190,200,0.12)",
+  // Cyan accent color
   cyanColor: "#22BEC8",
-  inactiveOpacity: 0.6,
-  activeIconScale: 1.2,
-  pressScale: 0.96,
+  inactiveOpacity: 0.5,
+  activeIconScale: 1.15,
+  pressScale: 0.95,
   spring: { damping: 18, stiffness: 180, mass: 0.9, overshootClamping: false, energyThreshold: 0.01 } as const,
   transitionMs: 380,
   tabCount: 4,

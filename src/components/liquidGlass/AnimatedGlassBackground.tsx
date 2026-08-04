@@ -13,29 +13,38 @@ function AnimatedGlassBackground({ style }: { style?: object }) {
   const shimmer = useSharedValue(0);
 
   React.useEffect(() => {
-    shimmer.value = withTiming(1, { duration: 2000 });
+    shimmer.value = withTiming(1, { duration: 3000, easing: (t) => t });
   }, [shimmer]);
 
   const shimmerStyle = useAnimatedStyle(() => {
     const tx = interpolate(shimmer.value, [0, 1], [-200, 200]);
-    return {
-      transform: [{ translateX: tx }],
-    };
+    return { transform: [{ translateX: tx }] };
   });
 
   return (
     <Animated.View style={[styles.container, style]}>
+      {/* Base blur layer */}
       <BlurView intensity={LIQUID.backdropBlur} tint="light" style={StyleSheet.absoluteFill} />
 
-      <View style={styles.layer1} pointerEvents="none" />
+      {/* Layer 1: Cyan base tint */}
+      <View style={styles.cyanBase} pointerEvents="none" />
 
-      <View style={styles.layer2} pointerEvents="none" />
+      {/* Layer 2: White glass base */}
+      <View style={styles.glassBase} pointerEvents="none" />
 
+      {/* Layer 3: Specular highlight edge */}
+      <View style={styles.highlightEdge} pointerEvents="none" />
+
+      {/* Layer 4: Moving shimmer (specular reflection) */}
       <Animated.View style={[styles.shimmer, shimmerStyle]} pointerEvents="none">
         <View style={styles.shimmerInner} />
       </Animated.View>
 
-      <View style={styles.highlightEdge} pointerEvents="none" />
+      {/* Layer 5: Top glossy edge */}
+      <View style={styles.glossyEdge} pointerEvents="none" />
+
+      {/* Layer 6: Subtle noise texture overlay */}
+      <View style={styles.noiseOverlay} pointerEvents="none" />
     </Animated.View>
   );
 }
@@ -46,37 +55,52 @@ const styles = StyleSheet.create({
     borderRadius: LIQUID.borderRadius,
     overflow: "hidden",
   },
-  layer1: {
+  cyanBase: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: LIQUID.bg,
+    backgroundColor: LIQUID.cyanBase,
     borderRadius: LIQUID.borderRadius,
   },
-  layer2: {
+  glassBase: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255,255,255,0.04)",
+    backgroundColor: LIQUID.glassBase,
     borderRadius: LIQUID.borderRadius,
   },
   highlightEdge: {
     position: "absolute",
     top: 0,
-    left: 20,
-    right: 20,
+    left: 8,
+    right: 8,
     height: 1,
-    backgroundColor: LIQUID.highlight,
+    backgroundColor: LIQUID.glassEdge,
     borderRadius: 1,
   },
   shimmer: {
     position: "absolute",
     top: 0,
     bottom: 0,
-    width: 120,
+    width: 140,
     alignItems: "center",
   },
   shimmerInner: {
-    width: 60,
+    width: 80,
     flex: 1,
-    backgroundColor: "rgba(255,255,255,0.06)",
+    backgroundColor: LIQUID.glassHighlight,
     borderRadius: 999,
+    opacity: 0.3,
+  },
+  glossyEdge: {
+    position: "absolute",
+    top: 0,
+    left: 16,
+    right: 16,
+    height: 2,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 1,
+  },
+  noiseOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.01)",
+    borderRadius: LIQUID.borderRadius,
   },
 });
 

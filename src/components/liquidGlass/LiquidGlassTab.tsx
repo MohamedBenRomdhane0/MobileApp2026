@@ -83,7 +83,7 @@ function LiquidGlassTab({
           <Ionicons
             name={isActive ? item.iconFocused : item.icon}
             size={24}
-            color={isActive ? "#FFFFFF" : "rgba(255,255,255,0.6)"}
+            color={isActive ? LIQUID.cyanColor : "rgba(34,190,200,0.45)"}
           />
         </Animated.View>
       </Animated.View>
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 10,
     fontWeight: "800",
-    color: "#FFFFFF",
+    color: LIQUID.cyanColor,
     letterSpacing: 0.2,
   },
 });
