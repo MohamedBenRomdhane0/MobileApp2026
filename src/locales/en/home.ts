@@ -25,6 +25,9 @@ export const home = {
   continue_cta: "Continue",
   progress_label: "progress",
   no_live_now: "No live classes right now",
+  search_tabs: { materials: "Subjects", books: "Books", live: "Live" },
+  search_hint: "Type to search subjects, school books and live classes.",
+  search_no_results: "No results found.",
   quick: {
     books: "My books",
     live: "Live",

@@ -89,4 +89,5 @@ export const common = {
   currency_tnd: "TND",
   generic_error: "Une erreur est survenue. Veuillez réessayer.",
   unnamed: "Sans titre",
+  close: "Fermer",
 }

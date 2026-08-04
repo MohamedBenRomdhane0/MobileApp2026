@@ -25,6 +25,9 @@ export const home = {
   continue_cta: "Continuer",
   progress_label: "progression",
   no_live_now: "Aucun cours en direct pour le moment",
+  search_tabs: { materials: "Matières", books: "Livres", live: "En direct" },
+  search_hint: "Recherchez des matières, des livres et des cours en direct.",
+  search_no_results: "Aucun résultat.",
   quick: {
     books: "Mes livres",
     live: "Direct",

@@ -32,12 +32,14 @@ import TeachersRow from "@screens/home/components/TeachersRow";
 import SubscribeBanner from "@screens/home/components/SubscribeBanner";
 import SectionHeader from "@screens/home/components/SectionHeader";
 import SectionState from "@screens/home/components/SectionState";
+import HomeSearchModal from "@screens/home/components/HomeSearchModal";
 
 import {
   HOME_UI,
   HOME_COMMON_UI,
   HOME_QUICK_ACTIONS,
   MOCK_TEACHERS,
+  MOCK_MEETINGS,
   getHomePalette,
 } from "./HomeScreen.constants";
 import {
@@ -88,6 +90,7 @@ export default function HomeScreen() {
   const activeChildId = useAppSelector(selectActiveChildId);
   const childAccessToken = useAppSelector((s) => s.auth.childAccessToken);
   const [keyword] = useState("");
+  const [searchVisible, setSearchVisible] = useState(false);
   const [switchToChild, switchState] = useSwitchToChildMutation();
 
   const canSwitch = typeof activeChildId === "number" && activeChildId > 0;
@@ -280,7 +283,7 @@ export default function HomeScreen() {
           topInset={insets.top}
           notificationsLabel={t(HOME_COMMON_UI.notifications)}
           onNotifications={goNotifications}
-          onSearch={goBooks}
+           onSearch={() => setSearchVisible(true)}
         />
 
         {/* Floats over the hero curve — kept outside `body` so its own
@@ -409,9 +412,26 @@ export default function HomeScreen() {
               ctaLabel={t(HOME_UI.subscribeCta)}
               onPress={goSubscribe}
             />
-          </View>
-        </View>
-      </ScrollView>
-    </View>
-  );
+           </View>
+         </View>
+       </ScrollView>
+
+       <HomeSearchModal
+         styles={styles}
+         palette={palette}
+         isRTL={isRTL}
+         isDark={isDark}
+         visible={searchVisible}
+         onClose={() => setSearchVisible(false)}
+         materials={materials}
+         labelForMaterial={(m) => getMaterialLabel(t, m)}
+         onSelectMaterial={openMaterial}
+         books={books}
+         unnamedLabel={t("common.unnamed")}
+         onSelectBook={openBook}
+         liveSessions={MOCK_MEETINGS}
+         onSelectLive={goMeetings}
+       />
+     </View>
+   );
 }

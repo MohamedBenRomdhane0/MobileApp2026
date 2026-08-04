@@ -94,4 +94,5 @@ export const common = {
   currency_tnd: "د.ت",
   generic_error: "حدث خطأ. الرجاء المحاولة مرة أخرى.",
   unnamed: "بدون عنوان",
+  close: "إغلاق",
 };

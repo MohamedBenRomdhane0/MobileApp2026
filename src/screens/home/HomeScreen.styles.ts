@@ -786,5 +786,136 @@ export function createHomeStyles(
         },
 
         subscribeBtnText: { color: "#FFFFFF", fontSize: 12.5, fontWeight: "900" },
+
+        /* ── Search modal ──────────────────────────────────────────────────── */
+
+        searchBackdrop: {
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.54)",
+            justifyContent: "flex-start",
+            alignItems: "stretch",
+        },
+
+        searchModalCard: {
+            marginTop: 26,
+            marginHorizontal: 16,
+            maxHeight: "66%",
+            borderRadius: 22,
+            backgroundColor: C.surface,
+            borderWidth: 1,
+            borderColor: C.hairline,
+            ...neutralShadow(isDark),
+        },
+
+        searchModalHeader: {
+            flexDirection: row,
+            alignItems: "center",
+            gap: 8,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: C.hairline,
+        },
+
+        searchInput: {
+            flex: 1,
+            fontSize: 15,
+            fontWeight: "700",
+            color: C.ink,
+            textAlign: textEnd,
+        },
+
+        searchTabToggle: {
+            flexDirection: row,
+            alignItems: "center",
+            gap: 4,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 999,
+            backgroundColor: C.tealSoft,
+        },
+
+        searchTabsRow: {
+            flexDirection: row,
+            gap: 6,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: C.hairline,
+        },
+
+        searchTabBtn: {
+            flex: 1,
+            paddingVertical: 8,
+            borderRadius: 12,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: C.surfaceAlt,
+        },
+
+        searchTabBtnActive: {
+            backgroundColor: C.tealSoft,
+        },
+
+        searchTabLabel: {
+            fontSize: 11.5,
+            fontWeight: "800",
+            color: C.sub,
+            textAlign: "center",
+        },
+
+        searchTabLabelActive: {
+            color: C.teal,
+        },
+
+        searchResultsList: { flex: 1, paddingHorizontal: 8 },
+
+        searchResultRow: {
+            flexDirection: row,
+            alignItems: "center",
+            gap: 10,
+            paddingVertical: 9,
+            paddingHorizontal: 6,
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomColor: C.hairline,
+        },
+
+        searchResultThumb: {
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            overflow: "hidden",
+            backgroundColor: C.surfaceAlt,
+            alignItems: "center",
+            justifyContent: "center",
+        },
+
+        searchResultImg: { width: "100%", height: "100%", resizeMode: "cover" },
+
+        searchResultEmoji: { fontSize: 20 },
+
+        searchResultTitle: {
+            flex: 1,
+            fontSize: 13.5,
+            fontWeight: "800",
+            color: C.ink,
+            textAlign: textEnd,
+            minWidth: 0,
+        },
+
+        searchResultSub: {
+            fontSize: 10.5,
+            fontWeight: "700",
+            color: C.sub,
+            textAlign: "right",
+        },
+
+        searchEmptyText: {
+            padding: 22,
+            fontSize: 12.5,
+            fontWeight: "700",
+            color: C.sub,
+            textAlign: "center",
+        },
     });
 }

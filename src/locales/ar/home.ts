@@ -25,6 +25,9 @@ export const home = {
   continue_cta: "متابعة",
   progress_label: "التقدم",
   no_live_now: "لا توجد حصص مباشرة الآن",
+  search_tabs: { materials: "مواد", books: "كتاب منهاجي", live: "مباشر" },
+  search_hint: "ابحث عن مواد، كتب منهاجية وحصص مباشرة.",
+  search_no_results: "لا توجد نتائج.",
   quick: {
     books: "كتبي",
     live: "مباشر",

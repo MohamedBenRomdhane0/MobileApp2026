@@ -87,7 +87,17 @@ export default function HomeHero({
         {/* Top row */}
         <View style={styles.heroTopRow}>
           <ActiveChildHeaderAvatar />
-
+          {/* Daily streak pill */}
+                  <View style={styles.streakWrap}>
+                    <LinearGradient
+                      colors={HOME_TOKENS.streakGradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.streakPill}
+                    >
+                      <Text style={styles.streakText}>{t("home.streak_label")}</Text>
+                    </LinearGradient>
+                  </View>
           <View style={styles.heroTopRight}>
             <TouchableOpacity
               style={styles.searchBtn}
@@ -112,22 +122,13 @@ export default function HomeHero({
               <View style={styles.bellDot} pointerEvents="none" />
             </TouchableOpacity>
           </View>
+          
         </View>
 
-        {/* Daily streak pill */}
-        <View style={styles.streakWrap}>
-          <LinearGradient
-            colors={HOME_TOKENS.streakGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.streakPill}
-          >
-            <Text style={styles.streakText}>{t("home.streak_label")}</Text>
-          </LinearGradient>
-        </View>
+       
 
         {/* Greeting section */}
-        <View style={styles.greetingWrap}>
+        {/* <View style={styles.greetingWrap}>
           <Text style={styles.greetingSub} numberOfLines={1}>
             {t("home.welcome_back")}
           </Text>
@@ -141,7 +142,7 @@ export default function HomeHero({
               {levelLabel}
             </Text>
           </View>
-        </View>
+        </View> */}
 
         {/* Emoji quick actions */}
         <BlurView intensity={18} tint="dark" style={styles.emojiGlass}>
