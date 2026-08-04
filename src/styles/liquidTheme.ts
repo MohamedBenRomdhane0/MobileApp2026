@@ -1,7 +1,7 @@
 export const LIQUID = {
   barWidthRatio: 0.9,
   barHeight: 68,
-  bottomSpacing: 16,
+  bottomSpacing: 8,
   borderRadius: 36,
   backdropBlur: 40,
   // Abajim blue (cyan) with very low opacity for the glass base
