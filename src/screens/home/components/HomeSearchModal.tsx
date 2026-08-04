@@ -196,9 +196,10 @@ export default function HomeSearchModal({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <Pressable style={styles.searchBackdrop} onPress={onClose} />
+      <View style={styles.searchModalRoot}>
+        <Pressable style={styles.searchBackdrop} onPress={onClose} />
 
-      <View style={styles.searchModalCard}>
+        <View style={styles.searchModalCard}>
         {/* Search input */}
         <View style={styles.searchModalHeader}>
           <TextInput
@@ -271,6 +272,7 @@ export default function HomeSearchModal({
               contentContainerStyle={{ paddingBottom: 12 }}
             />
           )}
+        </View>
         </View>
       </View>
     </Modal>

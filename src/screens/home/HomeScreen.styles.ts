@@ -789,11 +789,15 @@ export function createHomeStyles(
 
         /* ── Search modal ──────────────────────────────────────────────────── */
 
-        searchBackdrop: {
+        searchModalRoot: {
             flex: 1,
-            backgroundColor: "rgba(0,0,0,0.54)",
             justifyContent: "center",
             alignItems: "center",
+        },
+
+        searchBackdrop: {
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: "rgba(0,0,0,0.54)",
         },
 
         searchModalCard: {
