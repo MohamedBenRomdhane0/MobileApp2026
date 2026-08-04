@@ -10,7 +10,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { LIQUID } from "@styles/liquidTheme";
 import AnimatedGlassBackground from "./AnimatedGlassBackground";
-import ActiveCapsule from "./ActiveCapsule";
 import LiquidGlassTab from "./LiquidGlassTab";
 
 interface LiquidGlassTabBarProps {
@@ -26,11 +25,6 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
   const bottomOffset = Math.max(insets.bottom + LIQUID.bottomSpacing, LIQUID.bottomSpacing);
 
   const activeIndex = state.index;
-  const capsulePos = useSharedValue(activeIndex);
-
-  useEffect(() => {
-    capsulePos.value = withSpring(activeIndex, LIQUID.spring);
-  }, [activeIndex, capsulePos]);
 
   const handleTabPress = (routeName: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -49,8 +43,6 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
       >
         <AnimatedGlassBackground />
 
-        <ActiveCapsule translateX={capsulePos} />
-
         <View style={styles.tabsRow}>
           {tabs.map(
             (item: (typeof LIQUID.tabs)[number], i: number) => (
@@ -60,7 +52,6 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
                 index={i}
                 isActive={activeIndex === i}
                 onPress={() => handleTabPress(item.name)}
-                capsulePos={capsulePos}
               />
             )
           )}
@@ -75,6 +66,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
+    bottom: 0,
     alignItems: "center",
   },
   bar: {

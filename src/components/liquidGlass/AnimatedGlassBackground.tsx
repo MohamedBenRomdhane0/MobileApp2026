@@ -25,7 +25,7 @@ function AnimatedGlassBackground({ style }: { style?: object }) {
 
   return (
     <Animated.View style={[styles.container, style]}>
-      <BlurView intensity={LIQUID.backdropBlur} tint="dark" style={StyleSheet.absoluteFill} />
+      <BlurView intensity={LIQUID.backdropBlur} tint="light" style={StyleSheet.absoluteFill} />
 
       <View style={styles.layer1} pointerEvents="none" />
 

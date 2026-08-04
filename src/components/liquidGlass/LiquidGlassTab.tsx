@@ -6,7 +6,6 @@ import Animated, {
   useSharedValue,
   withSpring,
   interpolate,
-  type SharedValue,
 } from "react-native-reanimated";
 import { LIQUID } from "@styles/liquidTheme";
 
@@ -15,7 +14,6 @@ interface LiquidGlassTabProps {
   index: number;
   isActive: boolean;
   onPress: () => void;
-  capsulePos: SharedValue<number>;
 }
 
 function LiquidGlassTab({
@@ -23,7 +21,6 @@ function LiquidGlassTab({
   index,
   isActive,
   onPress,
-  capsulePos,
 }: LiquidGlassTabProps) {
   const press = useSharedValue(1);
   const iconScale = useSharedValue(isActive ? LIQUID.activeIconScale : 1);
