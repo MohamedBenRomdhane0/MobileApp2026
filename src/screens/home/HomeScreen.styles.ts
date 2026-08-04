@@ -6,7 +6,7 @@ import type { ThemeColors } from "./HomeScreen.type";
 const { width: W } = Dimensions.get("window");
 
 /** Book cards sit just under half-screen so the next one peeks in. */
-const BOOK_SWIPE_W = Math.min(176, (W - 16 * 2 - 12) / 2.25);
+const BOOK_SWIPE_W = Math.min(160, (W - 16 * 2 - 12) / 2.25);
 /** Subject cards: ~3.1 per screen, so the 4th invites a swipe. */
 const MAT_SWIPE_W = Math.max(88, Math.min(106, (W - 16 * 2 - 10 * 3) / 3.2));
 
@@ -834,7 +834,7 @@ export function createHomeStyles(
       width: "100%",
       paddingTop: 9,
       paddingHorizontal: 2,
-      gap: 7,
+      gap: 0,
     },
 
     bookTitle: {
