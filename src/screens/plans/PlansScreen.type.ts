@@ -20,6 +20,15 @@ export const PERIOD_MONTHS: PERIOD_MONTHS_MAP = {
 
 export type PlanTab = "live" | "books" | "bundle";
 
+export type PlanType = "live" | "books" | "books_docs";
+
+export type PlanSelectionState = {
+  planType: PlanType;
+  selectedMatiere: number | null;
+  selectedTeachers: number[];
+  selectedBooks: number[];
+};
+
 export type SelectedMaterials = Record<number, boolean>;
 
 export type CartSummaryLine = {
