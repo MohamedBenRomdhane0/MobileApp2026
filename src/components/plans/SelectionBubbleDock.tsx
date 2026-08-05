@@ -17,6 +17,7 @@ import Animated, {
 import { CTA_GRADIENT } from "@screens/plans/PlansScreen.constants";
 import type { PlansScreenStyles } from "@screens/plans/PlansScreen.styles";
 import type { getPlansPalette } from "@screens/plans/PlansScreen.styles";
+import { getLiquidBarReserved } from "@utils/helpers/liquidBar.helpers";
 
 export type SelectionBubble = {
   id: string;
@@ -76,7 +77,7 @@ export function SelectionBubbleDock({
     <Animated.View
       entering={FadeInUp.duration(280)}
       exiting={FadeOutDown.duration(160)}
-      style={[styles.dock, { bottom: bottomInset + 12 }]}
+      style={[styles.dock, { bottom: getLiquidBarReserved(bottomInset) + 12 }]}
     >
       {bubbles.length > 0 ? (
         <View style={styles.dockBubbles}>

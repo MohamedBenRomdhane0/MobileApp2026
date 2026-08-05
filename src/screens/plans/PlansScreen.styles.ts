@@ -390,7 +390,7 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
   return StyleSheet.create({
     container: { flex: 1 },
 
-    scrollContent: { flexGrow: 1, paddingBottom: 220 },
+    scrollContent: { flexGrow: 1, paddingBottom: 300 },
 
     header: {
       paddingHorizontal: 16,
