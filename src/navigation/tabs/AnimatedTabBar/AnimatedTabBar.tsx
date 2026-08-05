@@ -26,38 +26,32 @@ function LiquidTabBar(props: BottomTabBarProps) {
   return <LiquidGlassTabBar {...props} />;
 }
 
-const MainTabNavigator: React.FC = () => {
-  return (
-    <Tab.Navigator
-      initialRouteName="Home"
-      tabBar={(p) => <LiquidTabBar {...p} />}
-      screenOptions={{
-        headerShown: false,
-        lazy: true,
-        tabBarHideOnKeyboard: true,
-      }}
-    >
-      <Tab.Screen name="Books" component={BooksScreen} />
-      <Tab.Screen name="Courses" component={CoursesScreen} />
-      <Tab.Screen name="Meetings" component={MeetingsScreen} />
-      <Tab.Screen name="ReservedMeetings" component={ReservedMeetingsScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
-      <Tab.Screen name="Plans" component={PlansScreen} />
-      <Tab.Screen name="StudyGuide" component={StudyGuideScreen} />
-      <Tab.Screen name="MeetingView" component={MeetingViewScreen} />
-      <Tab.Screen name="StartLearning" component={StartLearningScreen} />
-      <Tab.Screen name="ProgressToday" component={ProgressTodayScreen} />
-      <Tab.Screen name="EduHome" component={EduHomeScreen} />
-      <Tab.Screen name="StudyCraft" component={StudyCraftScreen} />
-      <Tab.Screen name="AIOwl" component={AIOwlScreen} />
-      <Tab.Screen name="LearnCalendar" component={LearnCalendarScreen} />
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ tabBarButton: () => null }}
-      />
-    </Tab.Navigator>
-  );
-};
+const MainTabNavigator: React.FC = () => (
+  <Tab.Navigator
+    initialRouteName="Home"
+    tabBar={(p) => <LiquidTabBar {...p} />}
+    screenOptions={{ headerShown: false, lazy: true, tabBarHideOnKeyboard: true }}
+  >
+    <Tab.Screen name="Books" component={BooksScreen} />
+    <Tab.Screen name="Courses" component={CoursesScreen} />
+    <Tab.Screen name="Meetings" component={MeetingsScreen} />
+    <Tab.Screen name="ReservedMeetings" component={ReservedMeetingsScreen} />
+    <Tab.Screen name="Settings" component={SettingsScreen} />
+    <Tab.Screen name="Plans" component={PlansScreen} />
+    <Tab.Screen name="StudyGuide" component={StudyGuideScreen} />
+    <Tab.Screen name="MeetingView" component={MeetingViewScreen} />
+    <Tab.Screen name="StartLearning" component={StartLearningScreen} />
+    <Tab.Screen name="ProgressToday" component={ProgressTodayScreen} />
+    <Tab.Screen name="EduHome" component={EduHomeScreen} />
+    <Tab.Screen name="StudyCraft" component={StudyCraftScreen} />
+    <Tab.Screen name="AIOwl" component={AIOwlScreen} />
+    <Tab.Screen name="LearnCalendar" component={LearnCalendarScreen} />
+    <Tab.Screen
+      name="Home"
+      component={HomeScreen}
+      options={{ tabBarButton: () => null }}
+    />
+  </Tab.Navigator>
+);
 
 export default MainTabNavigator;

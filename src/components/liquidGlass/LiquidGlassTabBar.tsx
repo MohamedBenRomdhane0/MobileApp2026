@@ -23,8 +23,7 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
   const { width: screenW } = useWindowDimensions();
 
   const barWidth = screenW * LIQUID.barWidthRatio;
-  const bottomOffset = Math.max(insets.bottom + LIQUID.bottomSpacing, LIQUID.bottomSpacing) - 10;
-  const reservedHeight = bottomOffset + LIQUID.barHeight + 5;
+  const bottomOffset = Math.max(insets.bottom + LIQUID.bottomSpacing, LIQUID.bottomSpacing);
 
   const activeIndex = state.index;
 
@@ -36,11 +35,11 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
   const tabs = useMemo(() => LIQUID.tabs, []);
 
   return (
-    <View style={[styles.container, { height: reservedHeight }]}>
+    <View style={[styles.container, { bottom: bottomOffset }]}>
       <Animated.View
         style={[
           styles.bar,
-          { width: barWidth, bottom: bottomOffset },
+          { width: barWidth, marginHorizontal: (screenW - barWidth) / 2 },
         ]}
       >
         <AnimatedGlassBackground />
@@ -67,7 +66,7 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
     </Animated.View>
 
       {/* Floating Action Button - centered exactly, overlapping the bar */}
-      <View style={[styles.fabContainer, { width: barWidth, height: reservedHeight }]}>
+      <View style={[styles.fabContainer, { width: barWidth }]}>
         <FloatingActionButton onPress={() => handleTabPress("Home")} />
       </View>
     </View>
@@ -76,11 +75,13 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: "center",
   },
   bar: {
-    position: "absolute",
     height: LIQUID.barHeight,
     borderRadius: LIQUID.borderRadius,
     overflow: "hidden",
