@@ -36,6 +36,12 @@ export const home = {
     plans: "Forfaits",
   },
   streak_label: "⭐ + 5 DT",
+  summary_title: "Résumé",
+  summary_subjects: "Matières",
+  summary_books: "Livres",
+  summary_live: "En direct",
+  activities_title: "Activités",
+  activities_subtitle: "Ce mois",
   emoji: {
     love: {
       title: "Ton amour pour l'apprentissage inspire ! 💖",

@@ -36,6 +36,12 @@ export const home = {
     plans: "الباقات",
   },
   streak_label: "⭐ + 5 د.ت",
+  summary_title: "الملخص",
+  summary_subjects: "المواد",
+  summary_books: "الكتب",
+  summary_live: "مباشر",
+  activities_title: "الأنشطة",
+  activities_subtitle: "هذا الشهر",
   emoji: {
     love: {
       title: "حبّك للتعلّم ملهم! 💖",

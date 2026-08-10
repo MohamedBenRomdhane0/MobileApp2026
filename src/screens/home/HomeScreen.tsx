@@ -30,6 +30,8 @@ import LiveNowCard from "@screens/home/components/LiveNowCard";
 import BooksRow from "@screens/home/components/BooksRow";
 import TeachersRow from "@screens/home/components/TeachersRow";
 import SubscribeBanner from "@screens/home/components/SubscribeBanner";
+import SummaryCard from "@screens/home/components/SummaryCard";
+import ActivitiesCard from "@screens/home/components/ActivitiesCard";
 import SectionHeader from "@screens/home/components/SectionHeader";
 import SectionState from "@screens/home/components/SectionState";
 import HomeSearchModal from "@screens/home/components/HomeSearchModal";
@@ -39,8 +41,10 @@ import {
   HOME_UI,
   HOME_COMMON_UI,
   HOME_QUICK_ACTIONS,
+  HOME_SECTION_ACCENT,
   MOCK_TEACHERS,
   MOCK_MEETINGS,
+  MOCK_WEEKLY_ACTIVITY,
   getHomePalette,
 } from "./HomeScreen.constants";
 import {
@@ -316,6 +320,8 @@ export default function HomeScreen() {
               {...block}
               title={t(HOME_UI.subjectsTitle)}
               count={materials.length}
+              icon="grid"
+              accent={HOME_SECTION_ACCENT.subjects}
             />
 
             {showMaterialsLoader ? (
@@ -346,6 +352,8 @@ export default function HomeScreen() {
               count={homeBooks.length}
               seeAllLabel={seeAllLabel}
               onSeeAll={goBooks}
+              icon="library"
+              accent={HOME_SECTION_ACCENT.books}
             />
 
             {showBooksLoader ? (
@@ -370,25 +378,7 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {/* Live classes — time-sensitive, so it sits above browse content */}
-          <View style={styles.section}>
-            <SectionHeader
-              {...block}
-              title={t(HOME_UI.liveMeetings)}
-              seeAllLabel={seeAllLabel}
-              onSeeAll={goMeetings}
-            />
-
-            <LiveNowCard
-              {...block}
-              title={t("home.live_title_mock")}
-              meta={t("home.live_meta_mock")}
-              liveLabel={t(HOME_COMMON_UI.live)}
-              joinLabel={t(HOME_UI.join)}
-              onJoin={goMeetings}
-            />
-          </View>
-
+         
           {/* Teachers */}
           <View style={styles.section}>
             <SectionHeader
@@ -397,12 +387,54 @@ export default function HomeScreen() {
               count={MOCK_TEACHERS.length}
               seeAllLabel={seeAllLabel}
               onSeeAll={goMeetings}
+              icon="people"
+              accent={HOME_SECTION_ACCENT.teachers}
             />
 
             <TeachersRow
               {...block}
               teachers={MOCK_TEACHERS}
               onPressTeacher={openTeacher}
+            />
+          </View>
+          {/* Live classes — time-sensitive, so it sits above browse content */}
+                    <View style={styles.section}>
+                      <SectionHeader
+                        {...block}
+                        title={t(HOME_UI.liveMeetings)}
+                        seeAllLabel={seeAllLabel}
+                        onSeeAll={goMeetings}
+                        icon="videocam"
+                        accent={HOME_SECTION_ACCENT.live}
+                      />
+
+                      <LiveNowCard
+                        {...block}
+                        title={t("home.live_title_mock")}
+                        meta={t("home.live_meta_mock")}
+                        liveLabel={t(HOME_COMMON_UI.live)}
+                        joinLabel={t(HOME_UI.join)}
+                        onJoin={goMeetings}
+                      />
+                    </View>
+
+          {/* Summary + Activities row */}
+          <View style={styles.summaryRow}>
+            <SummaryCard
+              {...block}
+              title={t("home.summary_title")}
+              stats={[
+                { label: t("home.summary_subjects"), value: materials.length, color: "#22BEC8" },
+                { label: t("home.summary_books"), value: homeBooks.length, color: "#7C5CFC" },
+                { label: t("home.summary_live"), value: 2, color: "#EF4444" },
+              ]}
+            />
+            <ActivitiesCard
+              {...block}
+              title={t("home.activities_title")}
+              subtitle={t("home.activities_subtitle")}
+              weekDays={["S", "M", "T", "W", "T", "F", "S"]}
+              grid={MOCK_WEEKLY_ACTIVITY}
             />
           </View>
 

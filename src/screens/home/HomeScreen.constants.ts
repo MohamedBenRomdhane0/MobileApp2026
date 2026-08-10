@@ -79,10 +79,24 @@ export const HOME_TOKENS = {
   heroGradientDark: ["#0B1220", "#0B1B33", "#060B14"] as [string, string, string],
   /** Metallic gold gradient behind the daily streak pill. */
   streakGradient: ["#FFE9A8", "#F8D66D", "#D99A24"] as [string, string, string],
+  /** Join CTA on the live card — warmer at the top, deeper at the bottom. */
+  liveJoinGradient: ["#FB7185", "#E11D48"] as [string, string],
   /** Entrance + press motion, shared by every animated home card. */
   enterDuration: 420,
   enterStagger: 80,
   pressScale: 0.96,
+} as const;
+
+/**
+ * Per-section accent hues. Each block on the feed carries its own color on
+ * the header tile, count pill and "see all" chip, so a long scroll stays
+ * navigable without extra chrome.
+ */
+export const HOME_SECTION_ACCENT = {
+  subjects: "#22BEC8",
+  books: "#7C5CFC",
+  live: "#EF4444",
+  teachers: "#F59E0B",
 } as const;
 
 /** Reactions shown as circular glass emoji quick actions in the hero. */
@@ -161,4 +175,12 @@ const VIDEO_COVER = require("../../../assets/images/cover_video.png");
 export const MOCK_VIDEOS: LevelVideoCard[] = [
   { id: "v1", title: "جمع و طرح الأعداد إلى 999", subject: "رياضيات", teacherName: "Tarek Briki", duration: "12:35", thumbnail: VIDEO_COVER },
   { id: "v2", title: "فهم الجملة الاسمية", subject: "لغة عربية", teacherName: "Hajer Brahim", duration: "09:20", thumbnail: VIDEO_COVER },
+];
+
+export const MOCK_WEEKLY_ACTIVITY: { active: boolean; size: number }[][] = [
+  [{ active: false, size: 7 }, { active: true, size: 10 }, { active: false, size: 7 }, { active: true, size: 14 }, { active: false, size: 7 }, { active: false, size: 7 }, { active: true, size: 12 }],
+  [{ active: true, size: 11 }, { active: false, size: 7 }, { active: true, size: 14 }, { active: false, size: 7 }, { active: true, size: 10 }, { active: false, size: 7 }, { active: false, size: 7 }],
+  [{ active: false, size: 7 }, { active: false, size: 7 }, { active: true, size: 12 }, { active: true, size: 10 }, { active: false, size: 7 }, { active: true, size: 14 }, { active: false, size: 7 }],
+  [{ active: true, size: 14 }, { active: true, size: 10 }, { active: false, size: 7 }, { active: false, size: 7 }, { active: true, size: 12 }, { active: false, size: 7 }, { active: true, size: 10 }],
+  [{ active: false, size: 7 }, { active: true, size: 12 }, { active: true, size: 14 }, { active: false, size: 7 }, { active: false, size: 7 }, { active: true, size: 10 }, { active: false, size: 7 }],
 ];

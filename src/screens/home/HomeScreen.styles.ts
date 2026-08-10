@@ -735,6 +735,7 @@ export function createHomeStyles(
       paddingHorizontal: 16,
       paddingVertical: 0,
       gap: 10,
+      marginBottom: 12,
     },
 
     bookCardOuter: {
@@ -1289,6 +1290,171 @@ export function createHomeStyles(
       color: C.sub,
       textAlign: "center",
       lineHeight: 19,
+    },
+
+    /* ── Summary + Activities row ─────────────────────────────────────── */
+
+    summaryRow: {
+      flexDirection: row,
+      gap: 12,
+      paddingHorizontal: 16,
+    },
+
+    summaryCard: {
+      flex: 1,
+      borderRadius: 24,
+      backgroundColor: C.navy,
+      borderWidth: 1,
+      borderColor: isDark ? C.hairline : "rgba(255,255,255,0.06)",
+      paddingHorizontal: 16,
+      paddingVertical: 18,
+      overflow: "hidden",
+      ...neutralShadow(isDark),
+    },
+
+    summaryHeader: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 18,
+    },
+
+    summaryTitle: {
+      color: "#FFFFFF",
+      fontSize: 18,
+      fontWeight: "900",
+    },
+
+    summaryArrowBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: 999,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "rgba(255,255,255,0.10)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.18)",
+    },
+
+    summaryStatRow: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 14,
+    },
+
+    summaryStatLeft: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 8,
+    },
+
+    summaryStatDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 999,
+    },
+
+    summaryStatLabel: {
+      color: "rgba(255,255,255,0.80)",
+      fontSize: 14,
+      fontWeight: "700",
+    },
+
+    summaryStatValue: {
+      color: "#FFFFFF",
+      fontSize: 18,
+      fontWeight: "900",
+    },
+
+    summaryStatUnderline: {
+      height: 3,
+      borderRadius: 999,
+      marginTop: 2,
+    },
+
+    /* ── Activities card ──────────────────────────────────────────────── */
+
+    activitiesHeader: {
+      flexDirection: row,
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      marginBottom: 14,
+    },
+
+    activitiesHeaderText: {
+      flex: 1,
+    },
+
+    activitiesSubtitle: {
+      color: "rgba(255,255,255,0.50)",
+      fontSize: 12,
+      fontWeight: "600",
+      marginBottom: 2,
+    },
+
+    activitiesTitle: {
+      color: "#FFFFFF",
+      fontSize: 18,
+      fontWeight: "900",
+    },
+
+    activitiesArrowBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: 999,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "rgba(255,255,255,0.10)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.18)",
+    },
+
+    heatmapGrid: {
+      gap: 6,
+      marginBottom: 10,
+    },
+
+    heatmapRow: {
+      flexDirection: row,
+      justifyContent: "space-between",
+    },
+
+    heatmapDot: {
+      borderRadius: 999,
+      backgroundColor: "rgba(148,163,184,0.30)",
+    },
+
+    heatmapDotActive: {
+      backgroundColor: "#6366F1",
+    },
+
+    heatmapDotLarge: {
+      width: 14,
+      height: 14,
+    },
+
+    heatmapDotMedium: {
+      width: 10,
+      height: 10,
+    },
+
+    heatmapDotSmall: {
+      width: 7,
+      height: 7,
+    },
+
+    heatmapLabels: {
+      flexDirection: row,
+      justifyContent: "space-between",
+    },
+
+    heatmapLabel: {
+      color: "rgba(255,255,255,0.45)",
+      fontSize: 10,
+      fontWeight: "700",
+      textAlign: "center",
+      width: 14,
     },
   });
 }

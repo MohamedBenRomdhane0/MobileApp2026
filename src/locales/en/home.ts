@@ -36,6 +36,12 @@ export const home = {
     plans: "Plans",
   },
   streak_label: "⭐ + DT 5",
+  summary_title: "Summary",
+  summary_subjects: "Subjects",
+  summary_books: "Books",
+  summary_live: "Live",
+  activities_title: "Activities",
+  activities_subtitle: "This Month",
   emoji: {
     love: {
       title: "Your love for learning is inspiring! 💖",

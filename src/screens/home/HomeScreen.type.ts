@@ -49,6 +49,10 @@ export type SectionHeaderProps = HomeBlockBaseProps & {
   count?: number;
   seeAllLabel?: string;
   onSeeAll?: () => void;
+  /** Icon shown in the tinted tile before the title. */
+  icon?: IoniconName;
+  /** Section hue for the tile, count pill and link chip. Defaults to teal. */
+  accent?: string;
 };
 
 /** Which state a data-driven section is in. */
@@ -166,4 +170,29 @@ export type DailySnippet = {
   icon: IoniconName;
   textKey: string;
   sourceKey?: string;
+};
+
+export type SummaryStat = {
+  label: string;
+  value: string | number;
+  color: string;
+};
+
+export type SummaryCardProps = HomeBlockBaseProps & {
+  title: string;
+  stats: SummaryStat[];
+  onSeeAll?: () => void;
+};
+
+export type ActivityDot = {
+  size: number;
+  active: boolean;
+};
+
+export type ActivitiesCardProps = HomeBlockBaseProps & {
+  title: string;
+  subtitle: string;
+  weekDays: string[];
+  grid: ActivityDot[][];
+  onSeeAll?: () => void;
 };
