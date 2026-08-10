@@ -7,15 +7,20 @@ import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PATHS } from "@config/constants/paths";
 
-function parseQRData(data: string): { bookId: number; iconId: number } | null {
+function parseQRData(data: string): { bookId: number; iconId: number; page?: number } | null {
   try {
     const url = new URL(data);
     const pathParts = url.pathname.split("/");
     const bookId = parseInt(pathParts[pathParts.length - 1], 10);
     const iconId = parseInt(url.searchParams.get("icon") ?? "0", 10);
+    const page = parseInt(url.searchParams.get("page") ?? "0", 10);
 
-    if (!isNaN(bookId) && bookId > 0 && !isNaN(iconId) && iconId > 0) {
-      return { bookId, iconId };
+    if (!isNaN(bookId) && bookId > 0) {
+      return {
+        bookId,
+        iconId: isNaN(iconId) ? 0 : iconId,
+        page: isNaN(page) || page <= 0 ? undefined : page,
+      };
     }
   } catch {
     // not a URL
@@ -66,16 +71,19 @@ export default function ScanQRCodeScreen() {
 
       const parsed = parseQRData(data);
 
-      if (!parsed || parsed.iconId <= 0) {
+      if (!parsed || parsed.bookId <= 0) {
         Alert.alert(t("scan.invalid_qr"), t("scan.invalid_qr_desc"), [
           { text: "OK", onPress: () => setScanned(false) },
         ]);
         return;
       }
 
-      navigation.navigate(PATHS.APP.VIDEO, {
+      // Navigate to BooksFile which loads the book + icons from API,
+      // scrolls to the correct page, and lets the user tap the icon to open video
+      navigation.navigate(PATHS.APP.BOOKS_FILE, {
         bookId: parsed.bookId,
-        iconId: parsed.iconId,
+        pageNumber: parsed.page,
+        focusIconId: parsed.iconId > 0 ? parsed.iconId : undefined,
       });
     },
     [scanned, navigation, t]
