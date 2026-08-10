@@ -10,6 +10,7 @@ const CARD_INDEX = 7;
 export default function SummaryCard({
   title,
   stats,
+  liveInfo,
   styles,
   palette,
   isRTL,
@@ -52,6 +53,31 @@ export default function SummaryCard({
           <View style={[styles.summaryStatUnderline, { backgroundColor: stat.color }]} />
         </View>
       ))}
+
+      {!!liveInfo && (
+        <View style={styles.summaryLiveWrap}>
+          <View style={styles.summaryLiveDot} />
+          <View style={styles.summaryLiveInfo}>
+            <Text style={styles.summaryLiveSubject} numberOfLines={1}>
+              {liveInfo.subject}
+            </Text>
+            <Text style={styles.summaryLiveTeacher} numberOfLines={1}>
+              {liveInfo.teacherName}
+            </Text>
+            <Text style={styles.summaryLiveParticipants}>
+              {liveInfo.participants} participants
+            </Text>
+          </View>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={liveInfo.onJoin}
+            style={styles.summaryJoinBtn}
+          >
+            <Ionicons name="videocam" size={12} color="#FFFFFF" />
+            <Text style={styles.summaryJoinText}>{liveInfo.joinLabel}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </Animated.View>
   );
 }

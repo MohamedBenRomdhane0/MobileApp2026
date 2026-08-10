@@ -428,6 +428,14 @@ export default function HomeScreen() {
                 { label: t("home.summary_books"), value: homeBooks.length, color: "#7C5CFC" },
                 { label: t("home.summary_live"), value: 2, color: "#EF4444" },
               ]}
+              liveInfo={{
+                subject: t("home.live_title_mock"),
+                teacherName: t("home.live_meta_mock").split("•")[0].trim(),
+                participants: 142,
+                onJoin: goMeetings,
+                joinLabel: t("home.summary_join"),
+                liveLabel: t("home.summary_live_now"),
+              }}
             />
             <ActivitiesCard
               {...block}

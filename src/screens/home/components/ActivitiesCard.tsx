@@ -55,6 +55,7 @@ export default function ActivitiesCard({
     <Animated.View
       style={[
         styles.summaryCard,
+        styles.activitiesCard,
         { opacity, transform: [{ translateY }, { scale }] },
       ]}
     >

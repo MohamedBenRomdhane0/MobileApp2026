@@ -184,9 +184,19 @@ export type SummaryStat = {
   color: string;
 };
 
+export type SummaryLiveInfo = {
+  subject: string;
+  teacherName: string;
+  participants: number;
+  onJoin: () => void;
+  joinLabel: string;
+  liveLabel: string;
+};
+
 export type SummaryCardProps = HomeBlockBaseProps & {
   title: string;
   stats: SummaryStat[];
+  liveInfo?: SummaryLiveInfo;
   onSeeAll?: () => void;
 };
 

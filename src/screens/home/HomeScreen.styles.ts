@@ -1373,7 +1373,71 @@ export function createHomeStyles(
       marginTop: 2,
     },
 
+    summaryLiveWrap: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 10,
+      marginTop: 10,
+      paddingTop: 10,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: "rgba(255,255,255,0.14)",
+    },
+
+    summaryLiveDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 999,
+      backgroundColor: "#EF4444",
+    },
+
+    summaryLiveInfo: {
+      flex: 1,
+    },
+
+    summaryLiveSubject: {
+      color: "#FFFFFF",
+      fontSize: 13,
+      fontWeight: "800",
+    },
+
+    summaryLiveTeacher: {
+      color: "rgba(255,255,255,0.60)",
+      fontSize: 11,
+      fontWeight: "600",
+      marginTop: 1,
+    },
+
+    summaryLiveParticipants: {
+      color: "rgba(255,255,255,0.45)",
+      fontSize: 10,
+      fontWeight: "600",
+      marginTop: 2,
+    },
+
+    summaryJoinBtn: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 4,
+      paddingHorizontal: 10,
+      height: 28,
+      borderRadius: 999,
+      backgroundColor: "rgba(239,68,68,0.22)",
+      borderWidth: 1,
+      borderColor: "rgba(239,68,68,0.35)",
+    },
+
+    summaryJoinText: {
+      color: "#FFFFFF",
+      fontSize: 11,
+      fontWeight: "800",
+    },
+
     /* ── Activities card ──────────────────────────────────────────────── */
+
+    activitiesCard: {
+      aspectRatio: 1,
+      justifyContent: "space-between",
+    },
 
     activitiesHeader: {
       flexDirection: row,
@@ -1411,8 +1475,9 @@ export function createHomeStyles(
     },
 
     calGrid: {
-      gap: 4,
-      marginBottom: 8,
+      gap: 3,
+      flex: 1,
+      justifyContent: "center",
     },
 
     calRow: {
@@ -1421,8 +1486,10 @@ export function createHomeStyles(
     },
 
     calDay: {
-      width: 28,
-      height: 28,
+      flex: 1,
+      aspectRatio: 1,
+      maxWidth: 28,
+      maxHeight: 28,
       borderRadius: 999,
       alignItems: "center",
       justifyContent: "center",
@@ -1444,18 +1511,18 @@ export function createHomeStyles(
     },
 
     calDayPhoto: {
-      width: 26,
-      height: 26,
+      width: 22,
+      height: 22,
       borderRadius: 999,
     },
 
     calDayPhotoRing: {
-      width: 28,
-      height: 28,
+      width: 26,
+      height: 26,
       borderRadius: 999,
       alignItems: "center",
       justifyContent: "center",
-      borderWidth: 2,
+      borderWidth: 1.5,
     },
 
     calLabels: {
@@ -1465,10 +1532,10 @@ export function createHomeStyles(
 
     calLabel: {
       color: "rgba(255,255,255,0.45)",
-      fontSize: 10,
+      fontSize: 9,
       fontWeight: "700",
       textAlign: "center",
-      width: 28,
+      flex: 1,
     },
   });
 }
