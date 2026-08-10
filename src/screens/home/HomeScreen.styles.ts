@@ -1435,7 +1435,7 @@ export function createHomeStyles(
     /* ── Activities card ──────────────────────────────────────────────── */
 
     activitiesCard: {
-      aspectRatio: 1,
+      aspectRatio: 0.78,
       justifyContent: "space-between",
     },
 
