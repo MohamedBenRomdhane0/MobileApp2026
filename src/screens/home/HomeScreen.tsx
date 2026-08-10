@@ -408,34 +408,26 @@ export default function HomeScreen() {
                         accent={HOME_SECTION_ACCENT.live}
                       />
 
-                      <LiveNowCard
-                        {...block}
-                        title={t("home.live_title_mock")}
-                        meta={t("home.live_meta_mock")}
-                        liveLabel={t(HOME_COMMON_UI.live)}
-                        joinLabel={t(HOME_UI.join)}
-                        onJoin={goMeetings}
-                      />
+                        {/* <LiveNowCard
+                          {...block}
+                          title={t("home.live_title_mock")}
+                          meta={t("home.live_meta_mock")}
+                          liveLabel={t(HOME_COMMON_UI.live)}
+                          joinLabel={t(HOME_UI.join)}
+                          onJoin={goMeetings}
+                        /> */}
                     </View>
 
           {/* Summary + Activities row */}
           <View style={styles.summaryRow}>
             <SummaryCard
               {...block}
-              title={t("home.summary_title")}
-              stats={[
-                { label: t("home.summary_subjects"), value: materials.length, color: "#22BEC8" },
-                { label: t("home.summary_books"), value: homeBooks.length, color: "#7C5CFC" },
-                { label: t("home.summary_live"), value: 2, color: "#EF4444" },
-              ]}
-              liveInfo={{
-                subject: t("home.live_title_mock"),
-                teacherName: t("home.live_meta_mock").split("•")[0].trim(),
-                participants: 142,
-                onJoin: goMeetings,
-                joinLabel: t("home.summary_join"),
-                liveLabel: t("home.summary_live_now"),
-              }}
+              title={t("home.live_title_mock")}
+              meta={t("home.live_meta_mock")}
+              teacherPhoto={require("../../../assets/teachers/tarek.png")}
+              liveLabel={t("home.summary_live_now")}
+              joinLabel={t("home.summary_join")}
+              onJoin={goMeetings}
             />
             <ActivitiesCard
               {...block}

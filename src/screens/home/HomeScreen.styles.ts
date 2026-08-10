@@ -724,6 +724,17 @@ export function createHomeStyles(
       height: 42,
     },
 
+    summaryJoinInner: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      paddingHorizontal: 20,
+      height: 42,
+      backgroundColor: "#E11D48",
+      borderRadius: 15,
+    },
+
     liveJoinText: { color: "#FFFFFF", fontSize: 13, fontWeight: "900" },
 
     /* ── Books carousel ──────────────────────────────────────────────── */
@@ -1321,8 +1332,42 @@ export function createHomeStyles(
 
     summaryTitle: {
       color: "#FFFFFF",
-      fontSize: 18,
+      fontSize: 16,
       fontWeight: "900",
+      letterSpacing: -0.2,
+    },
+
+    summaryTopRow: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 10,
+    },
+
+    summaryTeacherPhoto: {
+      width: 44,
+      height: 44,
+      borderRadius: 999,
+      borderWidth: 2,
+      borderColor: "rgba(255,255,255,0.18)",
+    },
+
+    summaryInfo: {
+      flex: 1,
+      minWidth: 0,
+    },
+
+    summaryMetaRow: {
+      marginTop: 4,
+      flexDirection: row,
+      alignItems: "center",
+      gap: 4,
+    },
+
+    summaryMeta: {
+      color: "rgba(255,255,255,0.72)",
+      fontSize: 11.5,
+      fontWeight: "700",
+      flexShrink: 1,
     },
 
     summaryArrowBtn: {

@@ -195,9 +195,11 @@ export type SummaryLiveInfo = {
 
 export type SummaryCardProps = HomeBlockBaseProps & {
   title: string;
-  stats: SummaryStat[];
-  liveInfo?: SummaryLiveInfo;
-  onSeeAll?: () => void;
+  meta: string;
+  teacherPhoto: number;
+  liveLabel: string;
+  joinLabel: string;
+  onJoin: () => void;
 };
 
 export type ActivitiesCardProps = HomeBlockBaseProps & {

@@ -1,83 +1,115 @@
-import React from "react";
-import { Animated, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Animated, Easing, Image, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { useHomeCardEntrance, useHomeCardPress } from "@hooks/useHomeCardMotion";
+import { HOME_TOKENS } from "@screens/home/HomeScreen.constants";
+import { useHomeCardEntrance } from "@hooks/useHomeCardMotion";
 import type { SummaryCardProps } from "../HomeScreen.type";
 
 const CARD_INDEX = 7;
+const PULSE_DURATION = 1200;
 
 export default function SummaryCard({
   title,
-  stats,
-  liveInfo,
+  meta,
+  teacherPhoto,
+  liveLabel,
+  joinLabel,
+  onJoin,
   styles,
   palette,
   isRTL,
 }: SummaryCardProps) {
   const { opacity, translateY } = useHomeCardEntrance(CARD_INDEX);
-  const { scale, onPressIn, onPressOut } = useHomeCardPress();
+  const pulse = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, {
+          toValue: 1,
+          duration: PULSE_DURATION / 2,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulse, {
+          toValue: 0,
+          duration: PULSE_DURATION / 2,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulse]);
+
+  const glowScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 2.2] });
+  const glowOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0] });
 
   return (
     <Animated.View
       style={[
         styles.summaryCard,
-        { opacity, transform: [{ translateY }, { scale }] },
+        { opacity, transform: [{ translateY }] },
       ]}
     >
-      <View style={styles.summaryHeader}>
-        <Text style={styles.summaryTitle}>{title}</Text>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPressIn={onPressIn}
-          onPressOut={onPressOut}
-          style={styles.summaryArrowBtn}
-        >
-          <Ionicons
-            name={isRTL ? "arrow-back" : "arrow-forward"}
-            size={16}
-            color="#FFFFFF"
-          />
-        </TouchableOpacity>
+      <View style={styles.liveGlow} pointerEvents="none" />
+      <View style={styles.liveRail} pointerEvents="none" />
+
+      <View style={styles.summaryTopRow}>
+        <Image source={teacherPhoto} style={styles.summaryTeacherPhoto} />
+
+        <View style={styles.summaryInfo}>
+          <Text style={styles.summaryTitle} numberOfLines={1}>
+            {title}
+          </Text>
+
+          <View style={styles.summaryMetaRow}>
+            <Ionicons
+              name="person-outline"
+              size={11}
+              color="rgba(255,255,255,0.6)"
+            />
+            <Text style={styles.summaryMeta} numberOfLines={1}>
+              {meta}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.liveBadge}>
+          <View>
+            <Animated.View
+              style={{
+                position: "absolute",
+                width: 8,
+                height: 8,
+                borderRadius: 999,
+                backgroundColor: palette.live,
+                opacity: glowOpacity,
+                transform: [{ scale: glowScale }],
+              }}
+            />
+            <View style={styles.liveDot} />
+          </View>
+          <Text style={styles.liveBadgeText}>{liveLabel}</Text>
+        </View>
       </View>
 
-      {stats.map((stat, i) => (
-        <View key={i}>
-          <View style={styles.summaryStatRow}>
-            <View style={styles.summaryStatLeft}>
-              <View style={[styles.summaryStatDot, { backgroundColor: stat.color }]} />
-              <Text style={styles.summaryStatLabel}>{stat.label}</Text>
-            </View>
-            <Text style={styles.summaryStatValue}>{stat.value}</Text>
+      <View style={styles.liveBottomRow}>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          style={styles.liveJoinBtn}
+          onPress={onJoin}
+          accessibilityRole="button"
+          accessibilityLabel={joinLabel}
+        >
+          <View style={styles.summaryJoinInner}>
+            <Ionicons name={isRTL ? "arrow-back" : "arrow-forward"} size={14} color="#FFFFFF" />
+            <Text style={styles.liveJoinText}>{joinLabel}</Text>
           </View>
-          <View style={[styles.summaryStatUnderline, { backgroundColor: stat.color }]} />
-        </View>
-      ))}
-
-      {!!liveInfo && (
-        <View style={styles.summaryLiveWrap}>
-          <View style={styles.summaryLiveDot} />
-          <View style={styles.summaryLiveInfo}>
-            <Text style={styles.summaryLiveSubject} numberOfLines={1}>
-              {liveInfo.subject}
-            </Text>
-            <Text style={styles.summaryLiveTeacher} numberOfLines={1}>
-              {liveInfo.teacherName}
-            </Text>
-            <Text style={styles.summaryLiveParticipants}>
-              {liveInfo.participants} participants
-            </Text>
-          </View>
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={liveInfo.onJoin}
-            style={styles.summaryJoinBtn}
-          >
-            <Ionicons name="videocam" size={12} color="#FFFFFF" />
-            <Text style={styles.summaryJoinText}>{liveInfo.joinLabel}</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+        </TouchableOpacity>
+      </View>
     </Animated.View>
   );
 }
