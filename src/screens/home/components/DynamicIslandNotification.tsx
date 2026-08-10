@@ -32,7 +32,7 @@ export default function DynamicIslandNotification({
   const intervalTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isAuto = Boolean(autoShowIntervalMs);
-  const visible = isAuto ? internalVisible : externalVisible;
+  const visible = externalVisible || internalVisible;
 
   const dismiss = useCallback(() => {
     Animated.parallel([
