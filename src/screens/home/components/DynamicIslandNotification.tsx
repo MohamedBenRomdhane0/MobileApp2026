@@ -4,8 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 
 import type { DynamicIslandNotificationProps } from "../HomeScreen.type";
 
-const PILL_W = 152;
-const PILL_H = 38;
+const PILL_W = 200;
+const PILL_H = 44;
 const AUTO_DISMISS_MS = 3500;
 
 export default function DynamicIslandNotification({
@@ -83,7 +83,7 @@ export default function DynamicIslandNotification({
   });
   const pillHeight = expandAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [PILL_H, 110],
+    outputRange: [PILL_H, 130],
   });
   const pillRadius = expandAnim.interpolate({
     inputRange: [0, 1],
@@ -135,21 +135,21 @@ export default function DynamicIslandNotification({
           opacity: pillContentOpacity,
         }}
       >
-        <Image source={teacherPhoto} style={{ width: 28, height: 28, borderRadius: 999, borderWidth: 1.5, borderColor: "rgba(34,190,200,0.35)" }} />
+        <Image source={teacherPhoto} style={{ width: 30, height: 30, borderRadius: 999, borderWidth: 1.5, borderColor: "rgba(34,190,200,0.35)" }} />
         <Text
           style={{
             flex: 1,
             color: "#FFFFFF",
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: "800",
           }}
           numberOfLines={1}
         >
           {teacherName}
         </Text>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, height: 22, borderRadius: 999, backgroundColor: "rgba(239,68,68,0.22)", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)" }}>
-          <View style={{ width: 6, height: 6, borderRadius: 999, backgroundColor: "#EF4444" }} />
-          <Text style={{ color: "#FFFFFF", fontSize: 10, fontWeight: "800" }}>{liveLabel}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 10, height: 24, borderRadius: 999, backgroundColor: "rgba(239,68,68,0.22)", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)" }}>
+          <View style={{ width: 7, height: 7, borderRadius: 999, backgroundColor: "#EF4444" }} />
+          <Text style={{ color: "#FFFFFF", fontSize: 11, fontWeight: "800" }}>{liveLabel}</Text>
         </View>
       </Animated.View>
 
@@ -170,7 +170,7 @@ export default function DynamicIslandNotification({
           style={{ flex: 1 }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 14, paddingTop: 12, gap: 12 }}>
-            <Image source={teacherPhoto} style={{ width: 48, height: 48, borderRadius: 999, borderWidth: 2, borderColor: "rgba(34,190,200,0.35)" }} />
+            <Image source={teacherPhoto} style={{ width: 52, height: 52, borderRadius: 999, borderWidth: 2, borderColor: "rgba(34,190,200,0.35)" }} />
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={{ color: "#EF4444", fontSize: 10, fontWeight: "800", letterSpacing: 0.8 }}>
                 {liveLabel.toUpperCase()}
