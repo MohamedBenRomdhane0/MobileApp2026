@@ -494,7 +494,6 @@ export default function HomeScreen() {
 
         <WalletBottomSheet
           visible={walletVisible}
-          balance={5}
           currency="DT"
           onClose={() => setWalletVisible(false)}
         />

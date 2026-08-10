@@ -15,4 +15,10 @@ export const wallet = {
   beneficiary: "Bénéficiaire",
   upload_receipt: "Cliquez pour joindre la photo du reçu",
   receipt_types: "JPG, PNG ou PDF",
+  set_amount: "Définir le montant",
+  saved_cards: "Cartes enregistrées",
+  view_all: "Voir tout",
+  swipe_to_topup: "Glisser pour recharger",
+  decrease_amount: "Diminuer le montant",
+  increase_amount: "Augmenter le montant",
 };

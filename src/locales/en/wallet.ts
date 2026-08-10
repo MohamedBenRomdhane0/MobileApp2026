@@ -15,4 +15,10 @@ export const wallet = {
   beneficiary: "Beneficiary",
   upload_receipt: "Tap to upload receipt photo",
   receipt_types: "JPG, PNG or PDF",
+  set_amount: "Set Amount",
+  saved_cards: "Saved Cards",
+  view_all: "View All",
+  swipe_to_topup: "Swipe to topup",
+  decrease_amount: "Decrease amount",
+  increase_amount: "Increase amount",
 };

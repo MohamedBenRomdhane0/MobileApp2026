@@ -15,10 +15,7 @@ type RechargeAmountCardProps = {
   onPress: () => void;
 };
 
-/**
- * One quick recharge chip (5 / 10 / 20 / 50 DT). The selected chip gets a
- * cyan border + glow and springs slightly larger.
- */
+/** One quick-recharge chip. Selected chip gets a purple border + glow. */
 export default function RechargeAmountCard({
   amount,
   currency,
@@ -42,15 +39,14 @@ export default function RechargeAmountCard({
     <Animated.View style={[{ flex: 1 }, animatedStyle]}>
       <Pressable
         style={[
-          walletStyles.amountCard,
-          selected && walletStyles.amountCardActive,
+          walletStyles.chip,
+          selected && walletStyles.chipActive,
         ]}
         onPress={onPress}
         accessibilityRole="button"
         accessibilityState={{ selected }}
       >
-        <Text style={walletStyles.amountValue}>{amount}</Text>
-        <Text style={walletStyles.amountCurrency}>{currency}</Text>
+        <Text style={walletStyles.chipText}>{amount}</Text>
       </Pressable>
     </Animated.View>
   );

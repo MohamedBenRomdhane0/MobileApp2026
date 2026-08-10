@@ -1,20 +1,24 @@
 import type { WithSpringConfig } from "react-native-reanimated";
 
-/** Dark navy sheet surface (kept dark in both themes, like the home hero). */
-export const WALLET_NAVY = "#171D3A";
-export const WALLET_NAVY_CARD = "#1D2447";
+/** Dark navy sheet surface — deep premium background. */
+export const WALLET_NAVY = "#1A1A2E";
+export const WALLET_NAVY_CARD = "#252542";
 
-/** App teal used as the single wallet accent. */
+/** Purple accent for primary actions. */
+export const WALLET_PURPLE = "#7C4DFF";
+export const WALLET_PURPLE_SOFT = "rgba(124,77,255,0.18)";
+
+/** Teal retained for secondary accents. */
 export const WALLET_CYAN = "#22BEC8";
 export const WALLET_CYAN_SOFT = "rgba(34,190,200,0.16)";
 
 export const WALLET_TEXT = "#FFFFFF";
-export const WALLET_SUB = "rgba(255,255,255,0.62)";
+export const WALLET_SUB = "rgba(255,255,255,0.55)";
 export const WALLET_HAIRLINE = "rgba(255,255,255,0.10)";
-export const WALLET_INPUT_BG = "rgba(255,255,255,0.07)";
+export const WALLET_INPUT_BG = "rgba(255,255,255,0.06)";
 
-/** The four quick recharge amounts shown as selectable cards. */
-export const RECHARGE_AMOUNTS = [5, 10, 20, 50] as const;
+/** Preset recharge amounts shown as chips. */
+export const RECHARGE_AMOUNTS = [50, 100, 500, 1000] as const;
 
 /** Recognized card networks for the live brand badge. */
 export type CardBrand = "visa" | "mastercard" | null;
@@ -27,8 +31,22 @@ export function getCardBrand(value: string): CardBrand {
   return null;
 }
 
-/** Cyan gradient used by the "Pay now" primary button. */
-export const WALLET_BTN_GRADIENT = ["#2AD4DF", "#0E8E9B"] as [string, string];
+/** Purple gradient for the swipe-to-topup button. */
+export const WALLET_SWIPE_GRADIENT = [
+  "#9B6DFF",
+  "#7C4DFF",
+  "#5C2DDF",
+] as [string, string, string];
+
+/** Cyan gradient used by the "Pay now" primary button (fallback). */
+export const WALLET_BTN_GRADIENT = ["#9B6DFF", "#7C4DFF"] as [string, string];
+
+/** Gradient for the saved-card display. */
+export const WALLET_CARD_GRADIENT = [
+  "#3A2D6B",
+  "#2A1D5B",
+  "#1A1A2E",
+] as [string, string, string];
 
 /** Spring used for sheet presentation and snap transitions. */
 export const WALLET_SPRING: WithSpringConfig = {

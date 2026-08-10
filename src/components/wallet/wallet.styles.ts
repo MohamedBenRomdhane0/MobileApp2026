@@ -1,11 +1,12 @@
 import { StyleSheet } from "react-native";
 
 import {
-  WALLET_CYAN,
-  WALLET_CYAN_SOFT,
   WALLET_HAIRLINE,
   WALLET_INPUT_BG,
   WALLET_NAVY,
+  WALLET_NAVY_CARD,
+  WALLET_PURPLE,
+  WALLET_PURPLE_SOFT,
   WALLET_SUB,
   WALLET_TEXT,
 } from "./wallet.constants";
@@ -27,7 +28,7 @@ export const walletStyles = StyleSheet.create({
     width: 240,
     height: 240,
     borderRadius: 120,
-    backgroundColor: "rgba(34,190,200,0.20)",
+    backgroundColor: "rgba(124,77,255,0.18)",
   },
 
   sheetGlowSide: {
@@ -37,7 +38,7 @@ export const walletStyles = StyleSheet.create({
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: "rgba(34,190,200,0.12)",
+    backgroundColor: "rgba(124,77,255,0.10)",
   },
 
   handleIndicator: {
@@ -49,12 +50,12 @@ export const walletStyles = StyleSheet.create({
 
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(8,12,28,0.55)",
+    backgroundColor: "rgba(8,12,28,0.60)",
   },
 
   content: {
-    paddingHorizontal: 18,
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    paddingBottom: 32,
   },
 
   /* ── Header ───────────────────────────────────────────────────────────── */
@@ -75,6 +76,256 @@ export const walletStyles = StyleSheet.create({
     borderColor: WALLET_HAIRLINE,
     alignItems: "center",
     justifyContent: "center",
+  },
+
+  /* ── Set Amount section ──────────────────────────────────────────────── */
+
+  setAmountRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 18,
+    marginBottom: 20,
+  },
+
+  setAmountLabel: {
+    color: WALLET_SUB,
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+
+  setAmountChevron: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: WALLET_INPUT_BG,
+    borderWidth: 1,
+    borderColor: WALLET_HAIRLINE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  /* ── Amount stepper ──────────────────────────────────────────────────── */
+
+  amountStepperRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 24,
+  },
+
+  stepperBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: WALLET_INPUT_BG,
+    borderWidth: 1.5,
+    borderColor: WALLET_HAIRLINE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  amountDisplay: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  amountBig: {
+    color: WALLET_TEXT,
+    fontSize: 42,
+    fontWeight: "900",
+    letterSpacing: 1,
+    lineHeight: 50,
+  },
+
+  amountCurrencySub: {
+    color: WALLET_SUB,
+    fontSize: 13,
+    fontWeight: "700",
+    marginTop: 2,
+  },
+
+  /* ── Preset amount chips ─────────────────────────────────────────────── */
+
+  chipsRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 24,
+  },
+
+  chip: {
+    flex: 1,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: WALLET_HAIRLINE,
+    backgroundColor: WALLET_INPUT_BG,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  chipActive: {
+    borderColor: WALLET_PURPLE,
+    backgroundColor: WALLET_PURPLE_SOFT,
+    shadowColor: WALLET_PURPLE,
+    shadowOpacity: 0.50,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+
+  chipText: {
+    color: WALLET_TEXT,
+    fontSize: 14,
+    fontWeight: "800",
+  },
+
+  /* ── Swipe-to-topup slider ───────────────────────────────────────────── */
+
+  swipeTrack: {
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "rgba(124,77,255,0.12)",
+    borderWidth: 1.5,
+    borderColor: "rgba(124,77,255,0.25)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 28,
+    overflow: "hidden",
+  },
+
+  swipeTrackInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  swipeIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: WALLET_PURPLE,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: WALLET_PURPLE,
+    shadowOpacity: 0.6,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+
+  swipeLabel: {
+    color: "rgba(255,255,255,0.70)",
+    fontSize: 14,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+
+  /* ── Saved Cards section ─────────────────────────────────────────────── */
+
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 14,
+  },
+
+  sectionTitle: {
+    color: WALLET_TEXT,
+    fontSize: 15,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+
+  sectionLink: {
+    color: WALLET_PURPLE,
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  savedCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "rgba(124,77,255,0.20)",
+    backgroundColor: WALLET_NAVY_CARD,
+    padding: 18,
+    marginBottom: 10,
+    overflow: "hidden",
+  },
+
+  savedCardGlow: {
+    position: "absolute",
+    top: -30,
+    right: -30,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "rgba(124,77,255,0.10)",
+  },
+
+  savedCardChipRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 18,
+  },
+
+  savedCardType: {
+    color: WALLET_SUB,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+
+  savedCardNumber: {
+    color: WALLET_TEXT,
+    fontSize: 16,
+    fontWeight: "800",
+    letterSpacing: 2,
+  },
+
+  savedCardFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  savedCardHolder: {
+    color: WALLET_SUB,
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  savedCardExpiry: {
+    color: WALLET_SUB,
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  savedCardBrand: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+    backgroundColor: "rgba(124,77,255,0.25)",
+  },
+
+  savedCardBrandText: {
+    color: WALLET_TEXT,
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.5,
+  },
+
+  /* ── Legacy section label (kept for payment method) ─────────────────── */
+
+  sectionLabel: {
+    color: WALLET_SUB,
+    fontSize: 11.5,
+    fontWeight: "800",
+    letterSpacing: 0.6,
+    marginBottom: 10,
   },
 
   /* ── Balance ──────────────────────────────────────────────────────────── */
@@ -110,24 +361,14 @@ export const walletStyles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: WALLET_CYAN,
+    backgroundColor: WALLET_PURPLE,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: WALLET_CYAN,
+    shadowColor: WALLET_PURPLE,
     shadowOpacity: 0.6,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
-  },
-
-  /* ── Sections ─────────────────────────────────────────────────────────── */
-
-  sectionLabel: {
-    color: WALLET_SUB,
-    fontSize: 11.5,
-    fontWeight: "800",
-    letterSpacing: 0.6,
-    marginBottom: 10,
   },
 
   /* ── Recharge amount cards ────────────────────────────────────────────── */
@@ -151,9 +392,9 @@ export const walletStyles = StyleSheet.create({
   },
 
   amountCardActive: {
-    borderColor: WALLET_CYAN,
-    backgroundColor: WALLET_CYAN_SOFT,
-    shadowColor: WALLET_CYAN,
+    borderColor: WALLET_PURPLE,
+    backgroundColor: WALLET_PURPLE_SOFT,
+    shadowColor: WALLET_PURPLE,
     shadowOpacity: 0.55,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
@@ -208,9 +449,9 @@ export const walletStyles = StyleSheet.create({
   },
 
   methodCardActive: {
-    borderColor: WALLET_CYAN,
-    backgroundColor: WALLET_CYAN_SOFT,
-    shadowColor: WALLET_CYAN,
+    borderColor: WALLET_PURPLE,
+    backgroundColor: WALLET_PURPLE_SOFT,
+    shadowColor: WALLET_PURPLE,
     shadowOpacity: 0.35,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
@@ -229,9 +470,9 @@ export const walletStyles = StyleSheet.create({
   },
 
   methodIconBoxActive: {
-    backgroundColor: WALLET_CYAN,
-    borderColor: WALLET_CYAN,
-    shadowColor: WALLET_CYAN,
+    backgroundColor: WALLET_PURPLE,
+    borderColor: WALLET_PURPLE,
+    shadowColor: WALLET_PURPLE,
     shadowOpacity: 0.6,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
@@ -316,13 +557,13 @@ export const walletStyles = StyleSheet.create({
     height: 22,
     borderRadius: 6,
     borderWidth: 1.5,
-    borderColor: WALLET_CYAN,
+    borderColor: WALLET_PURPLE,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "transparent",
   },
 
-  saveBoxOn: { backgroundColor: WALLET_CYAN },
+  saveBoxOn: { backgroundColor: WALLET_PURPLE },
 
   saveText: {
     color: WALLET_SUB,
@@ -374,8 +615,8 @@ export const walletStyles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1.5,
     borderStyle: "dashed",
-    borderColor: "rgba(34,190,200,0.55)",
-    backgroundColor: "rgba(34,190,200,0.06)",
+    borderColor: "rgba(124,77,255,0.50)",
+    backgroundColor: "rgba(124,77,255,0.06)",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 14,
@@ -387,9 +628,9 @@ export const walletStyles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: WALLET_CYAN_SOFT,
+    backgroundColor: WALLET_PURPLE_SOFT,
     borderWidth: 1,
-    borderColor: "rgba(34,190,200,0.4)",
+    borderColor: "rgba(124,77,255,0.35)",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 2,
@@ -417,7 +658,7 @@ export const walletStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 2,
-    shadowColor: WALLET_CYAN,
+    shadowColor: WALLET_PURPLE,
     shadowOpacity: 0.55,
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 8 },

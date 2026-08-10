@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
+  Animated,
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,34 +16,31 @@ import BottomSheet, {
   type BottomSheetBackdropProps,
   type BottomSheetBackgroundProps,
 } from "@gorhom/bottom-sheet";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
+import {
+  GestureHandlerRootView,
+  PanGestureHandler,
+  State,
+  type HandlerStateChangeEvent,
+  type PanGestureHandlerEventPayload,
+  type PanGestureHandlerGestureEvent,
+} from "react-native-gesture-handler";
 
-import CardInput from "./CardInput";
-import PaymentMethodCard from "./PaymentMethodCard";
 import RechargeAmountCard from "./RechargeAmountCard";
 import {
   RECHARGE_AMOUNTS,
-  WALLET_BTN_GRADIENT,
-  WALLET_CYAN,
+  WALLET_CARD_GRADIENT,
   WALLET_SPRING,
-  getCardBrand,
+  WALLET_SWIPE_GRADIENT,
 } from "./wallet.constants";
 import { walletStyles } from "./wallet.styles";
 
-type PaymentMethod = "card" | "transfer";
-
 type WalletBottomSheetProps = {
   visible: boolean;
-  balance: number;
   currency: string;
   onClose: () => void;
 };
 
-/** Frosted-glass sheet shell: navy base + soft cyan glows under a blur. */
+/** Frosted-glass sheet shell: navy base + purple glows under a blur. */
 function WalletBackground({ style }: BottomSheetBackgroundProps) {
   return (
     <Animated.View
@@ -74,9 +71,137 @@ function WalletBackdrop({ style }: BottomSheetBackdropProps) {
   );
 }
 
+/** Swipe-to-topup animated slider. */
+function SwipeToTopup({ onSwipeComplete }: { onSwipeComplete: () => void }) {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const trackWidth = useRef(0);
+  const knobSize = 48;
+
+  const onGestureEvent = useCallback(
+    (event: PanGestureHandlerGestureEvent) => {
+      if (event.nativeEvent.state === State.ACTIVE) {
+        const maxX = Math.max(trackWidth.current - knobSize - 8, 1);
+        const clamped = Math.min(
+          Math.max(event.nativeEvent.translationX, 0),
+          maxX,
+        );
+        translateX.setValue(clamped);
+      }
+    },
+    [translateX],
+  );
+
+  const onHandlerStateChange = useCallback(
+    (event: HandlerStateChangeEvent<PanGestureHandlerEventPayload>) => {
+      if (event.nativeEvent.oldState === State.ACTIVE) {
+        const maxX = Math.max(trackWidth.current - knobSize - 8, 1);
+        const finalX = event.nativeEvent.translationX;
+        if (finalX >= maxX * 0.82) {
+          Animated.spring(translateX, {
+            toValue: maxX,
+            useNativeDriver: false,
+            damping: 18,
+            stiffness: 200,
+          }).start(() => {
+            onSwipeComplete();
+            Animated.spring(translateX, {
+              toValue: 0,
+              useNativeDriver: false,
+              damping: 18,
+              stiffness: 200,
+            }).start();
+          });
+        } else {
+          Animated.spring(translateX, {
+            toValue: 0,
+            useNativeDriver: false,
+            damping: 18,
+            stiffness: 200,
+          }).start();
+        }
+      }
+    },
+    [translateX, onSwipeComplete],
+  );
+
+  return (
+    <View
+      style={walletStyles.swipeTrack}
+      onLayout={(e) => {
+        trackWidth.current = e.nativeEvent.layout.width;
+      }}
+    >
+      <PanGestureHandler
+        onGestureEvent={onGestureEvent}
+        onHandlerStateChange={onHandlerStateChange}
+      >
+        <Animated.View
+          style={{
+            position: "absolute",
+            left: 4,
+            width: knobSize,
+            height: knobSize,
+            borderRadius: knobSize / 2,
+            transform: [{ translateX }],
+          }}
+        >
+          <LinearGradient
+            colors={WALLET_SWIPE_GRADIENT}
+            style={walletStyles.swipeIconCircle}
+          >
+            <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+          </LinearGradient>
+        </Animated.View>
+      </PanGestureHandler>
+      <View style={walletStyles.swipeTrackInner}>
+        <View style={{ width: knobSize + 20 }} />
+        <Text style={walletStyles.swipeLabel}>Swipe to topup</Text>
+      </View>
+    </View>
+  );
+}
+
+/** Saved card display with gradient background. */
+function SavedCard({
+  last4,
+  brand,
+  holder,
+  expiry,
+}: {
+  last4: string;
+  brand: string;
+  holder: string;
+  expiry: string;
+}) {
+  return (
+    <LinearGradient
+      colors={WALLET_CARD_GRADIENT}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={walletStyles.savedCard}
+    >
+      <View style={walletStyles.savedCardGlow} />
+      <View style={walletStyles.savedCardChipRow}>
+        <Text style={walletStyles.savedCardType}>Debit</Text>
+        <View style={walletStyles.savedCardBrand}>
+          <Text style={walletStyles.savedCardBrandText}>{brand}</Text>
+        </View>
+      </View>
+      <Text style={walletStyles.savedCardNumber}>
+        •••• •••• •••• {last4}
+      </Text>
+      <View style={walletStyles.savedCardFooter}>
+        <View>
+          <Text style={walletStyles.savedCardHolder}>{holder}</Text>
+        </View>
+        <Text style={walletStyles.savedCardExpiry}>{expiry}</Text>
+      </View>
+    </LinearGradient>
+  );
+}
+
 export default function WalletBottomSheet({
   visible,
-  balance,
   currency,
   onClose,
 }: WalletBottomSheetProps) {
@@ -84,277 +209,138 @@ export default function WalletBottomSheet({
   const sheetRef = useRef<BottomSheet>(null);
   const isRTL = (i18n.language ?? "ar") === "ar";
 
-  const [amount, setAmount] = useState<number>(10);
-  const [customAmount, setCustomAmount] = useState("");
-  const [method, setMethod] = useState<PaymentMethod>("card");
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [saveCard, setSaveCard] = useState(true);
+  const [amount, setAmount] = useState(100);
 
-  const snapPoints = useMemo(() => ["48%", "88%"], []);
-
-  const payScale = useSharedValue(1);
-  const payStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: payScale.value }],
-  }));
-
-  const onPayPressIn = useCallback(() => {
-    payScale.value = withSpring(0.96, { damping: 20, stiffness: 320 });
-  }, [payScale]);
-
-  const onPayPressOut = useCallback(() => {
-    payScale.value = withSpring(1, { damping: 16, stiffness: 200 });
-  }, [payScale]);
+  const snapPoints = useMemo(() => ["52%", "92%"], []);
 
   const selectAmount = useCallback((next: number) => {
     setAmount(next);
-    setCustomAmount("");
   }, []);
 
-  const onChangeCustom = useCallback((next: string) => {
-    setCustomAmount(next);
-    if (next.trim()) setAmount(0);
+  const incrementAmount = useCallback(() => {
+    setAmount((prev) => prev + 50);
   }, []);
 
-  const onPayNow = useCallback(() => {
-    // Wire to the recharge mutation once the backend contract lands.
-    sheetRef.current?.close();
+  const decrementAmount = useCallback(() => {
+    setAmount((prev) => Math.max(prev - 50, 0));
   }, []);
 
   if (!visible) return null;
 
   const row = isRTL ? ("row-reverse" as const) : ("row" as const);
-  const payLabel = `${t("wallet.pay_now")} · ${
-    customAmount.trim() || String(amount)
-  } ${currency}`;
 
   return (
-    <BottomSheet
-      ref={sheetRef}
-      index={0}
-      snapPoints={snapPoints}
-      enablePanDownToClose
-      enableDynamicSizing={false}
-      animationConfigs={WALLET_SPRING}
-      backgroundComponent={WalletBackground}
-      backdropComponent={WalletBackdrop}
-      handleIndicatorStyle={walletStyles.handleIndicator}
-      onClose={onClose}
-    >
-      <BottomSheetScrollView
-        style={{ backgroundColor: "transparent" }}
-        contentContainerStyle={walletStyles.content}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BottomSheet
+        ref={sheetRef}
+        index={0}
+        snapPoints={snapPoints}
+        enablePanDownToClose
+        enableDynamicSizing={false}
+        animationConfigs={WALLET_SPRING}
+        backgroundComponent={WalletBackground}
+        backdropComponent={WalletBackdrop}
+        handleIndicatorStyle={walletStyles.handleIndicator}
+        onClose={onClose}
       >
-        {/* Header — close on the leading edge, balance centered below */}
-        <View style={[walletStyles.headerRow, { flexDirection: row }]}>
-          <Pressable
-            style={walletStyles.closeBtn}
-            onPress={() => sheetRef.current?.close()}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={t("common.close")}
-          >
-            <Ionicons name="close" size={18} color="#FFFFFF" />
-          </Pressable>
-          <View style={walletStyles.headerSpacer} />
-        </View>
-
-        {/* Balance */}
-        <View style={walletStyles.balanceWrap}>
-          <Text style={walletStyles.balanceLabel}>
-            {t("wallet.current_balance")}
-          </Text>
-          <View style={walletStyles.balanceRow}>
-            <View style={walletStyles.balanceIcon}>
-              <Ionicons name="wallet" size={20} color="#FFFFFF" />
-            </View>
-            <Text style={walletStyles.balanceAmount}>
-              {balance} {currency}
-            </Text>
-          </View>
-        </View>
-
-        {/* Recharge amount */}
-        <Text style={walletStyles.sectionLabel}>
-          {t("wallet.recharge_amount")}
-        </Text>
-        <View style={[walletStyles.amountsRow, { flexDirection: row }]}>
-          {RECHARGE_AMOUNTS.map((value) => (
-            <RechargeAmountCard
-              key={value}
-              amount={value}
-              currency={currency}
-              selected={amount === value && !customAmount.trim()}
-              onPress={() => selectAmount(value)}
-            />
-          ))}
-        </View>
-
-        <TextInput
-          value={customAmount}
-          onChangeText={onChangeCustom}
-          placeholder={t("wallet.custom_amount")}
-          placeholderTextColor="rgba(255,255,255,0.35)"
-          keyboardType="number-pad"
-          style={walletStyles.customInput}
-          textAlign={isRTL ? "right" : "left"}
-        />
-
-        {/* Payment method */}
-        <View style={{ height: 16 }} />
-        <Text style={walletStyles.sectionLabel}>
-          {t("wallet.payment_method")}
-        </Text>
-        <View style={[walletStyles.methodRow, { flexDirection: row }]}>
-          <PaymentMethodCard
-            icon="card-outline"
-            title={t("wallet.credit_card")}
-            selected={method === "card"}
-            onPress={() => setMethod("card")}
-          />
-          <PaymentMethodCard
-            icon="business-outline"
-            title={t("wallet.bank_transfer")}
-            selected={method === "transfer"}
-            onPress={() => setMethod("transfer")}
-          />
-        </View>
-
-        <View style={{ height: 14 }} />
-
-        {method === "card" ? (
-          <View>
-            <CardInput
-              label={t("wallet.card_number")}
-              value={cardNumber}
-              onChangeText={setCardNumber}
-              placeholder={t("wallet.card_number_placeholder")}
-              keyboardType="number-pad"
-              maxLength={19}
-              isRTL={isRTL}
-              icon="card-outline"
-              suffix={
-                getCardBrand(cardNumber) ? (
-                  <View
-                    style={[
-                      walletStyles.brandBadge,
-                      getCardBrand(cardNumber) === "visa"
-                        ? walletStyles.brandBadgeVisa
-                        : walletStyles.brandBadgeMastercard,
-                    ]}
-                  >
-                    <Text style={walletStyles.brandBadgeText}>
-                      {getCardBrand(cardNumber) === "visa"
-                        ? "VISA"
-                        : "Mastercard"}
-                    </Text>
-                  </View>
-                ) : null
-              }
-            />
-            <View style={[walletStyles.inputRow, { flexDirection: row }]}>
-              <CardInput
-                label={t("wallet.expiry")}
-                value={expiry}
-                onChangeText={setExpiry}
-                placeholder={t("wallet.expiry")}
-                keyboardType="number-pad"
-                maxLength={5}
-                isRTL={isRTL}
-                icon="calendar-outline"
-              />
-              <CardInput
-                label={t("wallet.cvv")}
-                value={cvv}
-                onChangeText={setCvv}
-                placeholder="***"
-                keyboardType="number-pad"
-                maxLength={4}
-                secureTextEntry
-                isRTL={isRTL}
-                icon="lock-closed-outline"
-              />
-            </View>
-
+        <BottomSheetScrollView
+          style={{ backgroundColor: "transparent" }}
+          contentContainerStyle={walletStyles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header — close on the leading edge */}
+          <View style={[walletStyles.headerRow, { flexDirection: row }]}>
             <Pressable
-              style={[walletStyles.saveRow, { flexDirection: row }]}
-              onPress={() => setSaveCard((prev) => !prev)}
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: saveCard }}
-            >
-              <View
-                style={[
-                  walletStyles.saveBox,
-                  saveCard && walletStyles.saveBoxOn,
-                ]}
-              >
-                {saveCard && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
-              </View>
-              <Text style={walletStyles.saveText}>{t("wallet.save_card")}</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <View style={walletStyles.transferCard}>
-            <Text style={walletStyles.transferLabel}>
-              {t("wallet.iban_label")}
-            </Text>
-            <View style={[walletStyles.transferValueRow, { flexDirection: row }]}>
-              <Ionicons name="business-outline" size={14} color={WALLET_CYAN} />
-              <Text style={walletStyles.transferValue}>
-                TN59 1000 0321 4567 8901 23
-              </Text>
-            </View>
-
-            <Text
-              style={[walletStyles.transferLabel, { marginTop: 12 }]}
-            >
-              {t("wallet.beneficiary")}
-            </Text>
-            <Text style={walletStyles.transferValue}>Abajim EdTech SARL</Text>
-
-            <View style={walletStyles.transferDivider} />
-
-            <Pressable
-              style={walletStyles.receiptBox}
-              onPress={() => {}}
+              style={walletStyles.closeBtn}
+              onPress={() => sheetRef.current?.close()}
+              hitSlop={8}
               accessibilityRole="button"
-              accessibilityLabel={t("wallet.upload_receipt")}
+              accessibilityLabel={t("common.close")}
             >
-              <View style={walletStyles.receiptIcon}>
-                <Ionicons name="image-outline" size={22} color={WALLET_CYAN} />
-              </View>
-              <Text style={walletStyles.receiptTitle}>
-                {t("wallet.upload_receipt")}
-              </Text>
-              <Text style={walletStyles.receiptHint}>
-                {t("wallet.receipt_types")}
-              </Text>
+              <Ionicons name="close" size={18} color="#FFFFFF" />
+            </Pressable>
+            <View style={walletStyles.headerSpacer} />
+          </View>
+
+          {/* Set Amount */}
+          <View style={[walletStyles.setAmountRow, { flexDirection: row }]}>
+            <Text style={walletStyles.setAmountLabel}>
+              {t("wallet.set_amount")}
+            </Text>
+            <View style={walletStyles.setAmountChevron}>
+              <Ionicons
+                name={isRTL ? "chevron-back" : "chevron-forward"}
+                size={14}
+                color="rgba(255,255,255,0.45)"
+              />
+            </View>
+          </View>
+
+          {/* Amount stepper */}
+          <View style={walletStyles.amountStepperRow}>
+            <Pressable
+              style={walletStyles.stepperBtn}
+              onPress={decrementAmount}
+              accessibilityRole="button"
+              accessibilityLabel={t("wallet.decrease_amount")}
+            >
+              <Ionicons name="remove" size={22} color="#FFFFFF" />
+            </Pressable>
+            <View style={walletStyles.amountDisplay}>
+              <Text style={walletStyles.amountBig}>{amount}</Text>
+              <Text style={walletStyles.amountCurrencySub}>{currency}</Text>
+            </View>
+            <Pressable
+              style={walletStyles.stepperBtn}
+              onPress={incrementAmount}
+              accessibilityRole="button"
+              accessibilityLabel={t("wallet.increase_amount")}
+            >
+              <Ionicons name="add" size={22} color="#FFFFFF" />
             </Pressable>
           </View>
-        )}
 
-        {/* Pay now */}
-        <Animated.View style={payStyle}>
-          <Pressable
-            onPressIn={onPayPressIn}
-            onPressOut={onPayPressOut}
-            onPress={onPayNow}
-            accessibilityRole="button"
-          >
-            <LinearGradient
-              colors={WALLET_BTN_GRADIENT}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={walletStyles.payBtn}
-            >
-              <Text style={walletStyles.payBtnText}>{payLabel}</Text>
-            </LinearGradient>
-          </Pressable>
-        </Animated.View>
-      </BottomSheetScrollView>
-    </BottomSheet>
+          {/* Preset chips */}
+          <View style={[walletStyles.chipsRow, { flexDirection: row }]}>
+            {RECHARGE_AMOUNTS.map((value) => (
+              <RechargeAmountCard
+                key={value}
+                amount={value}
+                currency={currency}
+                selected={amount === value}
+                onPress={() => selectAmount(value)}
+              />
+            ))}
+          </View>
+
+          {/* Swipe to topup */}
+          <SwipeToTopup onSwipeComplete={() => {}} />
+
+          {/* Saved Cards */}
+          <View style={walletStyles.sectionHeader}>
+            <Text style={walletStyles.sectionTitle}>
+              {t("wallet.saved_cards")}
+            </Text>
+            <Text style={walletStyles.sectionLink}>
+              {t("wallet.view_all")}
+            </Text>
+          </View>
+
+          <SavedCard
+            last4="8243"
+            brand="VISA"
+            holder="Jane Cooper"
+            expiry="08/25"
+          />
+          <SavedCard
+            last4="3921"
+            brand="MC"
+            holder="Jane Cooper"
+            expiry="08/25"
+          />
+        </BottomSheetScrollView>
+      </BottomSheet>
+    </GestureHandlerRootView>
   );
 }

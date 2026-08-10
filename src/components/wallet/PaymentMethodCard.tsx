@@ -2,7 +2,7 @@ import React, { type ComponentProps } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { WALLET_CYAN } from "./wallet.constants";
+import { WALLET_PURPLE } from "./wallet.constants";
 import { walletStyles } from "./wallet.styles";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
@@ -40,7 +40,7 @@ export default function PaymentMethodCard({
         <Ionicons
           name={icon}
           size={22}
-          color={selected ? "#FFFFFF" : WALLET_CYAN}
+          color={selected ? "#FFFFFF" : WALLET_PURPLE}
         />
       </View>
       <Text style={walletStyles.methodTitle} numberOfLines={2}>

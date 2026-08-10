@@ -15,4 +15,10 @@ export const wallet = {
   beneficiary: "المستفيد",
   upload_receipt: "اضغط لرفع صورة الوصل",
   receipt_types: "JPG, PNG أو PDF",
+  set_amount: "تحديد المبلغ",
+  saved_cards: "البطاقات المحفوظة",
+  view_all: "عرض الكل",
+  swipe_to_topup: "اسحب للشحن",
+  decrease_amount: "تقليل المبلغ",
+  increase_amount: "زيادة المبلغ",
 };
