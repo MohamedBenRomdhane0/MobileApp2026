@@ -223,4 +223,6 @@ export type DynamicIslandNotificationProps = {
   onPress: () => void;
   onDismiss: () => void;
   topInset: number;
+  /** Auto-show interval in ms. When set, the pill cycles on/off automatically. */
+  autoShowIntervalMs?: number;
 };

@@ -1,15 +1,18 @@
-﻿import React, { useCallback, useEffect, useRef } from "react";
+﻿import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Easing, Image, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LIQUID } from "@styles/liquidTheme";
 
 import type { DynamicIslandNotificationProps } from "../HomeScreen.type";
 
-const PILL_W = 200;
-const PILL_H = 44;
-const AUTO_DISMISS_MS = 3500;
+const PILL_W = 240;
+const PILL_H = 46;
+const EXPANDED_H = 140;
+const AUTO_DISMISS_MS = 4000;
+const DEFAULT_INTERVAL_MS = 60_000;
 
 export default function DynamicIslandNotification({
-  visible,
+  visible: externalVisible,
   teacherPhoto,
   liveLabel,
   teacherName,
@@ -20,10 +23,16 @@ export default function DynamicIslandNotification({
   onPress,
   onDismiss,
   topInset,
+  autoShowIntervalMs,
 }: DynamicIslandNotificationProps) {
+  const [internalVisible, setInternalVisible] = useState(false);
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const expandAnim = useRef(new Animated.Value(0)).current;
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intervalTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const isAuto = Boolean(autoShowIntervalMs);
+  const visible = isAuto ? internalVisible : externalVisible;
 
   const dismiss = useCallback(() => {
     Animated.parallel([
@@ -40,14 +49,32 @@ export default function DynamicIslandNotification({
         easing: Easing.in(Easing.cubic),
         useNativeDriver: false,
       }),
-    ]).start(() => onDismiss());
+    ]).start(() => {
+      setInternalVisible(false);
+      onDismiss();
+    });
   }, [expandAnim, scaleAnim, onDismiss]);
 
+  /* ── Auto-show cycle ─────────────────────────────────────────────── */
+  useEffect(() => {
+    if (!isAuto) return;
+    const interval = autoShowIntervalMs ?? DEFAULT_INTERVAL_MS;
+
+    intervalTimerRef.current = setInterval(() => {
+      setInternalVisible(true);
+    }, interval);
+
+    return () => {
+      if (intervalTimerRef.current) clearInterval(intervalTimerRef.current);
+    };
+  }, [isAuto, autoShowIntervalMs]);
+
+  /* ── Animate in/out ──────────────────────────────────────────────── */
   useEffect(() => {
     if (!visible) {
       scaleAnim.setValue(0);
       expandAnim.setValue(0);
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
       return;
     }
 
@@ -68,9 +95,9 @@ export default function DynamicIslandNotification({
       }).start();
     });
 
-    timerRef.current = setTimeout(dismiss, AUTO_DISMISS_MS);
+    dismissTimerRef.current = setTimeout(dismiss, AUTO_DISMISS_MS);
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
     };
   }, [visible, scaleAnim, expandAnim, dismiss]);
 
@@ -79,17 +106,16 @@ export default function DynamicIslandNotification({
   const top = topInset + 6;
   const pillWidth = scaleAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [38, PILL_W],
+    outputRange: [44, PILL_W],
   });
   const pillHeight = expandAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [PILL_H, 130],
+    outputRange: [PILL_H, EXPANDED_H],
   });
   const pillRadius = expandAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [999, 24],
+    outputRange: [999, 28],
   });
-  const expandedOpacity = expandAnim;
   const pillContentOpacity = expandAnim.interpolate({
     inputRange: [0, 0.3, 1],
     outputRange: [1, 1, 0],
@@ -108,19 +134,34 @@ export default function DynamicIslandNotification({
         width: pillWidth,
         height: pillHeight,
         borderRadius: pillRadius,
-        backgroundColor: "#0F1A2E",
+        backgroundColor: LIQUID.cyanDeep,
         borderWidth: 1,
-        borderColor: "rgba(34,190,200,0.20)",
+        borderColor: LIQUID.border,
         overflow: "hidden",
         zIndex: 999,
         shadowColor: "#000",
-        shadowOpacity: 0.34,
-        shadowRadius: 16,
-        shadowOffset: { width: 0, height: 8 },
-        elevation: 8,
+        shadowOpacity: 0.38,
+        shadowRadius: 20,
+        shadowOffset: { width: 0, height: 10 },
+        elevation: 10,
       }}
     >
-      {/* Collapsed pill content */}
+      {/* Glass overlay — frosted highlight */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "50%",
+          borderRadius: 28,
+          backgroundColor: LIQUID.glassHighlight,
+          opacity: 0.12,
+        }}
+      />
+
+      {/* ── Collapsed pill ───────────────────────────────────────────── */}
       <Animated.View
         style={{
           position: "absolute",
@@ -130,30 +171,55 @@ export default function DynamicIslandNotification({
           height: PILL_H,
           flexDirection: "row",
           alignItems: "center",
-          paddingHorizontal: 10,
-          gap: 8,
+          paddingHorizontal: 12,
+          gap: 10,
           opacity: pillContentOpacity,
         }}
       >
-        <Image source={teacherPhoto} style={{ width: 30, height: 30, borderRadius: 999, borderWidth: 1.5, borderColor: "rgba(34,190,200,0.35)" }} />
-        <Text
+        <Image
+          source={teacherPhoto}
           style={{
-            flex: 1,
-            color: "#FFFFFF",
-            fontSize: 14,
-            fontWeight: "800",
+            width: 32,
+            height: 32,
+            borderRadius: 999,
+            borderWidth: 1.5,
+            borderColor: LIQUID.border,
           }}
+        />
+        <Text
+          style={{ flex: 1, color: "#FFFFFF", fontSize: 14, fontWeight: "800" }}
           numberOfLines={1}
         >
           {teacherName}
         </Text>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 10, height: 24, borderRadius: 999, backgroundColor: "rgba(239,68,68,0.22)", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)" }}>
-          <View style={{ width: 7, height: 7, borderRadius: 999, backgroundColor: "#EF4444" }} />
-          <Text style={{ color: "#FFFFFF", fontSize: 11, fontWeight: "800" }}>{liveLabel}</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 5,
+            paddingHorizontal: 10,
+            height: 26,
+            borderRadius: 999,
+            backgroundColor: "rgba(239,68,68,0.22)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.18)",
+          }}
+        >
+          <View
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: 999,
+              backgroundColor: "#EF4444",
+            }}
+          />
+          <Text style={{ color: "#FFFFFF", fontSize: 11, fontWeight: "800" }}>
+            {liveLabel}
+          </Text>
         </View>
       </Animated.View>
 
-      {/* Expanded content */}
+      {/* ── Expanded card ────────────────────────────────────────────── */}
       <Animated.View
         style={{
           position: "absolute",
@@ -165,32 +231,101 @@ export default function DynamicIslandNotification({
         }}
       >
         <TouchableOpacity
-          activeOpacity={0.9}
+          activeOpacity={0.92}
           onPress={onPress}
           style={{ flex: 1 }}
         >
-          <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 14, paddingTop: 12, gap: 12 }}>
-            <Image source={teacherPhoto} style={{ width: 52, height: 52, borderRadius: 999, borderWidth: 2, borderColor: "rgba(34,190,200,0.35)" }} />
+          {/* Top row: photo + info */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              paddingHorizontal: 16,
+              paddingTop: 14,
+              gap: 14,
+            }}
+          >
+            <Image
+              source={teacherPhoto}
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 999,
+                borderWidth: 2,
+                borderColor: LIQUID.border,
+              }}
+            />
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={{ color: "#EF4444", fontSize: 10, fontWeight: "800", letterSpacing: 0.8 }}>
+              <Text
+                style={{
+                  color: "#EF4444",
+                  fontSize: 11,
+                  fontWeight: "800",
+                  letterSpacing: 0.8,
+                }}
+              >
                 {liveLabel.toUpperCase()}
               </Text>
-              <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "900", marginTop: 2 }} numberOfLines={1}>
+              <Text
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 16,
+                  fontWeight: "900",
+                  marginTop: 2,
+                }}
+                numberOfLines={1}
+              >
                 {teacherName}
               </Text>
-              <Text style={{ color: "rgba(255,255,255,0.60)", fontSize: 12, fontWeight: "600", marginTop: 2 }} numberOfLines={1}>
+              <Text
+                style={{
+                  color: "rgba(255,255,255,0.55)",
+                  fontSize: 13,
+                  fontWeight: "600",
+                  marginTop: 2,
+                }}
+                numberOfLines={1}
+              >
                 {meetingTitle}
               </Text>
             </View>
           </View>
 
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 12, marginTop: 4 }}>
-            <Text style={{ color: "rgba(255,255,255,0.40)", fontSize: 10, fontWeight: "600" }}>
+          {/* Bottom row: timestamp + join */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingHorizontal: 16,
+              paddingBottom: 14,
+              marginTop: 6,
+            }}
+          >
+            <Text
+              style={{
+                color: "rgba(255,255,255,0.38)",
+                fontSize: 11,
+                fontWeight: "600",
+              }}
+            >
               {timestamp}
             </Text>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 14, height: 30, borderRadius: 999, backgroundColor: "#E11D48" }}>
-              <Ionicons name="videocam" size={12} color="#FFFFFF" />
-              <Text style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "800" }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
+                paddingHorizontal: 16,
+                height: 34,
+                borderRadius: 999,
+                backgroundColor: "#E11D48",
+              }}
+            >
+              <Ionicons name="videocam" size={13} color="#FFFFFF" />
+              <Text
+                style={{ color: "#FFFFFF", fontSize: 13, fontWeight: "800" }}
+              >
                 {joinLabel}
               </Text>
             </View>
