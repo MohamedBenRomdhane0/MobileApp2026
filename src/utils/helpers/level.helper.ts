@@ -2,7 +2,7 @@ export function normalizeLevelId(v: unknown): number {
   const n = Number(v);
   if (!Number.isFinite(n)) return 0;
   const x = Math.floor(n);
-  if (x < 1 || x > 6) return 0;
+  if (x < 1) return 0;
   return x;
 }
 
