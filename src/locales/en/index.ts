@@ -22,6 +22,7 @@ import { hub } from './hub'
 import { meetings } from './meetings'
 import { learning } from './learning'
 import { wallet } from './wallet'
+import { scan } from './scan'
 
 const en = {
   topbar,
@@ -48,5 +49,6 @@ const en = {
   meetings,
   learning,
   wallet,
+  scan,
 }
 export default en

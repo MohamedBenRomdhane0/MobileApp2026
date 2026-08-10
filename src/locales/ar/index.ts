@@ -22,6 +22,7 @@ import { meetings } from './meetings'
 import { trailers } from './trailers'
 import { learning } from './learning'
 import { wallet } from './wallet'
+import { scan } from './scan'
 
 const ar = {
   topbar,
@@ -48,5 +49,6 @@ const ar = {
   trailers,
   learning,
   wallet,
+  scan,
 }
 export default ar

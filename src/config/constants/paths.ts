@@ -44,6 +44,7 @@ export const PATHS = {
     STUDY_GUIDE: "StudyGuide",
     STUDY_CRAFT: "StudyCraft",
     AI_OWL: "AIOwl",
+    SCAN_QR_CODE: "ScanQRCode",
     LEARN_CALENDAR: "LearnCalendar",
   },
 
@@ -63,6 +64,7 @@ export const PATHS = {
     EDU_HOME: "EduHome",
     STUDY_CRAFT: "StudyCraft",
     AI_OWL: "AIOwl",
+    SCAN_QR_CODE: "ScanQRCode",
     LEARN_CALENDAR: "LearnCalendar",
   },
 } as const;
