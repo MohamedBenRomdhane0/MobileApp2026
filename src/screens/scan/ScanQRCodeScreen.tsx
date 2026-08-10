@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet, Animated, Easing, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Animated, Easing, TouchableOpacity, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { PATHS } from "@config/constants/paths";
 
 export default function ScanQRCodeScreen() {
   const { t } = useTranslation();
@@ -121,8 +122,44 @@ export default function ScanQRCodeScreen() {
 
   function handleBarCodeScanned({ data }: { data: string }) {
     setScanned(true);
-    // Navigate back with the scanned QR data
-    navigation.navigate("Home", { qrData: data });
+
+    try {
+      const url = new URL(data);
+      const pathParts = url.pathname.split("/");
+
+      // Extract bookId from path: /panel/concours/enfant/{bookId}
+      const bookIdStr = pathParts[pathParts.length - 1];
+      const bookId = parseInt(bookIdStr, 10);
+
+      // Extract iconId and page from query params
+      const iconId = parseInt(url.searchParams.get("icon") ?? "0", 10);
+      const page = parseInt(url.searchParams.get("page") ?? "0", 10);
+
+      if (isNaN(bookId) || bookId <= 0) {
+        Alert.alert(t("scan.invalid_qr"), t("scan.invalid_qr_desc"));
+        setScanned(false);
+        return;
+      }
+
+      // Navigate to VideoScreen with extracted params
+      navigation.navigate(PATHS.APP.VIDEO, {
+        bookId,
+        iconId: iconId || 0,
+        videoId: iconId || undefined,
+      });
+    } catch {
+      // If URL parsing fails, try to navigate with raw data as bookId
+      const rawId = parseInt(data, 10);
+      if (!isNaN(rawId) && rawId > 0) {
+        navigation.navigate(PATHS.APP.VIDEO, {
+          bookId: rawId,
+          iconId: 0,
+        });
+      } else {
+        Alert.alert(t("scan.invalid_qr"), t("scan.invalid_qr_desc"));
+        setScanned(false);
+      }
+    }
   }
 }
 
