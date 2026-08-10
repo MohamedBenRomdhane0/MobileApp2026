@@ -134,7 +134,7 @@ export default function DynamicIslandNotification({
         width: pillWidth,
         height: pillHeight,
         borderRadius: pillRadius,
-        backgroundColor: LIQUID.bg,
+        backgroundColor: "rgba(34,190,200,0.14)",
         borderWidth: 1,
         borderColor: LIQUID.border,
         overflow: "hidden",
