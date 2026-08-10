@@ -213,7 +213,7 @@ export default function HomeScreen() {
     [navigation]
   );
   const goMeetings = useCallback(
-    () => navigation.navigate(PATHS.TABS.MEETINGS as never),
+    () => navigation.navigate(PATHS.APP.JOIN_SESSION as never),
     [navigation]
   );
   const goNotifications = useCallback(
