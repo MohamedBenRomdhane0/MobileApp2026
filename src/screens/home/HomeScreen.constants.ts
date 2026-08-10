@@ -177,10 +177,9 @@ export const MOCK_VIDEOS: LevelVideoCard[] = [
   { id: "v2", title: "فهم الجملة الاسمية", subject: "لغة عربية", teacherName: "Hajer Brahim", duration: "09:20", thumbnail: VIDEO_COVER },
 ];
 
-export const MOCK_WEEKLY_ACTIVITY: { active: boolean; size: number }[][] = [
-  [{ active: false, size: 7 }, { active: true, size: 10 }, { active: false, size: 7 }, { active: true, size: 14 }, { active: false, size: 7 }, { active: false, size: 7 }, { active: true, size: 12 }],
-  [{ active: true, size: 11 }, { active: false, size: 7 }, { active: true, size: 14 }, { active: false, size: 7 }, { active: true, size: 10 }, { active: false, size: 7 }, { active: false, size: 7 }],
-  [{ active: false, size: 7 }, { active: false, size: 7 }, { active: true, size: 12 }, { active: true, size: 10 }, { active: false, size: 7 }, { active: true, size: 14 }, { active: false, size: 7 }],
-  [{ active: true, size: 14 }, { active: true, size: 10 }, { active: false, size: 7 }, { active: false, size: 7 }, { active: true, size: 12 }, { active: false, size: 7 }, { active: true, size: 10 }],
-  [{ active: false, size: 7 }, { active: true, size: 12 }, { active: true, size: 14 }, { active: false, size: 7 }, { active: false, size: 7 }, { active: true, size: 10 }, { active: false, size: 7 }],
+export const AUGUST_RESERVED_DAYS: import("./HomeScreen.type").ReservedDay[] = [
+  { day: 5,  teacherPhoto: require("../../../assets/teachers/tarek.png"),  accent: "#F97316" },
+  { day: 12, teacherPhoto: require("../../../assets/teachers/ismail.png"), accent: "#22BEC8" },
+  { day: 19, teacherPhoto: require("../../../assets/teachers/tounes.png"), accent: "#7C4DCC" },
+  { day: 25, teacherPhoto: require("../../../assets/teachers/tarek.png"),  accent: "#F97316" },
 ];

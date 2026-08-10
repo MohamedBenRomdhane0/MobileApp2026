@@ -44,7 +44,7 @@ import {
   HOME_SECTION_ACCENT,
   MOCK_TEACHERS,
   MOCK_MEETINGS,
-  MOCK_WEEKLY_ACTIVITY,
+  AUGUST_RESERVED_DAYS,
   getHomePalette,
 } from "./HomeScreen.constants";
 import {
@@ -434,7 +434,8 @@ export default function HomeScreen() {
               title={t("home.activities_title")}
               subtitle={t("home.activities_subtitle")}
               weekDays={["S", "M", "T", "W", "T", "F", "S"]}
-              grid={MOCK_WEEKLY_ACTIVITY}
+              reservedDays={AUGUST_RESERVED_DAYS}
+              today={10}
             />
           </View>
 

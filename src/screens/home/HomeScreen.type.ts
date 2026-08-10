@@ -172,6 +172,12 @@ export type DailySnippet = {
   sourceKey?: string;
 };
 
+export type ReservedDay = {
+  day: number;
+  teacherPhoto: number;
+  accent: string;
+};
+
 export type SummaryStat = {
   label: string;
   value: string | number;
@@ -184,15 +190,11 @@ export type SummaryCardProps = HomeBlockBaseProps & {
   onSeeAll?: () => void;
 };
 
-export type ActivityDot = {
-  size: number;
-  active: boolean;
-};
-
 export type ActivitiesCardProps = HomeBlockBaseProps & {
   title: string;
   subtitle: string;
   weekDays: string[];
-  grid: ActivityDot[][];
+  reservedDays: ReservedDay[];
+  today: number;
   onSeeAll?: () => void;
 };

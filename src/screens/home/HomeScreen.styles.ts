@@ -1410,51 +1410,65 @@ export function createHomeStyles(
       borderColor: "rgba(255,255,255,0.18)",
     },
 
-    heatmapGrid: {
-      gap: 6,
-      marginBottom: 10,
+    calGrid: {
+      gap: 4,
+      marginBottom: 8,
     },
 
-    heatmapRow: {
+    calRow: {
       flexDirection: row,
       justifyContent: "space-between",
     },
 
-    heatmapDot: {
+    calDay: {
+      width: 28,
+      height: 28,
       borderRadius: 999,
-      backgroundColor: "rgba(148,163,184,0.30)",
+      alignItems: "center",
+      justifyContent: "center",
     },
 
-    heatmapDotActive: {
-      backgroundColor: "#6366F1",
+    calDayText: {
+      color: "rgba(255,255,255,0.40)",
+      fontSize: 10,
+      fontWeight: "700",
     },
 
-    heatmapDotLarge: {
-      width: 14,
-      height: 14,
+    calDayToday: {
+      borderWidth: 1.5,
+      borderColor: "#22BEC8",
     },
 
-    heatmapDotMedium: {
-      width: 10,
-      height: 10,
+    calDayTodayText: {
+      color: "#22BEC8",
     },
 
-    heatmapDotSmall: {
-      width: 7,
-      height: 7,
+    calDayPhoto: {
+      width: 26,
+      height: 26,
+      borderRadius: 999,
     },
 
-    heatmapLabels: {
+    calDayPhotoRing: {
+      width: 28,
+      height: 28,
+      borderRadius: 999,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 2,
+    },
+
+    calLabels: {
       flexDirection: row,
       justifyContent: "space-between",
     },
 
-    heatmapLabel: {
+    calLabel: {
       color: "rgba(255,255,255,0.45)",
       fontSize: 10,
       fontWeight: "700",
       textAlign: "center",
-      width: 14,
+      width: 28,
     },
   });
 }
