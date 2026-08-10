@@ -1511,14 +1511,14 @@ export function createHomeStyles(
     },
 
     calDayPhoto: {
-      width: 22,
-      height: 22,
+      width: 18,
+      height: 18,
       borderRadius: 999,
     },
 
     calDayPhotoRing: {
-      width: 26,
-      height: 26,
+      width: 22,
+      height: 22,
       borderRadius: 999,
       alignItems: "center",
       justifyContent: "center",
