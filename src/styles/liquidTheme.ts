@@ -113,7 +113,7 @@ export const LIQUID = {
     {
       name: "Plans",
       label: "Plans",
-      icon: "calendar-outline",
+      icon: "diamond-outline",
     },
     {
       name: "ScanQRCode",
