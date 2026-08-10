@@ -32,6 +32,7 @@ import TeachersRow from "@screens/home/components/TeachersRow";
 import SubscribeBanner from "@screens/home/components/SubscribeBanner";
 import SummaryCard from "@screens/home/components/SummaryCard";
 import ActivitiesCard from "@screens/home/components/ActivitiesCard";
+import DynamicIslandNotification from "@screens/home/components/DynamicIslandNotification";
 import SectionHeader from "@screens/home/components/SectionHeader";
 import SectionState from "@screens/home/components/SectionState";
 import HomeSearchModal from "@screens/home/components/HomeSearchModal";
@@ -97,6 +98,7 @@ export default function HomeScreen() {
   const [keyword] = useState("");
   const [searchVisible, setSearchVisible] = useState(false);
   const [walletVisible, setWalletVisible] = useState(false);
+  const [notifVisible, setNotifVisible] = useState(false);
   const [switchToChild, switchState] = useSwitchToChildMutation();
 
   const canSwitch = typeof activeChildId === "number" && activeChildId > 0;
@@ -215,8 +217,14 @@ export default function HomeScreen() {
     [navigation]
   );
   const goNotifications = useCallback(
-    () => navigation.navigate(PATHS.APP.NOTIFICATIONS as never),
-    [navigation]
+    () => {
+      if (notifVisible) {
+        setNotifVisible(false);
+      } else {
+        setNotifVisible(true);
+      }
+    },
+    [notifVisible]
   );
 
   const openBook = useCallback(
@@ -450,7 +458,21 @@ export default function HomeScreen() {
             />
            </View>
          </View>
-       </ScrollView>
+        </ScrollView>
+
+        <DynamicIslandNotification
+          visible={notifVisible}
+          teacherPhoto={require("../../../assets/teachers/tarek.png")}
+          liveLabel={t("home.notif_live_now")}
+          teacherName={t("home.live_meta_mock").split("•")[0].trim()}
+          meetingTitle={t("home.live_title_mock")}
+          meetingTime="18:00 - 19:30"
+          joinLabel={t("home.notif_join")}
+          timestamp={t("home.notif_just_now")}
+          onPress={() => { setNotifVisible(false); goMeetings(); }}
+          onDismiss={() => setNotifVisible(false)}
+          topInset={insets.top}
+        />
 
         <HomeSearchModal
           styles={styles}

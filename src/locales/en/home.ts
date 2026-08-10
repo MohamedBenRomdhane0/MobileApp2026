@@ -8,7 +8,8 @@ export const home = {
   language_arabic: "Arabic",
   language_french: "French",
   language_english: "English",
-  language_changed: "Language changed. Restart the app to apply the new layout direction.",
+  language_changed:
+    "Language changed. Restart the app to apply the new layout direction.",
   subscribe_title: "Subscribe to Premium",
   subscribe_subtitle: "Unlimited access to all subjects",
   subscribe_cta: "Subscribe",
@@ -17,8 +18,8 @@ export const home = {
   join: "Join",
   book_math_grade: "Math - {{level}}",
   book_arabic_grade: "Arabic Language",
-  live_title_mock: "Math - Fractions",
-  live_meta_mock: "Mr. Mohamed • 142 participants",
+  live_title_mock: "Math - Fractions  (Grade 4 Math)",
+  live_meta_mock: "Mr. Tarek • 142 participants",
   available_teachers: "Available Teachers",
   subjects_title: "Subjects",
   continue_title: "Continue learning",
@@ -45,6 +46,11 @@ export const home = {
   summary_join: "Join",
   activities_title: "Activities",
   activities_subtitle: "This Month",
+  notif_live_now: "Live now",
+  notif_teacher: "{{name}}",
+  notif_meeting: "{{subject}} — {{time}}",
+  notif_join: "Join",
+  notif_just_now: "Just now",
   emoji: {
     love: {
       title: "Your love for learning is inspiring! 💖",

@@ -45,6 +45,11 @@ export const home = {
   summary_join: "انضم",
   activities_title: "الأنشطة",
   activities_subtitle: "هذا الشهر",
+  notif_live_now: "مباشر الآن",
+  notif_teacher: "{{name}}",
+  notif_meeting: "{{subject}} — {{time}}",
+  notif_join: "انضم",
+  notif_just_now: "الآن",
   emoji: {
     love: {
       title: "حبّك للتعلّم ملهم! 💖",

@@ -210,3 +210,17 @@ export type ActivitiesCardProps = HomeBlockBaseProps & {
   today: number;
   onSeeAll?: () => void;
 };
+
+export type DynamicIslandNotificationProps = {
+  visible: boolean;
+  teacherPhoto: number;
+  liveLabel: string;
+  teacherName: string;
+  meetingTitle: string;
+  meetingTime: string;
+  joinLabel: string;
+  timestamp: string;
+  onPress: () => void;
+  onDismiss: () => void;
+  topInset: number;
+};

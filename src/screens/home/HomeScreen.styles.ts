@@ -671,6 +671,7 @@ export function createHomeStyles(
       flexDirection: row,
       alignItems: "center",
       gap: 6,
+      marginTop: 10,
       paddingHorizontal: 12,
       height: 30,
       borderRadius: 999,
@@ -1332,7 +1333,13 @@ export function createHomeStyles(
 
     summaryTitle: {
       color: "#FFFFFF",
-      fontSize: 16,
+      fontSize: 14,
+      fontWeight: "900",
+      letterSpacing: -0.2,
+    },
+    summaryTitleTeacher: {
+      color: "#FFFFFF",
+      fontSize: 14,
       fontWeight: "900",
       letterSpacing: -0.2,
     },
@@ -1354,6 +1361,7 @@ export function createHomeStyles(
     summaryInfo: {
       flex: 1,
       minWidth: 0,
+      marginTop: 12,
     },
 
     summaryMetaRow: {
@@ -1365,8 +1373,8 @@ export function createHomeStyles(
 
     summaryMeta: {
       color: "rgba(255,255,255,0.72)",
-      fontSize: 11.5,
-      fontWeight: "700",
+      fontSize: 8.5,
+      fontWeight: "900",
       flexShrink: 1,
     },
 
@@ -1480,7 +1488,7 @@ export function createHomeStyles(
     /* ── Activities card ──────────────────────────────────────────────── */
 
     activitiesCard: {
-      aspectRatio: 0.65,
+      aspectRatio: 0.69,
       justifyContent: "space-between",
     },
 
@@ -1581,6 +1589,152 @@ export function createHomeStyles(
       fontWeight: "700",
       textAlign: "center",
       flex: 1,
+    },
+
+    /* ── Dynamic Island notification ──────────────────────────────────── */
+
+    diPill: {
+      position: "absolute",
+      alignSelf: "center",
+      borderRadius: 999,
+      backgroundColor: "#0F1A2E",
+      borderWidth: 1,
+      borderColor: "rgba(34,190,200,0.20)",
+      overflow: "hidden",
+      zIndex: 999,
+      ...neutralShadow(isDark),
+    },
+
+    diPillInner: {
+      flexDirection: row,
+      alignItems: "center",
+      paddingHorizontal: 12,
+      height: 38,
+      gap: 8,
+    },
+
+    diAvatar: {
+      width: 28,
+      height: 28,
+      borderRadius: 999,
+      borderWidth: 1.5,
+      borderColor: "rgba(34,190,200,0.35)",
+    },
+
+    diPillText: {
+      color: "#FFFFFF",
+      fontSize: 13,
+      fontWeight: "800",
+    },
+
+    diPillBadge: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 4,
+      paddingHorizontal: 8,
+      height: 22,
+      borderRadius: 999,
+      backgroundColor: "rgba(239,68,68,0.22)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.18)",
+    },
+
+    diPillBadgeDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 999,
+      backgroundColor: "#EF4444",
+    },
+
+    diPillBadgeText: {
+      color: "#FFFFFF",
+      fontSize: 10,
+      fontWeight: "800",
+    },
+
+    diExpanded: {
+      width: "88%",
+      maxWidth: 360,
+      borderRadius: 24,
+      backgroundColor: "#0F1A2E",
+      borderWidth: 1,
+      borderColor: "rgba(34,190,200,0.20)",
+      overflow: "hidden",
+      ...neutralShadow(isDark),
+    },
+
+    diExpandedRow: {
+      flexDirection: row,
+      alignItems: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      gap: 12,
+    },
+
+    diExpandedAvatar: {
+      width: 48,
+      height: 48,
+      borderRadius: 999,
+      borderWidth: 2,
+      borderColor: "rgba(34,190,200,0.35)",
+    },
+
+    diExpandedInfo: {
+      flex: 1,
+      minWidth: 0,
+    },
+
+    diExpandedLiveLabel: {
+      color: "#EF4444",
+      fontSize: 10,
+      fontWeight: "800",
+      letterSpacing: 0.8,
+      textTransform: "uppercase",
+    },
+
+    diExpandedTeacher: {
+      color: "#FFFFFF",
+      fontSize: 15,
+      fontWeight: "900",
+      marginTop: 2,
+    },
+
+    diExpandedMeeting: {
+      color: "rgba(255,255,255,0.60)",
+      fontSize: 12,
+      fontWeight: "600",
+      marginTop: 2,
+    },
+
+    diExpandedMeta: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 14,
+      paddingBottom: 12,
+      gap: 8,
+    },
+
+    diExpandedTimestamp: {
+      color: "rgba(255,255,255,0.40)",
+      fontSize: 10,
+      fontWeight: "600",
+    },
+
+    diExpandedJoinBtn: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 4,
+      paddingHorizontal: 14,
+      height: 30,
+      borderRadius: 999,
+      backgroundColor: "#E11D48",
+    },
+
+    diExpandedJoinText: {
+      color: "#FFFFFF",
+      fontSize: 12,
+      fontWeight: "800",
     },
   });
 }
