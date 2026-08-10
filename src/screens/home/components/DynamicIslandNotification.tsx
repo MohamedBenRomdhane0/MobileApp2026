@@ -103,7 +103,7 @@ export default function DynamicIslandNotification({
 
   if (!visible) return null;
 
-  const top = topInset + 30;
+  const top = topInset + 56;
   const pillWidth = scaleAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [44, PILL_W],
@@ -134,30 +134,18 @@ export default function DynamicIslandNotification({
         width: pillWidth,
         height: pillHeight,
         borderRadius: pillRadius,
-        backgroundColor: "rgba(34, 189, 200, 0.29)",
-        borderWidth: 1,
-        borderColor: LIQUID.border,
+        backgroundColor: "rgba(15,26,46,0.92)",
+        borderWidth: 1.5,
+        borderColor: "rgba(34,190,200,0.40)",
         overflow: "hidden",
         zIndex: 999,
-        shadowColor: LIQUID.shadow,
-        shadowOpacity: 0.5,
-        shadowRadius: 24,
-        shadowOffset: { width: 0, height: 12 },
-        elevation: 10,
+        shadowColor: "#000",
+        shadowOpacity: 0.6,
+        shadowRadius: 30,
+        shadowOffset: { width: 0, height: 14 },
+        elevation: 12,
       }}
     >
-      {/* Glass base layer */}
-      <View
-        pointerEvents="none"
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: LIQUID.glassBase,
-        }}
-      />
       {/* Glass highlight — frosted top */}
       <View
         pointerEvents="none"
@@ -166,10 +154,9 @@ export default function DynamicIslandNotification({
           top: 0,
           left: 0,
           right: 0,
-          height: "50%",
+          height: "45%",
           borderRadius: 28,
-          backgroundColor: LIQUID.glassHighlight,
-          opacity: 0.18,
+          backgroundColor: "rgba(255,255,255,0.08)",
         }}
       />
 
@@ -212,9 +199,9 @@ export default function DynamicIslandNotification({
             paddingHorizontal: 10,
             height: 26,
             borderRadius: 999,
-            backgroundColor: "rgba(239,68,68,0.22)",
+            backgroundColor: "rgba(239,68,68,0.35)",
             borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.18)",
+            borderColor: "rgba(239,68,68,0.50)",
           }}
         >
           <View
@@ -264,7 +251,7 @@ export default function DynamicIslandNotification({
             height: 60,
                 borderRadius: 999,
                 borderWidth: 2,
-                borderColor: LIQUID.border,
+                borderColor: "rgba(34,190,200,0.50)",
               }}
             />
             <View style={{ flex: 1, minWidth: 0 }}>
