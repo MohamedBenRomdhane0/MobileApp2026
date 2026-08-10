@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Animated, Image, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated from "react-native-reanimated";
 
 import { useHomeCardEntrance, useHomeCardPress } from "@hooks/useHomeCardMotion";
 import type { ActivitiesCardProps } from "../HomeScreen.type";
