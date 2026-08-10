@@ -111,9 +111,9 @@ export const LIQUID = {
   /** The three shortcuts revealed by the center button. */
   quickActions: [
     {
-      name: "StartLearning",
-      label: "Apprendre",
-      icon: "play-circle",
+      name: "Plans",
+      label: "Plans",
+      icon: "calendar-outline",
     },
     {
       name: "ScanQRCode",
