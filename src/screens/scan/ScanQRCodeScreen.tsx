@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Animated, Easing, TouchableOpacity, Alert, Acti
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppDispatch } from "@redux/hooks";
 import { PATHS } from "@config/constants/paths";
@@ -47,6 +47,14 @@ export default function ScanQRCodeScreen() {
   const [flashOn, setFlashOn] = useState(false);
   const [loading, setLoading] = useState(false);
   const scanLineAnim = useRef(new Animated.Value(0)).current;
+
+  // Reset scan state when screen regains focus (user comes back from VideoScreen)
+  useFocusEffect(
+    useCallback(() => {
+      setScanned(false);
+      setLoading(false);
+    }, [])
+  );
 
   useEffect(() => {
     const loop = Animated.loop(
