@@ -5,9 +5,9 @@ import { LIQUID } from "@styles/liquidTheme";
 
 import type { DynamicIslandNotificationProps } from "../HomeScreen.type";
 
-const PILL_W = 240;
-const PILL_H = 46;
-const EXPANDED_H = 140;
+const PILL_W = 280;
+const PILL_H = 50;
+const EXPANDED_H = 150;
 const AUTO_DISMISS_MS = 4000;
 const DEFAULT_INTERVAL_MS = 60_000;
 
@@ -134,19 +134,31 @@ export default function DynamicIslandNotification({
         width: pillWidth,
         height: pillHeight,
         borderRadius: pillRadius,
-        backgroundColor: LIQUID.cyanDeep,
+        backgroundColor: LIQUID.bg,
         borderWidth: 1,
         borderColor: LIQUID.border,
         overflow: "hidden",
         zIndex: 999,
-        shadowColor: "#000",
-        shadowOpacity: 0.38,
-        shadowRadius: 20,
-        shadowOffset: { width: 0, height: 10 },
+        shadowColor: LIQUID.shadow,
+        shadowOpacity: 0.5,
+        shadowRadius: 24,
+        shadowOffset: { width: 0, height: 12 },
         elevation: 10,
       }}
     >
-      {/* Glass overlay — frosted highlight */}
+      {/* Glass base layer */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: LIQUID.glassBase,
+        }}
+      />
+      {/* Glass highlight — frosted top */}
       <View
         pointerEvents="none"
         style={{
@@ -157,7 +169,7 @@ export default function DynamicIslandNotification({
           height: "50%",
           borderRadius: 28,
           backgroundColor: LIQUID.glassHighlight,
-          opacity: 0.12,
+          opacity: 0.18,
         }}
       />
 
@@ -179,8 +191,8 @@ export default function DynamicIslandNotification({
         <Image
           source={teacherPhoto}
           style={{
-            width: 32,
-            height: 32,
+            width: 34,
+            height: 34,
             borderRadius: 999,
             borderWidth: 1.5,
             borderColor: LIQUID.border,
@@ -248,8 +260,8 @@ export default function DynamicIslandNotification({
             <Image
               source={teacherPhoto}
               style={{
-                width: 56,
-                height: 56,
+            width: 60,
+            height: 60,
                 borderRadius: 999,
                 borderWidth: 2,
                 borderColor: LIQUID.border,
@@ -269,7 +281,7 @@ export default function DynamicIslandNotification({
               <Text
                 style={{
                   color: "#FFFFFF",
-                  fontSize: 16,
+                  fontSize: 17,
                   fontWeight: "900",
                   marginTop: 2,
                 }}
@@ -317,7 +329,7 @@ export default function DynamicIslandNotification({
                 alignItems: "center",
                 gap: 5,
                 paddingHorizontal: 16,
-                height: 34,
+                height: 36,
                 borderRadius: 999,
                 backgroundColor: "#E11D48",
               }}
