@@ -103,7 +103,7 @@ export default function DynamicIslandNotification({
 
   if (!visible) return null;
 
-  const top = topInset + 6;
+  const top = topInset + 30;
   const pillWidth = scaleAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [44, PILL_W],
@@ -134,7 +134,7 @@ export default function DynamicIslandNotification({
         width: pillWidth,
         height: pillHeight,
         borderRadius: pillRadius,
-        backgroundColor: "rgba(34,190,200,0.14)",
+        backgroundColor: "rgba(34, 189, 200, 0.29)",
         borderWidth: 1,
         borderColor: LIQUID.border,
         overflow: "hidden",
