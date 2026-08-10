@@ -472,7 +472,7 @@ export default function HomeScreen() {
           onPress={() => { setNotifVisible(false); goMeetings(); }}
           onDismiss={() => setNotifVisible(false)}
           topInset={insets.top}
-          autoShowIntervalMs={60_000}
+          autoShowIntervalMs={30_000}
         />
 
         <HomeSearchModal
