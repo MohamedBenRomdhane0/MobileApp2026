@@ -124,41 +124,46 @@ function SwipeToTopup({ onSwipeComplete }: { onSwipeComplete: () => void }) {
   );
 
   return (
-    <View
-      style={walletStyles.swipeTrack}
-      onLayout={(e) => {
-        trackWidth.current = e.nativeEvent.layout.width;
-      }}
-    >
-      {/* Drag knob */}
-      <PanGestureHandler
-        onGestureEvent={onGestureEvent}
-        onHandlerStateChange={onHandlerStateChange}
+    <View style={walletStyles.swipeTrackOuter}>
+      <LinearGradient
+        colors={["#152F6B", "#22BEC8", "#152F6B"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={walletStyles.swipeTrack}
+        onLayout={(e) => {
+          trackWidth.current = e.nativeEvent.layout.width;
+        }}
       >
-        <Animated.View
-          style={{
-            position: "absolute",
-            left: 4,
-            width: knobSize,
-            height: knobSize,
-            borderRadius: knobSize / 2,
-            transform: [{ translateX }],
-            zIndex: 2,
-          }}
+        {/* Drag knob */}
+        <PanGestureHandler
+          onGestureEvent={onGestureEvent}
+          onHandlerStateChange={onHandlerStateChange}
         >
-          <View style={walletStyles.swipeKnob}>
-            <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
-          </View>
-        </Animated.View>
-      </PanGestureHandler>
-      {/* Label centered */}
-      <Text style={walletStyles.swipeLabel}>Swipe to topup</Text>
-      {/* Right-side chevrons */}
-      <View style={walletStyles.swipeChevrons}>
-        <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.5)" />
-        <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.35)" />
-        <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.2)" />
-      </View>
+          <Animated.View
+            style={{
+              position: "absolute",
+              left: 4,
+              width: knobSize,
+              height: knobSize,
+              borderRadius: knobSize / 2,
+              transform: [{ translateX }],
+              zIndex: 2,
+            }}
+          >
+            <View style={walletStyles.swipeKnob}>
+              <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+            </View>
+          </Animated.View>
+        </PanGestureHandler>
+        {/* Label centered */}
+        <Text style={walletStyles.swipeLabel}>Swipe to topup</Text>
+        {/* Right-side chevrons */}
+        <View style={walletStyles.swipeChevrons}>
+          <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.5)" />
+          <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.35)" />
+          <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.2)" />
+        </View>
+      </LinearGradient>
     </View>
   );
 }

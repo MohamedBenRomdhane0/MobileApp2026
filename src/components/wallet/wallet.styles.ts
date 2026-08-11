@@ -174,13 +174,18 @@ export const walletStyles = StyleSheet.create({
 
   /* ── Swipe-to-topup slider ───────────────────────────────────────────── */
 
-  swipeTrack: {
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "transparent",
+  swipeTrackOuter: {
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 32,
+  },
+
+  swipeTrack: {
+    width: "80%",
+    height: 60,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
     overflow: "hidden",
     position: "relative",
   },
