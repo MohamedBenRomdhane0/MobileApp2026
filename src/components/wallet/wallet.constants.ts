@@ -1,8 +1,8 @@
 import type { WithSpringConfig } from "react-native-reanimated";
 
-/** Dark navy sheet surface — deep premium background. */
-export const WALLET_NAVY = "#1A1A2E";
-export const WALLET_NAVY_CARD = "#252542";
+/** Dark navy sheet surface — Abajim blue background. */
+export const WALLET_NAVY = "#0F1F3D";
+export const WALLET_NAVY_CARD = "#152F57";
 
 /** Purple accent for primary actions. */
 export const WALLET_PURPLE = "#7C4DFF";
