@@ -53,13 +53,12 @@ function WalletBackground({ style }: BottomSheetBackgroundProps) {
   );
 }
 
-/** Blurred dim backdrop; tapping it closes the sheet. */
+/** Transparent backdrop; tapping it closes the sheet. No gray overlay. */
 function WalletBackdrop({ style }: BottomSheetBackdropProps) {
   const { close } = useBottomSheet();
 
   return (
     <Animated.View style={[walletStyles.backdrop, style]}>
-      <BlurView intensity={20} tint="dark" style={{ flex: 1 }} />
       <Pressable
         style={StyleSheet.absoluteFill}
         onPress={() => close()}
@@ -242,7 +241,7 @@ export default function WalletBottomSheet({
 
   const [amount, setAmount] = useState(100);
 
-  const snapPoints = useMemo(() => ["52%", "92%"], []);
+  const snapPoints = useMemo(() => ["80%", "92%"], []);
 
   const selectAmount = useCallback((next: number) => {
     setAmount(next);

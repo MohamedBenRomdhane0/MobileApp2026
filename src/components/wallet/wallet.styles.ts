@@ -50,7 +50,7 @@ export const walletStyles = StyleSheet.create({
 
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(8,12,28,0.60)",
+    backgroundColor: "rgba(0,0,0,0)",
   },
 
   content: {
