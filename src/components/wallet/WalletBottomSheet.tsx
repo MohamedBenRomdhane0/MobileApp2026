@@ -71,7 +71,7 @@ function WalletBackdrop({ style }: BottomSheetBackdropProps) {
   );
 }
 
-/** Swipe-to-topup animated slider matching the blue-to-purple gradient design. */
+/** Swipe-to-topup animated slider matching the blue gradient design. */
 function SwipeToTopup({ onSwipeComplete }: { onSwipeComplete: () => void }) {
   const translateX = useRef(new Animated.Value(0)).current;
   const trackWidth = useRef(0);
@@ -185,7 +185,7 @@ function SavedCard({
 }) {
   return (
     <LinearGradient
-      colors={["#6B5CE7", "#9B6DFF", "#C77DFF"]}
+      colors={[...WALLET_CARD_GRADIENT]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={walletStyles.creditCard}

@@ -6,9 +6,9 @@ export const WALLET_CYAN = "#22BEC8";
 export const WALLET_GRADIENT = [WALLET_NAVY, WALLET_CYAN] as const;
 export const WALLET_NAVY_CARD = "rgba(11,27,51,0.55)";
 
-/** Purple accent for primary actions. */
-export const WALLET_PURPLE = "#7C4DFF";
-export const WALLET_PURPLE_SOFT = "rgba(124,77,255,0.18)";
+/** Abajim blue accent for primary actions. */
+export const WALLET_PURPLE = "#22BEC8";
+export const WALLET_PURPLE_SOFT = "rgba(34,190,200,0.18)";
 
 export const WALLET_CYAN_SOFT = "rgba(34,190,200,0.16)";
 
@@ -31,21 +31,21 @@ export function getCardBrand(value: string): CardBrand {
   return null;
 }
 
-/** Purple gradient for the swipe-to-topup button. */
+/** Blue gradient for the swipe-to-topup button. */
 export const WALLET_SWIPE_GRADIENT = [
-  "#9B6DFF",
-  "#7C4DFF",
-  "#5C2DDF",
+  "#0B1B33",
+  "#22BEC8",
+  "#0B1B33",
 ] as [string, string, string];
 
-/** Cyan gradient used by the "Pay now" primary button (fallback). */
-export const WALLET_BTN_GRADIENT = ["#9B6DFF", "#7C4DFF"] as [string, string];
+/** Blue gradient for the "Pay now" primary button. */
+export const WALLET_BTN_GRADIENT = ["#22BEC8", "#15A0B0"] as [string, string];
 
 /** Gradient for the saved-card display. */
 export const WALLET_CARD_GRADIENT = [
-  "#3A2D6B",
-  "#2A1D5B",
-  "#1A1A2E",
+  "#152F57",
+  "#0B1B33",
+  "#060F22",
 ] as [string, string, string];
 
 /** Spring used for sheet presentation and snap transitions. */
