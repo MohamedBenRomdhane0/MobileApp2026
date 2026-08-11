@@ -241,7 +241,7 @@ export default function WalletBottomSheet({
 
   const [amount, setAmount] = useState(100);
 
-  const snapPoints = useMemo(() => ["80%", "92%"], []);
+  const snapPoints = useMemo(() => ["90%", "95%"], []);
 
   const selectAmount = useCallback((next: number) => {
     setAmount(next);
