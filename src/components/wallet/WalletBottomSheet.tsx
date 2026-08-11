@@ -29,6 +29,7 @@ import RechargeAmountCard from "./RechargeAmountCard";
 import {
   RECHARGE_AMOUNTS,
   WALLET_CARD_GRADIENT,
+  WALLET_GRADIENT,
   WALLET_SPRING,
 } from "./wallet.constants";
 import { walletStyles } from "./wallet.styles";
@@ -39,17 +40,18 @@ type WalletBottomSheetProps = {
   onClose: () => void;
 };
 
-/** Frosted-glass sheet shell: navy base + purple glows under a blur. */
+/** Abajim blue gradient sheet shell: dark → cyan. */
 function WalletBackground({ style }: BottomSheetBackgroundProps) {
   return (
-    <Animated.View
-      pointerEvents="none"
+    <LinearGradient
+      colors={[...WALLET_GRADIENT]}
+      start={{ x: 0, y: 1 }}
+      end={{ x: 0, y: 0 }}
       style={[style, walletStyles.sheetBg]}
     >
       <View style={walletStyles.sheetGlowTop} />
       <View style={walletStyles.sheetGlowSide} />
-      <BlurView intensity={24} tint="dark" style={{ flex: 1 }} />
-    </Animated.View>
+    </LinearGradient>
   );
 }
 
@@ -241,7 +243,7 @@ export default function WalletBottomSheet({
 
   const [amount, setAmount] = useState(100);
 
-  const snapPoints = useMemo(() => ["90%", "95%"], []);
+  const snapPoints = useMemo(() => ["85%", "95%"], []);
 
   const selectAmount = useCallback((next: number) => {
     setAmount(next);

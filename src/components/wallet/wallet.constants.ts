@@ -1,15 +1,15 @@
 import type { WithSpringConfig } from "react-native-reanimated";
 
-/** Abajim blue sheet surface. */
-export const WALLET_NAVY = "#22BEC8";
-export const WALLET_NAVY_CARD = "rgba(15,31,61,0.65)";
+/** Abajim blue sheet surface — dark-to-cyan gradient. */
+export const WALLET_NAVY = "#0B1B33";
+export const WALLET_CYAN = "#22BEC8";
+export const WALLET_GRADIENT = [WALLET_NAVY, WALLET_CYAN] as const;
+export const WALLET_NAVY_CARD = "rgba(11,27,51,0.55)";
 
 /** Purple accent for primary actions. */
 export const WALLET_PURPLE = "#7C4DFF";
 export const WALLET_PURPLE_SOFT = "rgba(124,77,255,0.18)";
 
-/** Teal retained for secondary accents. */
-export const WALLET_CYAN = "#22BEC8";
 export const WALLET_CYAN_SOFT = "rgba(34,190,200,0.16)";
 
 export const WALLET_TEXT = "#FFFFFF";
