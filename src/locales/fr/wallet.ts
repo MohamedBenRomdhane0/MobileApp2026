@@ -16,6 +16,7 @@ export const wallet = {
   upload_receipt: "Cliquez pour joindre la photo du reçu",
   receipt_types: "JPG, PNG ou PDF",
   set_amount: "Définir le montant",
+  topup_question: "Combien souhaitez-vous recharger ?",
   saved_cards: "Cartes enregistrées",
   view_all: "Voir tout",
   swipe_to_topup: "Glisser pour recharger",

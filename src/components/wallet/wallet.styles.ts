@@ -28,7 +28,7 @@ export const walletStyles = StyleSheet.create({
     width: 240,
     height: 240,
     borderRadius: 120,
-    backgroundColor: "rgba(124,77,255,0.18)",
+    backgroundColor: "rgba(124,77,255,0.15)",
   },
 
   sheetGlowSide: {
@@ -38,7 +38,7 @@ export const walletStyles = StyleSheet.create({
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: "rgba(124,77,255,0.10)",
+    backgroundColor: "rgba(124,77,255,0.08)",
   },
 
   handleIndicator: {
@@ -58,52 +58,41 @@ export const walletStyles = StyleSheet.create({
     paddingBottom: 32,
   },
 
-  /* ── Header ───────────────────────────────────────────────────────────── */
+  /* ── Set Amount header ───────────────────────────────────────────────── */
 
-  headerRow: {
+  setAmountHeader: {
     flexDirection: "row",
-    alignItems: "center",
-  },
-
-  headerSpacer: { flex: 1 },
-
-  closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: WALLET_INPUT_BG,
-    borderWidth: 1,
-    borderColor: WALLET_HAIRLINE,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  /* ── Set Amount section ──────────────────────────────────────────────── */
-
-  setAmountRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
-    marginTop: 18,
-    marginBottom: 20,
+    marginTop: 14,
+    marginBottom: 8,
   },
 
-  setAmountLabel: {
-    color: WALLET_SUB,
-    fontSize: 13,
-    fontWeight: "700",
+  setAmountTitle: {
+    color: WALLET_TEXT,
+    fontSize: 18,
+    fontWeight: "800",
     letterSpacing: 0.3,
   },
 
+  setAmountSubtitle: {
+    color: WALLET_SUB,
+    fontSize: 13,
+    fontWeight: "500",
+    marginTop: 4,
+    letterSpacing: 0.2,
+  },
+
   setAmountChevron: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: WALLET_INPUT_BG,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(124,77,255,0.15)",
     borderWidth: 1,
-    borderColor: WALLET_HAIRLINE,
+    borderColor: "rgba(124,77,255,0.25)",
     alignItems: "center",
     justifyContent: "center",
+    marginTop: 2,
   },
 
   /* ── Amount stepper ──────────────────────────────────────────────────── */
@@ -113,15 +102,16 @@ export const walletStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 24,
+    marginTop: 16,
   },
 
   stepperBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: WALLET_INPUT_BG,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "rgba(124,77,255,0.15)",
     borderWidth: 1.5,
-    borderColor: WALLET_HAIRLINE,
+    borderColor: "rgba(124,77,255,0.30)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -134,10 +124,10 @@ export const walletStyles = StyleSheet.create({
 
   amountBig: {
     color: WALLET_TEXT,
-    fontSize: 42,
+    fontSize: 48,
     fontWeight: "900",
     letterSpacing: 1,
-    lineHeight: 50,
+    lineHeight: 56,
   },
 
   amountCurrencySub: {
@@ -161,14 +151,14 @@ export const walletStyles = StyleSheet.create({
     borderRadius: 22,
     borderWidth: 1.5,
     borderColor: WALLET_HAIRLINE,
-    backgroundColor: WALLET_INPUT_BG,
+    backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
   },
 
   chipActive: {
     borderColor: WALLET_PURPLE,
-    backgroundColor: WALLET_PURPLE_SOFT,
+    backgroundColor: WALLET_PURPLE,
     shadowColor: WALLET_PURPLE,
     shadowOpacity: 0.50,
     shadowRadius: 14,
@@ -185,140 +175,242 @@ export const walletStyles = StyleSheet.create({
   /* ── Swipe-to-topup slider ───────────────────────────────────────────── */
 
   swipeTrack: {
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "rgba(124,77,255,0.12)",
-    borderWidth: 1.5,
-    borderColor: "rgba(124,77,255,0.25)",
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 28,
+    marginBottom: 32,
     overflow: "hidden",
+    position: "relative",
   },
 
-  swipeTrackInner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-
-  swipeIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: WALLET_PURPLE,
+  swipeKnob: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#1E2A5A",
+    borderWidth: 2,
+    borderColor: "rgba(100,120,255,0.4)",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: WALLET_PURPLE,
-    shadowOpacity: 0.6,
-    shadowRadius: 10,
+    shadowColor: "#4060FF",
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
 
   swipeLabel: {
-    color: "rgba(255,255,255,0.70)",
-    fontSize: 14,
+    color: "rgba(255,255,255,0.75)",
+    fontSize: 15,
     fontWeight: "700",
     letterSpacing: 0.3,
+    zIndex: 1,
+  },
+
+  swipeChevrons: {
+    position: "absolute",
+    right: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+    zIndex: 1,
   },
 
   /* ── Saved Cards section ─────────────────────────────────────────────── */
 
-  sectionHeader: {
+  savedCardsHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 14,
+    marginBottom: 16,
   },
 
-  sectionTitle: {
+  savedCardsTitle: {
     color: WALLET_TEXT,
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: "800",
     letterSpacing: 0.3,
   },
 
-  sectionLink: {
-    color: WALLET_PURPLE,
-    fontSize: 12,
-    fontWeight: "700",
-  },
-
-  savedCard: {
+  savedCardsChevron: {
+    width: 36,
+    height: 36,
     borderRadius: 18,
+    backgroundColor: "rgba(124,77,255,0.15)",
     borderWidth: 1,
-    borderColor: "rgba(124,77,255,0.20)",
-    backgroundColor: WALLET_NAVY_CARD,
-    padding: 18,
-    marginBottom: 10,
-    overflow: "hidden",
+    borderColor: "rgba(124,77,255,0.25)",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
-  savedCardGlow: {
+  /* ── Card carousel ───────────────────────────────────────────────────── */
+
+  cardCarousel: {
+    position: "relative",
+    height: 220,
+    marginBottom: 16,
+  },
+
+  cardBehind: {
     position: "absolute",
-    top: -30,
-    right: -30,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "rgba(124,77,255,0.10)",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
   },
 
-  savedCardChipRow: {
-    flexDirection: "row",
-    alignItems: "center",
+  creditCard: {
+    width: "100%",
+    height: 200,
+    borderRadius: 20,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 18,
     justifyContent: "space-between",
-    marginBottom: 18,
+    shadowColor: "#6B5CE7",
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 12,
   },
 
-  savedCardType: {
-    color: WALLET_SUB,
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.3,
-  },
-
-  savedCardNumber: {
-    color: WALLET_TEXT,
-    fontSize: 16,
-    fontWeight: "800",
-    letterSpacing: 2,
-  },
-
-  savedCardFooter: {
+  creditCardTopRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
 
-  savedCardHolder: {
-    color: WALLET_SUB,
-    fontSize: 11,
+  creditCardBankRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  creditCardBankIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "rgba(255,255,255,0.25)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  creditCardBankName: {
+    color: "#FFFFFF",
+    fontSize: 14,
     fontWeight: "700",
   },
 
-  savedCardExpiry: {
-    color: WALLET_SUB,
-    fontSize: 11,
-    fontWeight: "700",
-  },
-
-  savedCardBrand: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-    backgroundColor: "rgba(124,77,255,0.25)",
-  },
-
-  savedCardBrandText: {
-    color: WALLET_TEXT,
-    fontSize: 10,
+  creditCardBrand: {
+    color: "#FFFFFF",
+    fontSize: 22,
     fontWeight: "900",
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
 
-  /* ── Legacy section label (kept for payment method) ─────────────────── */
+  creditCardChipRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  creditCardChip: {
+    width: 40,
+    height: 30,
+    borderRadius: 6,
+    backgroundColor: "#E8C860",
+    borderWidth: 1,
+    borderColor: "#C9A83A",
+    padding: 4,
+    justifyContent: "center",
+  },
+
+  creditCardChipLines: {
+    gap: 3,
+  },
+
+  creditCardChipLine: {
+    height: 2,
+    backgroundColor: "#C9A83A",
+    borderRadius: 1,
+  },
+
+  creditCardNumber: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "700",
+    letterSpacing: 2.5,
+  },
+
+  creditCardFooter: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+  },
+
+  creditCardLabel: {
+    color: "rgba(255,255,255,0.6)",
+    fontSize: 10,
+    fontWeight: "600",
+    letterSpacing: 0.3,
+    marginBottom: 2,
+  },
+
+  creditCardHolder: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+
+  creditCardExpiry: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+
+  addCardBtnWrap: {
+    position: "absolute",
+    right: -10,
+    top: "50%",
+    transform: [{ translateY: -24 }],
+    zIndex: 5,
+  },
+
+  addCardBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#8BC34A",
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+
+  /* ── Legacy styles (kept for compatibility) ──────────────────────────── */
+
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  headerSpacer: { flex: 1 },
+
+  closeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: WALLET_INPUT_BG,
+    borderWidth: 1,
+    borderColor: WALLET_HAIRLINE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
   sectionLabel: {
     color: WALLET_SUB,
@@ -327,8 +419,6 @@ export const walletStyles = StyleSheet.create({
     letterSpacing: 0.6,
     marginBottom: 10,
   },
-
-  /* ── Balance ──────────────────────────────────────────────────────────── */
 
   balanceWrap: {
     alignItems: "center",
@@ -371,8 +461,6 @@ export const walletStyles = StyleSheet.create({
     elevation: 6,
   },
 
-  /* ── Recharge amount cards ────────────────────────────────────────────── */
-
   amountsRow: {
     flexDirection: "row",
     gap: 10,
@@ -413,8 +501,6 @@ export const walletStyles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  /* ── Custom amount ────────────────────────────────────────────────────── */
-
   customInput: {
     height: 44,
     borderRadius: 12,
@@ -427,8 +513,6 @@ export const walletStyles = StyleSheet.create({
     fontWeight: "700",
     marginTop: 10,
   },
-
-  /* ── Payment method cards ─────────────────────────────────────────────── */
 
   methodRow: {
     flexDirection: "row",
@@ -485,8 +569,6 @@ export const walletStyles = StyleSheet.create({
     fontWeight: "800",
     textAlign: "center",
   },
-
-  /* ── Card form ────────────────────────────────────────────────────────── */
 
   inputRow: {
     flexDirection: "row",
@@ -571,8 +653,6 @@ export const walletStyles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  /* ── Bank transfer ────────────────────────────────────────────────────── */
-
   transferCard: {
     borderRadius: 12,
     borderWidth: 1,
@@ -607,8 +687,6 @@ export const walletStyles = StyleSheet.create({
     backgroundColor: WALLET_HAIRLINE,
     marginVertical: 14,
   },
-
-  /* ── Receipt upload ───────────────────────────────────────────────────── */
 
   receiptBox: {
     marginTop: 10,
@@ -649,8 +727,6 @@ export const walletStyles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
   },
-
-  /* ── Pay button ───────────────────────────────────────────────────────── */
 
   payBtn: {
     height: 50,

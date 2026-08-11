@@ -30,7 +30,6 @@ import {
   RECHARGE_AMOUNTS,
   WALLET_CARD_GRADIENT,
   WALLET_SPRING,
-  WALLET_SWIPE_GRADIENT,
 } from "./wallet.constants";
 import { walletStyles } from "./wallet.styles";
 
@@ -71,11 +70,11 @@ function WalletBackdrop({ style }: BottomSheetBackdropProps) {
   );
 }
 
-/** Swipe-to-topup animated slider. */
+/** Swipe-to-topup animated slider matching the blue-to-purple gradient design. */
 function SwipeToTopup({ onSwipeComplete }: { onSwipeComplete: () => void }) {
   const translateX = useRef(new Animated.Value(0)).current;
   const trackWidth = useRef(0);
-  const knobSize = 48;
+  const knobSize = 52;
 
   const onGestureEvent = useCallback(
     (event: PanGestureHandlerGestureEvent) => {
@@ -131,6 +130,7 @@ function SwipeToTopup({ onSwipeComplete }: { onSwipeComplete: () => void }) {
         trackWidth.current = e.nativeEvent.layout.width;
       }}
     >
+      {/* Drag knob */}
       <PanGestureHandler
         onGestureEvent={onGestureEvent}
         onHandlerStateChange={onHandlerStateChange}
@@ -143,58 +143,84 @@ function SwipeToTopup({ onSwipeComplete }: { onSwipeComplete: () => void }) {
             height: knobSize,
             borderRadius: knobSize / 2,
             transform: [{ translateX }],
+            zIndex: 2,
           }}
         >
-          <LinearGradient
-            colors={WALLET_SWIPE_GRADIENT}
-            style={walletStyles.swipeIconCircle}
-          >
-            <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-          </LinearGradient>
+          <View style={walletStyles.swipeKnob}>
+            <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+          </View>
         </Animated.View>
       </PanGestureHandler>
-      <View style={walletStyles.swipeTrackInner}>
-        <View style={{ width: knobSize + 20 }} />
-        <Text style={walletStyles.swipeLabel}>Swipe to topup</Text>
+      {/* Label centered */}
+      <Text style={walletStyles.swipeLabel}>Swipe to topup</Text>
+      {/* Right-side chevrons */}
+      <View style={walletStyles.swipeChevrons}>
+        <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.5)" />
+        <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.35)" />
+        <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.2)" />
       </View>
     </View>
   );
 }
 
-/** Saved card display with gradient background. */
+/** Realistic credit card display matching the design image. */
 function SavedCard({
-  last4,
-  brand,
+  cardNumber,
   holder,
   expiry,
+  bankName,
+  brand,
 }: {
-  last4: string;
-  brand: string;
+  cardNumber: string;
   holder: string;
   expiry: string;
+  bankName: string;
+  brand: string;
 }) {
   return (
     <LinearGradient
-      colors={WALLET_CARD_GRADIENT}
+      colors={["#6B5CE7", "#9B6DFF", "#C77DFF"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={walletStyles.savedCard}
+      style={walletStyles.creditCard}
     >
-      <View style={walletStyles.savedCardGlow} />
-      <View style={walletStyles.savedCardChipRow}>
-        <Text style={walletStyles.savedCardType}>Debit</Text>
-        <View style={walletStyles.savedCardBrand}>
-          <Text style={walletStyles.savedCardBrandText}>{brand}</Text>
+      {/* Bank logo + name */}
+      <View style={walletStyles.creditCardTopRow}>
+        <View style={walletStyles.creditCardBankRow}>
+          <View style={walletStyles.creditCardBankIcon}>
+            <Ionicons name="information-circle" size={14} color="#FFFFFF" />
+          </View>
+          <Text style={walletStyles.creditCardBankName}>{bankName}</Text>
         </View>
+        <Text style={walletStyles.creditCardBrand}>{brand}</Text>
       </View>
-      <Text style={walletStyles.savedCardNumber}>
-        •••• •••• •••• {last4}
-      </Text>
-      <View style={walletStyles.savedCardFooter}>
-        <View>
-          <Text style={walletStyles.savedCardHolder}>{holder}</Text>
+
+      {/* Chip + contactless */}
+      <View style={walletStyles.creditCardChipRow}>
+        <View style={walletStyles.creditCardChip}>
+          <View style={walletStyles.creditCardChipLines}>
+            <View style={walletStyles.creditCardChipLine} />
+            <View style={walletStyles.creditCardChipLine} />
+            <View style={walletStyles.creditCardChipLine} />
+            <View style={walletStyles.creditCardChipLine} />
+          </View>
         </View>
-        <Text style={walletStyles.savedCardExpiry}>{expiry}</Text>
+        <Ionicons name="wifi" size={16} color="rgba(255,255,255,0.6)" style={{ transform: [{ rotate: "90deg" }] }} />
+      </View>
+
+      {/* Card number */}
+      <Text style={walletStyles.creditCardNumber}>{cardNumber}</Text>
+
+      {/* Name + Expiry */}
+      <View style={walletStyles.creditCardFooter}>
+        <View>
+          <Text style={walletStyles.creditCardLabel}>Name</Text>
+          <Text style={walletStyles.creditCardHolder}>{holder}</Text>
+        </View>
+        <View style={{ alignItems: "flex-end" }}>
+          <Text style={walletStyles.creditCardLabel}>Expired Date</Text>
+          <Text style={walletStyles.creditCardExpiry}>{expiry}</Text>
+        </View>
       </View>
     </LinearGradient>
   );
@@ -249,35 +275,26 @@ export default function WalletBottomSheet({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Header — close on the leading edge */}
-          <View style={[walletStyles.headerRow, { flexDirection: row }]}>
-            <Pressable
-              style={walletStyles.closeBtn}
-              onPress={() => sheetRef.current?.close()}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel={t("common.close")}
-            >
-              <Ionicons name="close" size={18} color="#FFFFFF" />
-            </Pressable>
-            <View style={walletStyles.headerSpacer} />
-          </View>
-
-          {/* Set Amount */}
-          <View style={[walletStyles.setAmountRow, { flexDirection: row }]}>
-            <Text style={walletStyles.setAmountLabel}>
-              {t("wallet.set_amount")}
-            </Text>
+          {/* ─── Set Amount section ─── */}
+          <View style={[walletStyles.setAmountHeader, { flexDirection: row }]}>
+            <View>
+              <Text style={walletStyles.setAmountTitle}>
+                {t("wallet.set_amount")}
+              </Text>
+              <Text style={walletStyles.setAmountSubtitle}>
+                {t("wallet.topup_question")}
+              </Text>
+            </View>
             <View style={walletStyles.setAmountChevron}>
               <Ionicons
                 name={isRTL ? "chevron-back" : "chevron-forward"}
-                size={14}
-                color="rgba(255,255,255,0.45)"
+                size={16}
+                color="rgba(255,255,255,0.5)"
               />
             </View>
           </View>
 
-          {/* Amount stepper */}
+          {/* ─── Amount stepper ─── */}
           <View style={walletStyles.amountStepperRow}>
             <Pressable
               style={walletStyles.stepperBtn}
@@ -288,7 +305,9 @@ export default function WalletBottomSheet({
               <Ionicons name="remove" size={22} color="#FFFFFF" />
             </Pressable>
             <View style={walletStyles.amountDisplay}>
-              <Text style={walletStyles.amountBig}>{amount}</Text>
+              <Text style={walletStyles.amountBig}>
+                ${amount}
+              </Text>
               <Text style={walletStyles.amountCurrencySub}>{currency}</Text>
             </View>
             <Pressable
@@ -301,7 +320,7 @@ export default function WalletBottomSheet({
             </Pressable>
           </View>
 
-          {/* Preset chips */}
+          {/* ─── Preset chips ─── */}
           <View style={[walletStyles.chipsRow, { flexDirection: row }]}>
             {RECHARGE_AMOUNTS.map((value) => (
               <RechargeAmountCard
@@ -314,31 +333,52 @@ export default function WalletBottomSheet({
             ))}
           </View>
 
-          {/* Swipe to topup */}
+          {/* ─── Swipe to topup ─── */}
           <SwipeToTopup onSwipeComplete={() => {}} />
 
-          {/* Saved Cards */}
-          <View style={walletStyles.sectionHeader}>
-            <Text style={walletStyles.sectionTitle}>
+          {/* ─── Saved Cards ─── */}
+          <View style={[walletStyles.savedCardsHeader, { flexDirection: row }]}>
+            <Text style={walletStyles.savedCardsTitle}>
               {t("wallet.saved_cards")}
             </Text>
-            <Text style={walletStyles.sectionLink}>
-              {t("wallet.view_all")}
-            </Text>
+            <View style={walletStyles.savedCardsChevron}>
+              <Ionicons
+                name={isRTL ? "chevron-back" : "chevron-forward"}
+                size={16}
+                color="rgba(255,255,255,0.5)"
+              />
+            </View>
           </View>
 
-          <SavedCard
-            last4="8243"
-            brand="VISA"
-            holder="Jane Cooper"
-            expiry="08/25"
-          />
-          <SavedCard
-            last4="3921"
-            brand="MC"
-            holder="Jane Cooper"
-            expiry="08/25"
-          />
+          {/* Card carousel stack */}
+          <View style={walletStyles.cardCarousel}>
+            {/* Second card (peeking behind) */}
+            <View style={walletStyles.cardBehind}>
+              <LinearGradient
+                colors={["#E8A838", "#D4942A"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[walletStyles.creditCard, { transform: [{ translateX: 8 }] }]}
+              />
+            </View>
+            {/* Main card */}
+            <SavedCard
+              cardNumber="1237 6890 7654 5678"
+              holder="Ethan Brooks"
+              expiry="12/26"
+              bankName="TheBank"
+              brand="VISA"
+            />
+            {/* Add card button */}
+            <View style={walletStyles.addCardBtnWrap}>
+              <LinearGradient
+                colors={["#B8E84C", "#8BC34A"]}
+                style={walletStyles.addCardBtn}
+              >
+                <Ionicons name="add" size={24} color="#1A1A2E" />
+              </LinearGradient>
+            </View>
+          </View>
         </BottomSheetScrollView>
       </BottomSheet>
     </GestureHandlerRootView>

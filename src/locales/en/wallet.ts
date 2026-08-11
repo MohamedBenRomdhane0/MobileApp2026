@@ -16,6 +16,7 @@ export const wallet = {
   upload_receipt: "Tap to upload receipt photo",
   receipt_types: "JPG, PNG or PDF",
   set_amount: "Set Amount",
+  topup_question: "How much you would like to top up?",
   saved_cards: "Saved Cards",
   view_all: "View All",
   swipe_to_topup: "Swipe to topup",

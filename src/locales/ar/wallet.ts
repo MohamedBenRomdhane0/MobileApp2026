@@ -16,6 +16,7 @@ export const wallet = {
   upload_receipt: "اضغط لرفع صورة الوصل",
   receipt_types: "JPG, PNG أو PDF",
   set_amount: "تحديد المبلغ",
+  topup_question: "كم تريد الشحن؟",
   saved_cards: "البطاقات المحفوظة",
   view_all: "عرض الكل",
   swipe_to_topup: "اسحب للشحن",
