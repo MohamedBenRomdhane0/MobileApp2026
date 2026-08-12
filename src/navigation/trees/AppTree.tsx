@@ -20,6 +20,7 @@ import JoinSessionScreen from "@screens/meetings/joinSession/JoinSessionScreen";
 import PlansScreen from "@screens/plans/PlansScreen";
 import DetailPlanMettingScreen from "@screens/plans/DetailPlanMettingScreen";
 import TrailersScreen from "@screens/trailers/TrailersScreen";
+import CustomizeAvatarScreen from "@screens/child/customizeAvatar/CustomizeAvatarScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -69,6 +70,10 @@ export default function AppTree() {
         component={DetailPlanMettingScreen}
       />
       <Stack.Screen name={PATHS.APP.TRAILERS} component={TrailersScreen} />
+      <Stack.Screen
+        name={PATHS.APP.CUSTOMIZE_AVATAR}
+        component={CustomizeAvatarScreen}
+      />
     </Stack.Navigator>
   );
 }

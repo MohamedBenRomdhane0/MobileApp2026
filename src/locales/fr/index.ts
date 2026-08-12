@@ -18,6 +18,7 @@ import { meetings } from './meetings'
 import { learning } from './learning'
 import { wallet } from './wallet'
 import { scan } from './scan'
+import { customize } from './customize'
 
 const fr = {
   topbar,
@@ -40,5 +41,6 @@ const fr = {
   learning,
   wallet,
   scan,
+  customize,
 }
 export default fr

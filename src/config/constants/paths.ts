@@ -46,6 +46,7 @@ export const PATHS = {
     AI_OWL: "AIOwl",
     SCAN_QR_CODE: "ScanQRCode",
     LEARN_CALENDAR: "LearnCalendar",
+    CUSTOMIZE_AVATAR: "CustomizeAvatar",
   },
 
   TABS: {

@@ -14,7 +14,7 @@ export default function ActiveChildHeaderAvatar() {
 
   return (
     <TouchableOpacity
-      onPress={() => navigation.navigate(PATHS.ONBOARDING.ADD_KIDS as any)}
+      onPress={() => navigation.navigate(PATHS.APP.CUSTOMIZE_AVATAR as any)}
       style={styles.container}
       activeOpacity={0.85}
     >
