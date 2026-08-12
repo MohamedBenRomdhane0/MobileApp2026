@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -33,6 +34,7 @@ const RARITY_COLOR: Record<HeroItem["rarity"], TextStyle> = {
 
 export default function CustomizeAvatarScreen() {
   const { t } = useTranslation();
+  const navigation = useNavigation();
   const child = useActiveChild();
   const childId = child?.id ?? null;
 
@@ -84,9 +86,15 @@ export default function CustomizeAvatarScreen() {
     <View style={s.screen}>
       {/* Header */}
       <View style={s.header}>
-        <View style={s.headerBtn}>
+        <TouchableOpacity
+          style={s.headerBtn}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel="Back"
+        >
           <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
-        </View>
+        </TouchableOpacity>
         <Text style={s.headerTitle}>{t("customize.title")}</Text>
         <TouchableOpacity
           style={[s.headerBtn, s.headerBtnSave]}

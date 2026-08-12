@@ -20,7 +20,7 @@ export const customizeAvatarStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 44,
   },
 
   headerBtn: {
@@ -87,7 +87,7 @@ export const customizeAvatarStyles = StyleSheet.create({
 
   heroImage: {
     width: "100%",
-    height: 420,
+    height: 300,
   },
 
   heroOverlay: {
