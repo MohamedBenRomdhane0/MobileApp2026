@@ -32,6 +32,25 @@ const RARITY_COLOR: Record<HeroItem["rarity"], TextStyle> = {
   legendary: s.rarityLegendary,
 };
 
+/** Preload all hero + thumb images into the RN image cache on mount. */
+function usePreloadAssets() {
+  useEffect(() => {
+    const seen = new Set<string>();
+    for (const item of HERO_ITEMS) {
+      const avatarUri = Image.resolveAssetSource(item.avatar)?.uri;
+      if (avatarUri && !seen.has(avatarUri)) {
+        Image.prefetch(avatarUri);
+        seen.add(avatarUri);
+      }
+      const thumbUri = Image.resolveAssetSource(item.thumb)?.uri;
+      if (thumbUri && !seen.has(thumbUri)) {
+        Image.prefetch(thumbUri);
+        seen.add(thumbUri);
+      }
+    }
+  }, []);
+}
+
 export default function CustomizeAvatarScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation();
@@ -39,6 +58,8 @@ export default function CustomizeAvatarScreen() {
   const childId = child?.id ?? null;
 
   const { itemId, equip } = useAvatarCustomization(childId);
+
+  usePreloadAssets();
 
   const [tab, setTab] = useState<HeroCategory>("head");
   const [editingName, setEditingName] = useState(false);
