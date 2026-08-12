@@ -51,6 +51,19 @@ function usePreloadAssets() {
   }, []);
 }
 
+/** Preload images for a specific tab so they're ready when scrolled into view. */
+function usePreloadTab(tab: HeroCategory) {
+  useEffect(() => {
+    for (const item of HERO_ITEMS) {
+      if (item.category !== tab) continue;
+      const avatarUri = Image.resolveAssetSource(item.avatar)?.uri;
+      if (avatarUri) Image.prefetch(avatarUri);
+      const thumbUri = Image.resolveAssetSource(item.thumb)?.uri;
+      if (thumbUri) Image.prefetch(thumbUri);
+    }
+  }, [tab]);
+}
+
 export default function CustomizeAvatarScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation();
@@ -65,6 +78,8 @@ export default function CustomizeAvatarScreen() {
   const [editingName, setEditingName] = useState(false);
   const [saved, setSaved] = useState(false);
   const [name, setName] = useState<string | null>(null);
+
+  usePreloadTab(tab);
 
   const equipped =
     HERO_ITEMS.find((item) => item.id === (itemId ?? DEFAULT_HERO_ITEM_ID)) ??
@@ -164,7 +179,6 @@ export default function CustomizeAvatarScreen() {
         {/* Hero preview */}
         <View style={s.heroPreview}>
           <Animated.Image
-            key={equipped.id}
             source={equipped.avatar}
             style={[s.heroImage, { opacity: heroOpacity }]}
             resizeMode="cover"
