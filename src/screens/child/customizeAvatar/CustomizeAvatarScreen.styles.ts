@@ -87,7 +87,7 @@ export const customizeAvatarStyles = StyleSheet.create({
 
   heroImage: {
     width: "100%",
-    height: 360,
+    height: 420,
   },
 
   heroOverlay: {
@@ -176,12 +176,13 @@ export const customizeAvatarStyles = StyleSheet.create({
   },
 
   gridItem: {
-    width: "47%",
+    width: "30%",
     borderRadius: 20,
     borderWidth: 2,
     borderColor: BORDER,
     backgroundColor: SURFACE,
-    padding: 12,
+    padding: 10,
+    alignItems: "center",
   },
 
   gridItemSelected: {
@@ -193,8 +194,8 @@ export const customizeAvatarStyles = StyleSheet.create({
   },
 
   gridThumb: {
-    width: "100%",
-    height: 120,
+    width: 72,
+    height: 72,
     borderRadius: 14,
   },
 
