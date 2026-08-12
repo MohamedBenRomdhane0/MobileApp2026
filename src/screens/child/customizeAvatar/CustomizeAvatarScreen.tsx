@@ -70,7 +70,7 @@ export default function CustomizeAvatarScreen() {
   const child = useActiveChild();
   const childId = child?.id ?? null;
 
-  const { itemId, equip } = useAvatarCustomization(childId);
+  const { selections, equip, previewAvatar } = useAvatarCustomization(childId);
 
   usePreloadAssets();
 
@@ -81,9 +81,7 @@ export default function CustomizeAvatarScreen() {
 
   usePreloadTab(tab);
 
-  const equipped =
-    HERO_ITEMS.find((item) => item.id === (itemId ?? DEFAULT_HERO_ITEM_ID)) ??
-    HERO_ITEMS[0];
+  const currentSelection = selections[tab];
 
   const visibleItems = useMemo(
     () => HERO_ITEMS.filter((item) => item.category === tab),
@@ -93,7 +91,7 @@ export default function CustomizeAvatarScreen() {
   const selectItem = useCallback(
     (item: HeroItem) => {
       if (item.locked) return;
-      equip(item.id);
+      equip(tab, item.id);
       setSaved(false);
     },
     [equip],
@@ -168,7 +166,7 @@ export default function CustomizeAvatarScreen() {
         {/* Hero preview */}
         <View style={s.heroPreview}>
           <ExpoImage
-            source={equipped.avatar}
+            source={previewAvatar}
             style={s.heroImage}
             contentFit="cover"
             transition={200}
@@ -178,7 +176,7 @@ export default function CustomizeAvatarScreen() {
             <View style={s.heroLevelLine}>
               <Text style={s.heroLevel}>{t("customize.level", { level: child?.levelIdNormalized ?? 12 })}</Text>
               <Text style={s.heroItemName} numberOfLines={1}>
-                {t(`customize.items.${equipped.nameKey}`)}
+                {t(`customize.items.${HERO_ITEMS.find((i) => i.id === currentSelection)?.nameKey ?? "frog_hood"}`)}
               </Text>
             </View>
             <View style={s.pointsBadge}>
@@ -199,6 +197,7 @@ export default function CustomizeAvatarScreen() {
         >
           {CUSTOMIZE_TABS.map((category) => {
             const active = tab === category;
+            const hasSelection = Boolean(selections[category]);
             return (
               <TouchableOpacity
                 key={category}
@@ -210,6 +209,7 @@ export default function CustomizeAvatarScreen() {
               >
                 <Text style={[s.tabPillText, active && s.tabPillTextActive]}>
                   {t(`customize.tabs.${category}`)}
+                  {hasSelection && !active ? " ●" : ""}
                 </Text>
               </TouchableOpacity>
             );
@@ -225,7 +225,7 @@ export default function CustomizeAvatarScreen() {
         ) : (
           <View style={s.grid}>
             {visibleItems.map((item) => {
-              const isSelected = item.id === equipped.id;
+              const isSelected = item.id === currentSelection;
               const rarityStyle = item.locked ? s.rarityLocked : RARITY_COLOR[item.rarity];
               return (
                 <TouchableOpacity
