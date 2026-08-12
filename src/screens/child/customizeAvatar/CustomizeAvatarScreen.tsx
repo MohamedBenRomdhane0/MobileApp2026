@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Animated,
   Image,
   ScrollView,
   Text,
@@ -85,17 +84,6 @@ export default function CustomizeAvatarScreen() {
     HERO_ITEMS.find((item) => item.id === (itemId ?? DEFAULT_HERO_ITEM_ID)) ??
     HERO_ITEMS[0];
 
-  const heroOpacity = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    heroOpacity.setValue(0);
-    Animated.timing(heroOpacity, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  }, [equipped.id]);
-
   const visibleItems = useMemo(
     () => HERO_ITEMS.filter((item) => item.category === tab),
     [tab],
@@ -178,9 +166,9 @@ export default function CustomizeAvatarScreen() {
       >
         {/* Hero preview */}
         <View style={s.heroPreview}>
-          <Animated.Image
+          <Image
             source={equipped.avatar}
-            style={[s.heroImage, { opacity: heroOpacity }]}
+            style={s.heroImage}
             resizeMode="cover"
           />
           <View style={s.heroOverlay}>
