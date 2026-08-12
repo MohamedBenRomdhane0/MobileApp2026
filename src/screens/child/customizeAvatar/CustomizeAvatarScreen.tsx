@@ -31,7 +31,6 @@ const RARITY_COLOR: Record<HeroItem["rarity"], TextStyle> = {
   legendary: s.rarityLegendary,
 };
 
-/** Preload all hero + thumb images into the RN image cache on mount. */
 function usePreloadAssets() {
   useEffect(() => {
     const seen = new Set<string>();
@@ -50,7 +49,6 @@ function usePreloadAssets() {
   }, []);
 }
 
-/** Preload images for a specific tab so they're ready when scrolled into view. */
 function usePreloadTab(tab: HeroCategory) {
   useEffect(() => {
     for (const item of HERO_ITEMS) {
@@ -63,13 +61,17 @@ function usePreloadTab(tab: HeroCategory) {
   }, [tab]);
 }
 
+function findItem(id: string | null): HeroItem {
+  return HERO_ITEMS.find((item) => item.id === id) ?? HERO_ITEMS[0];
+}
+
 export default function CustomizeAvatarScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const child = useActiveChild();
   const childId = child?.id ?? null;
 
-  const { itemId, equip } = useAvatarCustomization(childId);
+  const { selections, equip } = useAvatarCustomization(childId);
 
   usePreloadAssets();
 
@@ -80,22 +82,32 @@ export default function CustomizeAvatarScreen() {
 
   usePreloadTab(tab);
 
-  const equipped =
-    HERO_ITEMS.find((item) => item.id === (itemId ?? DEFAULT_HERO_ITEM_ID)) ??
-    HERO_ITEMS[0];
+  const currentSelection = selections[tab];
+  const equipped = findItem(currentSelection);
+
+  const previewItem = useMemo(() => {
+    const headItem = findItem(selections.head);
+    const gearItem = findItem(selections.gear);
+    return gearItem.id !== headItem.id ? gearItem : headItem;
+  }, [selections.head, selections.gear]);
 
   const visibleItems = useMemo(
     () => HERO_ITEMS.filter((item) => item.category === tab),
     [tab],
   );
 
+  const selectedCount = useMemo(
+    () => Object.values(selections).filter(Boolean).length,
+    [selections],
+  );
+
   const selectItem = useCallback(
     (item: HeroItem) => {
       if (item.locked) return;
-      equip(item.id);
+      equip(tab, item.id);
       setSaved(false);
     },
-    [equip],
+    [equip, tab],
   );
 
   const save = useCallback(() => {
@@ -108,7 +120,6 @@ export default function CustomizeAvatarScreen() {
 
   return (
     <View style={s.screen}>
-      {/* Header */}
       <View style={s.header}>
         <TouchableOpacity
           style={s.headerBtn}
@@ -131,7 +142,6 @@ export default function CustomizeAvatarScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Name */}
       <View style={s.nameRow}>
         {editingName ? (
           <TextInput
@@ -164,10 +174,9 @@ export default function CustomizeAvatarScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}
       >
-        {/* Hero preview */}
         <View style={s.heroPreview}>
           <Image
-            source={equipped.avatar}
+            source={previewItem.avatar}
             style={s.heroImage}
             resizeMode="cover"
           />
@@ -175,7 +184,7 @@ export default function CustomizeAvatarScreen() {
             <View style={s.heroLevelLine}>
               <Text style={s.heroLevel}>{t("customize.level", { level: child?.levelIdNormalized ?? 12 })}</Text>
               <Text style={s.heroItemName} numberOfLines={1}>
-                {t(`customize.items.${equipped.nameKey}`)}
+                {t(`customize.items.${previewItem.nameKey}`)}
               </Text>
             </View>
             <View style={s.pointsBadge}>
@@ -187,7 +196,6 @@ export default function CustomizeAvatarScreen() {
           </View>
         </View>
 
-        {/* Category tabs */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -196,6 +204,7 @@ export default function CustomizeAvatarScreen() {
         >
           {CUSTOMIZE_TABS.map((category) => {
             const active = tab === category;
+            const hasSelection = Boolean(selections[category]);
             return (
               <TouchableOpacity
                 key={category}
@@ -207,13 +216,13 @@ export default function CustomizeAvatarScreen() {
               >
                 <Text style={[s.tabPillText, active && s.tabPillTextActive]}>
                   {t(`customize.tabs.${category}`)}
+                  {hasSelection && !active ? " ●" : ""}
                 </Text>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
 
-        {/* Items grid */}
         {visibleItems.length === 0 ? (
           <View style={s.emptyState}>
             <Ionicons name="paw-outline" size={32} color="rgba(241,245,249,0.3)" />
@@ -222,7 +231,7 @@ export default function CustomizeAvatarScreen() {
         ) : (
           <View style={s.grid}>
             {visibleItems.map((item) => {
-              const isSelected = item.id === equipped.id;
+              const isSelected = item.id === currentSelection;
               const rarityStyle = item.locked ? s.rarityLocked : RARITY_COLOR[item.rarity];
               return (
                 <TouchableOpacity
@@ -250,7 +259,6 @@ export default function CustomizeAvatarScreen() {
           </View>
         )}
 
-        {/* Save button */}
         <TouchableOpacity
           onPress={save}
           activeOpacity={0.9}
