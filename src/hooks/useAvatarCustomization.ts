@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 
 import {
   DEFAULT_HERO_ITEM_ID,
@@ -79,36 +80,37 @@ export function useAvatarCustomization(childId: number | null) {
 
 /**
  * Lightweight hook: returns the saved skin avatar source for a child.
- * Use in the header avatar — no full selections needed.
+ * Re-reads on every screen focus so changes from customize screen appear instantly.
  */
 export function useChildSkinAvatar(childId: number | null): number | null {
   const [avatar, setAvatar] = useState<number | null>(null);
 
-  useEffect(() => {
-    let mounted = true;
+  const readSkin = useCallback(async () => {
     const key = storageKey(childId);
     if (!key) {
       setAvatar(null);
       return;
     }
-    AsyncStorage.getItem(key)
-      .then((raw) => {
-        if (!mounted || !raw) return;
-        try {
-          const parsed = JSON.parse(raw) as Partial<Selections>;
-          const gear = HERO_ITEMS.find((i) => i.id === parsed.gear);
-          const head = HERO_ITEMS.find((i) => i.id === parsed.head);
-          const source = gear?.avatar ?? head?.avatar ?? null;
-          setAvatar(source ?? null);
-        } catch {
-          setAvatar(null);
-        }
-      })
-      .catch(() => setAvatar(null));
-    return () => {
-      mounted = false;
-    };
+    try {
+      const raw = await AsyncStorage.getItem(key);
+      if (!raw) {
+        setAvatar(null);
+        return;
+      }
+      const parsed = JSON.parse(raw) as Partial<Selections>;
+      const gear = HERO_ITEMS.find((i) => i.id === parsed.gear);
+      const head = HERO_ITEMS.find((i) => i.id === parsed.head);
+      setAvatar(gear?.avatar ?? head?.avatar ?? null);
+    } catch {
+      setAvatar(null);
+    }
   }, [childId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      readSkin();
+    }, [readSkin]),
+  );
 
   return avatar;
 }
