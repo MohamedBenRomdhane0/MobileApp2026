@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, Image, Pressable, ScrollView, Animated } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { useHomeCardEntrance, useHomeCardPress } from "@hooks/useHomeCardMotion";
 import { pickMaterialArtwork } from "@screens/home/HomeScreen.helpers";
@@ -18,7 +19,9 @@ type MaterialCardProps = {
 
 /**
  * Subject card. Colors come from `pickSubjectVisual`, so a subject always
- * carries the same tint no matter where it lands in the list.
+ * carries the same tint no matter where it lands in the list. The tint is
+ * layered as a two-stop gradient plus a corner bloom — depth without ever
+ * leaving the subject's own hue.
  */
 function MaterialCard({ material, index, label, isDark, styles, onPress }: MaterialCardProps) {
   const entrance = useHomeCardEntrance(index);
@@ -27,41 +30,68 @@ function MaterialCard({ material, index, label, isDark, styles, onPress }: Mater
   const visual = pickSubjectVisual(material);
   const artwork = pickMaterialArtwork(material);
 
-  // The visual tints are 12% alpha over white; on the dark canvas the card
-  // needs the same tint but the label has to switch to the accent itself.
-  const cardBg = isDark ? visual.bg : `${visual.color}1A`;
-  const tileBg = isDark ? `${visual.color}33` : `${visual.color}26`;
+  // Alpha layering over the subject accent: a strong-to-faint wash on light,
+  // a lifted glass wash on dark. The label switches to white on dark because
+  // the accent itself no longer clears contrast on the deep canvas.
+  const face: [string, string] = isDark
+    ? [`${visual.color}30`, `${visual.color}12`]
+    : [`${visual.color}24`, `${visual.color}0A`];
+  const tileBg = isDark ? `${visual.color}38` : "rgba(255,255,255,0.72)";
+  const labelColor = isDark ? "#FFFFFF" : visual.color;
 
   return (
     <Animated.View
       style={[
         styles.materialCard,
         {
-          backgroundColor: cardBg,
+          borderColor: `${visual.color}${isDark ? "3D" : "2E"}`,
+          shadowColor: visual.color,
           opacity: entrance.opacity,
           transform: [{ translateY: entrance.translateY }, { scale: press.scale }],
         },
       ]}
     >
-      <Pressable
-        onPress={onPress}
-        onPressIn={press.onPressIn}
-        onPressOut={press.onPressOut}
-        style={styles.materialCardPress}
-        accessibilityRole="button"
-        accessibilityLabel={label}
+      <LinearGradient
+        colors={face}
+        start={{ x: 0.1, y: 0 }}
+        end={{ x: 0.9, y: 1 }}
+        style={styles.materialCardFace}
       >
-        <View style={[styles.materialCardIconWrap, { backgroundColor: tileBg }]}>
-          <Image source={artwork} style={styles.materialCardImg} />
-        </View>
+        <View
+          style={[
+            styles.materialCardBloom,
+            { backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.55)" },
+          ]}
+          pointerEvents="none"
+        />
 
-        <Text
-          style={[styles.materialCardLabel, { color: isDark ? "#FFFFFF" : visual.color }]}
-          numberOfLines={2}
+        <Pressable
+          onPress={onPress}
+          onPressIn={press.onPressIn}
+          onPressOut={press.onPressOut}
+          style={styles.materialCardPress}
+          accessibilityRole="button"
+          accessibilityLabel={label}
         >
-          {label}
-        </Text>
-      </Pressable>
+          <View
+            style={[
+              styles.materialCardIconWrap,
+              { backgroundColor: tileBg, borderColor: `${visual.color}33` },
+            ]}
+          >
+            <Image source={artwork} style={styles.materialCardImg} />
+          </View>
+
+          <Text
+            style={[styles.materialCardLabel, { color: labelColor }]}
+            numberOfLines={2}
+          >
+            {label}
+          </Text>
+
+          <View style={[styles.materialCardRule, { backgroundColor: visual.color }]} />
+        </Pressable>
+      </LinearGradient>
     </Animated.View>
   );
 }

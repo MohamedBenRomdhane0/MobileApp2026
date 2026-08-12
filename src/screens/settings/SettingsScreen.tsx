@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation, CommonActions } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+  withSequence,
+  Easing,
+} from "react-native-reanimated";
 
 import { useAppTheme } from "@theme/ThemeProvider";
 import { selectAuth, logout } from "@redux/slices/authSlice";
@@ -77,6 +85,83 @@ function buildTokens(): ThemeTokens {
     },
     switchTrackOff: "rgba(148,163,184,0.35)",
   };
+}
+
+function AnimatedPlanCard({
+  colors,
+  titleKey,
+  icon,
+  unlockKey,
+  onPress,
+  t,
+  styles,
+}: {
+  colors: [string, string, string];
+  titleKey: string;
+  icon: React.ComponentProps<typeof Ionicons>["name"];
+  unlockKey: string;
+  onPress: () => void;
+  t: (key: string) => string;
+  styles: ReturnType<typeof createSettingsStyles>;
+}) {
+  const breathe = useSharedValue(1);
+
+  useEffect(() => {
+    breathe.value = withRepeat(
+      withSequence(
+        withTiming(0, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
+        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
+      ),
+      -1,
+      false,
+    );
+  }, [breathe]);
+
+  const cardStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 + breathe.value * 0.02 }],
+    shadowOpacity: 0.18 + breathe.value * 0.08,
+  }));
+
+  const iconStyle = useAnimatedStyle(() => ({
+    transform: [
+      { rotate: `${15 - breathe.value * 5}deg` },
+      { scale: 1 + breathe.value * 0.08 },
+    ],
+    opacity: 0.18 + breathe.value * 0.06,
+  }));
+
+  return (
+    <TouchableOpacity activeOpacity={0.88} onPress={onPress}>
+      <Animated.View style={cardStyle}>
+        <LinearGradient
+          colors={colors}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.planCard}
+        >
+          {/* Background icon — absolute, no layout impact */}
+          <Animated.View style={[styles.planCardBgIcon, iconStyle]}>
+            <Ionicons name={icon} size={80} color="#FFFFFF" />
+          </Animated.View>
+
+          {/* Text — centered in card */}
+          <View style={styles.planCardContent}>
+            <View style={styles.planCardTop}>
+              <Text style={styles.planCardTitle}>{t(titleKey)}</Text>
+            </View>
+            <View style={styles.planCardBottom}>
+              <Text style={styles.planCardUnlock}>{t(unlockKey)}</Text>
+              <Ionicons
+                name="arrow-back"
+                size={12}
+                color="rgba(255,255,255,0.85)"
+              />
+            </View>
+          </View>
+        </LinearGradient>
+      </Animated.View>
+    </TouchableOpacity>
+  );
 }
 
 export default function SettingsScreen() {
@@ -190,6 +275,30 @@ export default function SettingsScreen() {
               storageBaseUrl={STORAGE_BASE_URL}
               onSwitchedNavigateTo={PATHS.APP.BOOKS}
             />
+          </View>
+
+          {/* ── Plan cards ──────────────────────────────────────────── */}
+          <View style={styles.planSection}>
+            <View style={styles.planCardsRow}>
+              <AnimatedPlanCard
+                colors={["#FF416C", "#FF4B2B", "#FF8C42"]}
+                titleKey="settings.wealth_level"
+                icon="gift"
+                unlockKey="settings.unlock_now"
+                onPress={() => navigation.navigate(PATHS.APP.PLANS as never)}
+                t={t}
+                styles={styles}
+              />
+              <AnimatedPlanCard
+                colors={["#667EEA", "#764BA2", "#F093FB"]}
+                titleKey="settings.vip_club"
+                icon="pricetag"
+                unlockKey="settings.unlock_now"
+                onPress={() => navigation.navigate(PATHS.APP.PLANS as never)}
+                t={t}
+                styles={styles}
+              />
+            </View>
           </View>
 
           <View style={styles.optionsWrapper}>

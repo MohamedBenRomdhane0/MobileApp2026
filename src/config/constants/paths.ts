@@ -47,6 +47,7 @@ export const PATHS = {
     SCAN_QR_CODE: "ScanQRCode",
     LEARN_CALENDAR: "LearnCalendar",
     CUSTOMIZE_AVATAR: "CustomizeAvatar",
+    TOPUP: "Topup",
   },
 
   TABS: {

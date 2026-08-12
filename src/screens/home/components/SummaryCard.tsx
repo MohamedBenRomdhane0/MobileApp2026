@@ -59,10 +59,10 @@ export default function SummaryCard({
 
       <View style={styles.summaryTopRow}>
         <Image source={teacherPhoto} style={styles.summaryTeacherPhoto} />
-
         <View style={styles.summaryInfo}>
+          
           <Text style={styles.summaryTitle} numberOfLines={1}>
-            {title}
+            {meta}
           </Text>
 
           <View style={styles.summaryMetaRow}>
@@ -72,30 +72,38 @@ export default function SummaryCard({
               color="rgba(255,255,255,0.6)"
             />
             <Text style={styles.summaryMeta} numberOfLines={1}>
-              {meta}
+              14 participants
             </Text>
           </View>
         </View>
+        
 
-        <View style={styles.liveBadge}>
-          <View>
-            <Animated.View
-              style={{
-                position: "absolute",
-                width: 8,
-                height: 8,
-                borderRadius: 999,
-                backgroundColor: palette.live,
-                opacity: glowOpacity,
-                transform: [{ scale: glowScale }],
-              }}
-            />
-            <View style={styles.liveDot} />
-          </View>
-          <Text style={styles.liveBadgeText}>{liveLabel}</Text>
-        </View>
+        
       </View>
+      <View style={styles.liveBadge}>
+                <View>
+                  <Animated.View
+                    style={{
+                      position: "absolute",
+                      width: 8,
+                      height: 8,
+                      borderRadius: 999,
+                      backgroundColor: palette.live,
+                      opacity: glowOpacity,
+                      transform: [{ scale: glowScale }],
+                    }}
+                  />
+                  <View style={styles.liveDot} />
+                </View>
+                <Text style={styles.liveBadgeText}>{liveLabel}</Text>
+      </View>
+      <View style={styles.summaryInfo}>
+          <Text style={styles.summaryTitle} >
+            {title}
+          </Text>
 
+          
+        </View>
       <View style={styles.liveBottomRow}>
         <TouchableOpacity
           activeOpacity={0.9}

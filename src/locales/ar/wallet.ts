@@ -22,4 +22,18 @@ export const wallet = {
   swipe_to_topup: "اسحب للشحن",
   decrease_amount: "تقليل المبلغ",
   increase_amount: "زيادة المبلغ",
+
+  /* ── Topup screen ──────────────────────────────────────────────── */
+  topup_title: "شحن المحفظة",
+  topup_amount: "مبلغ الشحن",
+  select_payment_method: "اختر طريقة الدفع",
+  credit_debit_card: "بطاقة ائتمان / خصم",
+  apple_pay: "Apple Pay",
+  google_pay: "Google Pay",
+  holder_name: "اسم صاحب البطاقة",
+  add_card_and_pay: "إضافة البطاقة والدفع",
+  apple_pay_hint: "ادفع بأمان باستخدام Apple Pay",
+  google_pay_hint: "ادفع بأمان باستخدام Google Pay",
+  continue_apple_pay: "المتابعة مع Apple Pay",
+  continue_google_pay: "المتابعة مع Google Pay",
 };

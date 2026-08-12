@@ -10,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
+import { useNavigation } from "@react-navigation/native";
 import BottomSheet, {
   BottomSheetScrollView,
   useBottomSheet,
@@ -24,6 +25,8 @@ import {
   type PanGestureHandlerEventPayload,
   type PanGestureHandlerGestureEvent,
 } from "react-native-gesture-handler";
+
+import { PATHS } from "@config/constants/paths";
 
 import RechargeAmountCard from "./RechargeAmountCard";
 import {
@@ -238,12 +241,13 @@ export default function WalletBottomSheet({
   onClose,
 }: WalletBottomSheetProps) {
   const { t, i18n } = useTranslation();
+  const navigation = useNavigation();
   const sheetRef = useRef<BottomSheet>(null);
   const isRTL = (i18n.language ?? "ar") === "ar";
 
   const [amount, setAmount] = useState(100);
 
-  const snapPoints = useMemo(() => ["85%", "100%"], []);
+  const snapPoints = useMemo(() => ["88%", "100%"], []);
 
   const selectAmount = useCallback((next: number) => {
     setAmount(next);
@@ -340,7 +344,13 @@ export default function WalletBottomSheet({
           </View>
 
           {/* ─── Swipe to topup ─── */}
-          <SwipeToTopup onSwipeComplete={() => {}} />
+          <SwipeToTopup
+            onSwipeComplete={() => {
+              onClose();
+              // @ts-expect-error -- navigation type inference limitation
+              navigation.navigate(PATHS.APP.TOPUP, { amount });
+            }}
+          />
 
           {/* ─── Saved Cards ─── */}
           <View style={[walletStyles.savedCardsHeader, { flexDirection: row }]}>

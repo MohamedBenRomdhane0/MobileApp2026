@@ -1,9 +1,10 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { TEACHER_COLORS } from "@screens/home/HomeScreen.constants";
-import type { TeacherCard, TeachersRowProps } from "@screens/home/HomeScreen.type";
+import type { TeachersRowProps } from "@screens/home/HomeScreen.type";
 
 /**
  * Horizontal row of the available teachers — the 3 real mock entries, each
@@ -35,11 +36,23 @@ export default function TeachersRow({
             accessibilityRole="button"
             accessibilityLabel={teacher.fullName}
           >
-            <View style={[styles.teacherAvatarRing, { backgroundColor: ringColor }]}>
+            {/* Accent wash bleeding down from the top edge, tinted per teacher. */}
+            <LinearGradient
+              colors={[`${ringColor}2E`, "transparent"]}
+              style={styles.teacherCardWash}
+              pointerEvents="none"
+            />
+
+            <LinearGradient
+              colors={[ringColor, `${ringColor}88`]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.teacherAvatarRing}
+            >
               <View style={styles.teacherAvatar}>
                 <Image source={teacher.avatar} style={styles.teacherImg} />
               </View>
-            </View>
+            </LinearGradient>
 
             <Text style={styles.teacherName} numberOfLines={1}>
               {teacher.fullName}

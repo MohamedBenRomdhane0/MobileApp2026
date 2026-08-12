@@ -25,8 +25,10 @@ type BookCardProps = {
 };
 
 /**
- * Book card: cover with a legibility scrim, page / video badges and a teal
- * progress bar on the bottom edge, plus the title below.
+ * Book card: cover with a legibility scrim, page / video badges on one row
+ * and — under the title — a progress strip that only fills once the book has
+ * been started. The strip keeps its height either way so a mixed row of
+ * started and untouched books stays on one baseline.
  */
 function BookCard({ book, index, title, unnamedLabel, styles, onPress }: BookCardProps) {
   const entrance = useHomeCardEntrance(index);
@@ -65,36 +67,54 @@ function BookCard({ book, index, title, unnamedLabel, styles, onPress }: BookCar
           )}
 
           <LinearGradient
-            colors={["rgba(15,23,42,0)", "rgba(15,23,42,0.45)"]}
+            colors={["rgba(9,17,33,0)", "rgba(9,17,33,0.62)"]}
             style={styles.bookCoverScrim}
             pointerEvents="none"
           />
 
-          {pagesCount > 0 && (
-            <View style={styles.bookBadgeOverlay}>
-              <Ionicons name="reader-outline" size={12} color="#FFFFFF" />
-              <Text style={styles.bookBadgeText}>{pagesCount}</Text>
-            </View>
-          )}
-
-          {videosCount > 0 && (
-            <View style={styles.bookVideoBadge}>
-              <Ionicons name="play-circle" size={12} color="#FFFFFF" />
-              <Text style={styles.bookBadgeText}>{videosCount}</Text>
-            </View>
-          )}
-
           {progress > 0 && (
-            <View style={styles.bookProgressTrack}>
-              <View style={[styles.bookProgressFill, { width: percentWidth(progress) }]} />
+            <View style={styles.bookResumeChip}>
+              <Ionicons name="play" size={9} color="#FFFFFF" />
+              <Text style={styles.bookResumeChipText}>{progress}%</Text>
             </View>
           )}
+
+          <View style={styles.bookBadgeRow} pointerEvents="none">
+            {videosCount > 0 ? (
+              <View style={styles.bookVideoBadge}>
+                <Ionicons name="play-circle" size={12} color="#FFFFFF" />
+                <Text style={styles.bookBadgeText}>{videosCount}</Text>
+              </View>
+            ) : (
+              <View />
+            )}
+
+            {pagesCount > 0 && (
+              <View style={styles.bookBadgeOverlay}>
+                <Ionicons name="reader-outline" size={12} color="#FFFFFF" />
+                <Text style={styles.bookBadgeText}>{pagesCount}</Text>
+              </View>
+            )}
+          </View>
         </View>
 
         <View style={styles.bookMetaWrap}>
           <Text style={styles.bookTitle} numberOfLines={2}>
             {displayTitle}
           </Text>
+
+          <View style={styles.bookProgressSlot}>
+            {progress > 0 && (
+              <>
+                <View style={styles.bookProgressTrack}>
+                  <View
+                    style={[styles.bookProgressFill, { width: percentWidth(progress) }]}
+                  />
+                </View>
+                <Text style={styles.bookProgressLabel}>{progress}%</Text>
+              </>
+            )}
+          </View>
         </View>
       </Pressable>
     </Animated.View>

@@ -73,6 +73,11 @@ function matches(haystack: string, needle: string): boolean {
   return haystack.toLowerCase().includes(needle.toLowerCase());
 }
 
+/**
+ * Full-height search sheet. Every tab is filtered against the same query at
+ * once so each chip can show its own hit count — the child sees where the
+ * results are before switching tabs.
+ */
 export default function HomeSearchModal({
   styles,
   palette,
@@ -92,67 +97,62 @@ export default function HomeSearchModal({
   const { t } = useTranslation();
   const [tab, setTab] = useState<SearchTab>("materials");
   const [query, setQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
-  const activeColor = isDark ? "#FFFFFF" : palette.ink;
-  const hintColor = isDark ? "rgba(255,255,255,0.45)" : "rgba(15,46,87,0.45)";
-  const fieldHintColor = isDark ? "rgba(255,255,255,0.4)" : "rgba(18,42,78,0.4)";
   const chevron = isRTL ? ("chevron-back" as const) : ("chevron-forward" as const);
 
   const bandColors = isDark
     ? HOME_TOKENS.heroGradientDark
     : HOME_TOKENS.heroGradientLight;
 
-  const results: SearchResult[] = useMemo(() => {
+  const resultsByTab: Record<SearchTab, SearchResult[]> = useMemo(() => {
     const q = query.trim();
 
-    if (tab === "materials") {
-      return materials
-        .filter((m) => matches(labelForMaterial(m), q))
-        .map((m) => ({
-          id: `m_${m.id}`,
-          title: labelForMaterial(m),
-          thumb: pickMaterialArtwork(m),
-          onPress: () => {
-            onSelectMaterial(m);
-            onClose();
-          },
-        }));
-    }
+    const materialResults = materials
+      .filter((m) => matches(labelForMaterial(m), q))
+      .map((m) => ({
+        id: `m_${m.id}`,
+        title: labelForMaterial(m),
+        thumb: pickMaterialArtwork(m),
+        onPress: () => {
+          onSelectMaterial(m);
+          onClose();
+        },
+      }));
 
-    if (tab === "books") {
-      return books
-        .filter((b) => matches(String(b.title ?? ""), q))
-        .map((b) => ({
-          id: `b_${b.id}`,
-          title: String(b.title ?? "").trim() || unnamedLabel,
-          subtitle: `${b.videosCount ?? 0} vid • ${b.pagesTotal ?? 0} pgs`,
-          thumb: b.coverUrl ? { uri: b.coverUrl } : null,
-          onPress: () => {
-            onSelectBook(b.id);
-            onClose();
-          },
-        }));
-    }
+    const bookResults = books
+      .filter((b) => matches(String(b.title ?? ""), q))
+      .map((b) => ({
+        id: `b_${b.id}`,
+        title: String(b.title ?? "").trim() || unnamedLabel,
+        subtitle: `${b.videosCount ?? 0} vid • ${b.pagesTotal ?? 0} pgs`,
+        thumb: b.coverUrl ? { uri: b.coverUrl } : null,
+        onPress: () => {
+          onSelectBook(b.id);
+          onClose();
+        },
+      }));
 
-    const live = liveSessions.filter(
-      (s) =>
-        matches(String(s.teacherName ?? ""), q) ||
-        matches(String(s.subjectLabel ?? ""), q)
-    );
+    const liveResults = liveSessions
+      .filter(
+        (s) =>
+          matches(String(s.teacherName ?? ""), q) ||
+          matches(String(s.subjectLabel ?? ""), q)
+      )
+      .map((s) => ({
+        id: `l_${s.id}`,
+        title: String(s.teacherName ?? ""),
+        subtitle: String(s.subjectLabel ?? ""),
+        thumb: s.avatar,
+        onPress: () => {
+          onSelectLive(s);
+          onClose();
+        },
+      }));
 
-    return live.map((s) => ({
-      id: `l_${s.id}`,
-      title: String(s.teacherName ?? ""),
-      subtitle: String(s.subjectLabel ?? ""),
-      thumb: s.avatar,
-      onPress: () => {
-        onSelectLive(s);
-        onClose();
-      },
-    }));
+    return { materials: materialResults, books: bookResults, live: liveResults };
   }, [
-    tab,
     query,
     materials,
     labelForMaterial,
@@ -165,38 +165,37 @@ export default function HomeSearchModal({
     onClose,
   ]);
 
+  const results = resultsByTab[tab];
+
   const renderItem = ({ item }: ListRenderItemInfo<SearchResult>) => (
     <TouchableOpacity
       style={styles.searchResultRow}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       onPress={item.onPress}
       accessibilityRole="button"
     >
-      <View
-        style={[
-          styles.searchResultThumb,
-          { backgroundColor: palette.surfaceAlt },
-        ]}
-      >
+      <View style={styles.searchResultThumb}>
         {item.thumb ? (
           <Image source={item.thumb} style={styles.searchResultImg} />
         ) : (
-          <Ionicons name={TAB_ICON[tab]} size={20} color={palette.teal} />
+          <Ionicons name={TAB_ICON[tab]} size={22} color={palette.teal} />
         )}
       </View>
 
       <View style={styles.searchResultBody}>
-        <Text style={[styles.searchResultTitle, { color: palette.ink }]} numberOfLines={1}>
+        <Text style={styles.searchResultTitle} numberOfLines={1}>
           {item.title}
         </Text>
         {!!item.subtitle && (
-          <Text style={[styles.searchResultSub, { color: palette.sub }]} numberOfLines={1}>
+          <Text style={styles.searchResultSub} numberOfLines={1}>
             {item.subtitle}
           </Text>
         )}
       </View>
 
-      <Ionicons name={chevron} size={16} color={palette.muted} />
+      <View style={styles.searchResultGo}>
+        <Ionicons name={chevron} size={15} color={palette.teal} />
+      </View>
     </TouchableOpacity>
   );
 
@@ -204,7 +203,7 @@ export default function HomeSearchModal({
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType="slide"
       statusBarTranslucent
       onRequestClose={onClose}
     >
@@ -214,38 +213,26 @@ export default function HomeSearchModal({
       >
         <Pressable style={styles.searchBackdrop} onPress={onClose} />
 
-        <View style={styles.searchModalCard}>
-          {/* Navy band: eyebrow title + glass search field + close */}
+        <View style={styles.searchSheet}>
+          {/* Navy band: handle, title, glass field and close */}
           <LinearGradient
             colors={bandColors}
             start={{ x: 0.08, y: 0.05 }}
             end={{ x: 0.95, y: 1 }}
             style={styles.searchBand}
           >
-            <Text style={styles.searchBandTitle}>{t("home.search_title")}</Text>
+            <View style={styles.searchBandGlow} pointerEvents="none" />
 
-            <View style={styles.searchFieldRow}>
-              <View style={styles.searchField}>
-                <Ionicons name="search-outline" size={18} color={palette.teal} />
-                <TextInput
-                  ref={inputRef}
-                  value={query}
-                  onChangeText={setQuery}
-                  placeholder={t("common.search_placeholder")}
-                  placeholderTextColor={fieldHintColor}
-                  style={[styles.searchInput, { color: activeColor }]}
-                  textAlign={isRTL ? "right" : "left"}
-                />
-                {query.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => setQuery("")}
-                    hitSlop={8}
-                    accessibilityRole="button"
-                    accessibilityLabel={t("common.close")}
-                  >
-                    <Ionicons name="close-circle" size={18} color={hintColor} />
-                  </TouchableOpacity>
-                )}
+            <View style={styles.searchHandle} />
+
+            <View style={styles.searchBandTopRow}>
+              <View style={styles.searchBandTitles}>
+                <Text style={styles.searchBandTitle} numberOfLines={1}>
+                  {t("home.search_title")}
+                </Text>
+                <Text style={styles.searchBandSub} numberOfLines={1}>
+                  {t("home.search_hint")}
+                </Text>
               </View>
 
               <TouchableOpacity
@@ -258,21 +245,49 @@ export default function HomeSearchModal({
                 <Ionicons name="close" size={20} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
+
+            <View style={[styles.searchField, isFocused && styles.searchFieldFocused]}>
+              <Ionicons name="search" size={18} color="#8FE3E8" />
+              <TextInput
+                ref={inputRef}
+                value={query}
+                onChangeText={setQuery}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                placeholder={t("common.search_placeholder")}
+                placeholderTextColor="rgba(255,255,255,0.45)"
+                style={styles.searchInput}
+                textAlign={isRTL ? "right" : "left"}
+                returnKeyType="search"
+              />
+              {query.length > 0 && (
+                <TouchableOpacity
+                  style={styles.searchClearBtn}
+                  onPress={() => setQuery("")}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("common.close")}
+                >
+                  <Ionicons name="close" size={13} color="#FFFFFF" />
+                </TouchableOpacity>
+              )}
+            </View>
           </LinearGradient>
 
-          {/* Tab chips */}
+          {/* Tab chips, each carrying its own hit count */}
           <View style={styles.searchTabsRow}>
             {SEARCH_TABS.map((tabItem) => {
               const isActive = tab === tabItem.key;
+              const count = resultsByTab[tabItem.key].length;
+
               return (
                 <TouchableOpacity
                   key={tabItem.key}
-                  style={[
-                    styles.searchTabBtn,
-                    isActive && styles.searchTabBtnActive,
-                  ]}
+                  style={[styles.searchTabBtn, isActive && styles.searchTabBtnActive]}
                   onPress={() => setTab(tabItem.key)}
-                  activeOpacity={0.8}
+                  activeOpacity={0.85}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: isActive }}
                 >
                   <Ionicons
                     name={tabItem.icon}
@@ -283,12 +298,29 @@ export default function HomeSearchModal({
                     style={[
                       styles.searchTabLabel,
                       isActive && styles.searchTabLabelActive,
-                      { color: isActive ? "#FFFFFF" : palette.sub },
                     ]}
                     numberOfLines={1}
                   >
                     {t(tabItem.labelKey)}
                   </Text>
+
+                  {count > 0 && (
+                    <View
+                      style={[
+                        styles.searchTabCount,
+                        isActive && styles.searchTabCountActive,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.searchTabCountText,
+                          isActive && styles.searchTabCountTextActive,
+                        ]}
+                      >
+                        {count}
+                      </Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
               );
             })}
@@ -304,9 +336,9 @@ export default function HomeSearchModal({
                     { backgroundColor: palette.tealSoft },
                   ]}
                 >
-                  <Ionicons name="search-outline" size={24} color={palette.teal} />
+                  <Ionicons name="search-outline" size={30} color={palette.teal} />
                 </View>
-                <Text style={[styles.searchEmptyText, { color: palette.sub }]}>
+                <Text style={styles.searchEmptyText}>
                   {query.trim()
                     ? t("home.search_no_results")
                     : t("home.search_hint")}
@@ -318,11 +350,12 @@ export default function HomeSearchModal({
                 keyExtractor={(item) => item.id}
                 renderItem={renderItem}
                 keyboardShouldPersistTaps="always"
-                contentContainerStyle={{ paddingBottom: 12 }}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.searchResultsContent}
               />
-          )}
+            )}
+          </View>
         </View>
-      </View>
       </KeyboardAvoidingView>
     </Modal>
   );

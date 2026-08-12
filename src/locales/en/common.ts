@@ -86,4 +86,5 @@ export const common = {
   generic_error: "An error occurred. Please try again.",
   unnamed: "Untitled",
   close: "Close",
+  continue: "Continue",
 }

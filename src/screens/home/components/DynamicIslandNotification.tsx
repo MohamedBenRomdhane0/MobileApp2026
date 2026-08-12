@@ -5,9 +5,9 @@ import { LIQUID } from "@styles/liquidTheme";
 
 import type { DynamicIslandNotificationProps } from "../HomeScreen.type";
 
-const PILL_W = 320;
+const PILL_W = 358;
 const PILL_H = 50;
-const EXPANDED_H = 150;
+const EXPANDED_H = 130;
 const AUTO_DISMISS_MS = 4000;
 const DEFAULT_INTERVAL_MS = 60_000;
 
@@ -134,7 +134,7 @@ export default function DynamicIslandNotification({
         width: pillWidth,
         height: pillHeight,
         borderRadius: pillRadius,
-        backgroundColor: "rgba(15,26,46,0.92)",
+        backgroundColor: "rgba(11, 27, 51, 0.74)",
         borderWidth: 1.5,
         borderColor: "rgba(34,190,200,0.40)",
         overflow: "hidden",

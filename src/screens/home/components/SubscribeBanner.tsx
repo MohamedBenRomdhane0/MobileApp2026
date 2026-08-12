@@ -32,16 +32,26 @@ export default function SubscribeBanner({
         end={{ x: 0, y: 0.95 }}
         style={styles.subscribeBanner}
       >
+        <View style={styles.subscribeBloom} pointerEvents="none" />
+        <View style={styles.subscribeBloomAlt} pointerEvents="none" />
+
         <View style={styles.subscribeContent}>
-          <View style={styles.subscribeTextBlock}>
-            <Text style={styles.subscribeTitle} numberOfLines={1}>
-              {title}
-            </Text>
-            <Text style={styles.subscribeSub} numberOfLines={2}>
-              {subtitle}
-            </Text>
+          <View style={styles.subscribeTopRow}>
+            <View style={styles.subscribeIconTile}>
+              <Ionicons name="diamond" size={20} color="#FFFFFF" />
+            </View>
+
+            <View style={styles.subscribeTextBlock}>
+              <Text style={styles.subscribeTitle} numberOfLines={1}>
+                {title}
+              </Text>
+              <Text style={styles.subscribeSub} numberOfLines={2}>
+                {subtitle}
+              </Text>
+            </View>
           </View>
 
+          {/* Full-width CTA — the single primary action of the section. */}
           <View style={styles.subscribeBtn}>
             <Ionicons
               name={isRTL ? "arrow-back" : "arrow-forward"}

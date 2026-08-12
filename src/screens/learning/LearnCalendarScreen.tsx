@@ -26,6 +26,7 @@ const TEACHER_PHOTO = require("../../../assets/teachers/ismail.png");
 // Clear cover image for the group-session card (Pexels — a study/classroom
 // scene). Replaces the blurry teacher headshot as the card banner.
 const SESSION_COVER = require("../../../assets/teachers/testtt.jpeg");
+const SESSION_Eng = require("../../../assets/teachers/ar1.jpeg");
 const COVER_MATHS = require("../../../assets/teachers/ma1.jpeg");
 const COVER_FR = require("../../../assets/teachers/fr1.jpeg");
 const COVER_SCIENCES = require("../../../assets/teachers/ar1.jpeg");
@@ -233,7 +234,7 @@ const RECORDED_SESSIONS: RecordedSession[] = [
     duration: "1h 30",
     progress: 85,
     photo: require("../../../assets/teachers/ismail.png"),
-    cover: SESSION_COVER,
+    cover: SESSION_Eng,
     videoUrl: RECORDING_DEMO_URL,
   },
   {
@@ -247,7 +248,7 @@ const RECORDED_SESSIONS: RecordedSession[] = [
     duration: "1h 30",
     progress: 0,
     photo: require("../../../assets/teachers/ismail.png"),
-    cover: SESSION_COVER,
+    cover: SESSION_Eng,
     videoUrl: RECORDING_DEMO_URL,
   },
   {
@@ -261,7 +262,7 @@ const RECORDED_SESSIONS: RecordedSession[] = [
     duration: "1h 30",
     progress: 45,
     photo: require("../../../assets/teachers/ismail.png"),
-    cover: SESSION_COVER,
+    cover: SESSION_Eng,
     videoUrl: RECORDING_DEMO_URL,
   },
   {

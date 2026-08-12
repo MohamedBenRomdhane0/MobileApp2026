@@ -1,37 +1,86 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useAnimatedStyle,
-  useSharedValue,
-  withSpring,
+  interpolate,
   type SharedValue,
 } from "react-native-reanimated";
 import { LIQUID } from "@styles/liquidTheme";
 
 interface ActiveCapsuleProps {
+  /** Left offset of the capsule, already spring-animated by the parent. */
   translateX: SharedValue<number>;
+  /** 0 at rest, 1 mid-travel — drives the liquid stretch/squash. */
+  stretch: SharedValue<number>;
+  width: number;
+  height?: number;
 }
 
-function ActiveCapsule({ translateX }: ActiveCapsuleProps) {
-  const capsuleWidth = useSharedValue(56);
-  const capsuleHeight = useSharedValue(44);
-
-  React.useEffect(() => {
-    capsuleWidth.value = withSpring(132, LIQUID.spring);
-    capsuleHeight.value = withSpring(64, LIQUID.spring);
-  }, []);
-
+/**
+ * The blob of liquid that follows the active tab. It stretches along its
+ * direction of travel and squashes vertically, the way a droplet would.
+ */
+function ActiveCapsule({
+  translateX,
+  stretch,
+  width,
+  height = LIQUID.indicatorHeight,
+}: ActiveCapsuleProps) {
   const animatedStyle = useAnimatedStyle(() => ({
-    width: capsuleWidth.value,
-    height: capsuleHeight.value,
-    transform: [{ translateX: translateX.value }],
-    borderRadius: capsuleHeight.value / 2,
+    transform: [
+      { translateX: translateX.value },
+      { scaleX: interpolate(stretch.value, [0, 1], [1, 1.3]) },
+      { scaleY: interpolate(stretch.value, [0, 1], [1, 0.86]) },
+    ],
   }));
 
   return (
-    <Animated.View style={[styles.capsule, animatedStyle]} pointerEvents="none">
-      <View style={styles.capsuleInner} />
-      <View style={styles.capsuleHighlight} />
+    <Animated.View
+      style={[
+        styles.capsule,
+        { width, height, borderRadius: height / 2, top: (LIQUID.barHeight - height) / 2 },
+        animatedStyle,
+      ]}
+      pointerEvents="none"
+    >
+      {/* Diffuse halo (bar clips shadows, so the glow is drawn as layers) */}
+      <View
+        style={[
+          styles.halo,
+          { borderRadius: height / 2, backgroundColor: "rgba(34,190,200,0.10)" },
+        ]}
+      />
+      <View
+        style={[
+          styles.haloInner,
+          { borderRadius: height / 2, backgroundColor: "rgba(34,190,200,0.14)" },
+        ]}
+      />
+
+      {/* Liquid body */}
+      <LinearGradient
+        colors={["rgba(34,190,200,0.34)", "rgba(34,190,200,0.16)"]}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+        style={[StyleSheet.absoluteFill, { borderRadius: height / 2 }]}
+      />
+
+      {/* Rim */}
+      <View
+        style={[
+          styles.rim,
+          { borderRadius: height / 2, borderColor: "rgba(255,255,255,0.45)" },
+        ]}
+      />
+
+      {/* Specular cap */}
+      <LinearGradient
+        colors={["rgba(255,255,255,0.55)", "rgba(255,255,255,0)"]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={styles.gloss}
+      />
     </Animated.View>
   );
 }
@@ -39,33 +88,35 @@ function ActiveCapsule({ translateX }: ActiveCapsuleProps) {
 const styles = StyleSheet.create({
   capsule: {
     position: "absolute",
-    top: 7,
-    height: 64,
-    backgroundColor: "rgba(34,190,200,0.18)",
-    borderWidth: 1,
-    borderColor: "rgba(34,190,200,0.4)",
-    shadowColor: LIQUID.cyanColor,
-    shadowOpacity: 0.6,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 20,
-    elevation: 10,
+    left: 0,
+    overflow: "visible",
   },
-  capsuleInner: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 32,
-    backgroundColor: "rgba(34,190,200,0.08)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
-  },
-  capsuleHighlight: {
+  halo: {
     position: "absolute",
-    top: 4,
-    left: 12,
-    right: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: "rgba(255,255,255,0.12)",
+    top: -7,
+    bottom: -7,
+    left: -7,
+    right: -7,
+  },
+  haloInner: {
+    position: "absolute",
+    top: -3,
+    bottom: -3,
+    left: -3,
+    right: -3,
+  },
+  rim: {
+    ...StyleSheet.absoluteFillObject,
+    borderWidth: 1,
+  },
+  gloss: {
+    position: "absolute",
+    top: 3,
+    left: 10,
+    right: 10,
+    height: 14,
+    borderRadius: 8,
   },
 });
 
-export default ActiveCapsule;
+export default React.memo(ActiveCapsule);

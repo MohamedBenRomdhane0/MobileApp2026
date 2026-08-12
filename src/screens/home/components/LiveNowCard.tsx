@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, Animated, Easing } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
+import { HOME_TOKENS } from "@screens/home/HomeScreen.constants";
 import type { LiveNowCardProps } from "@screens/home/HomeScreen.type";
 
 const PULSE_DURATION = 1200;
@@ -50,12 +52,24 @@ export default function LiveNowCard({
   return (
     <View style={styles.liveCard}>
       <View style={styles.liveGlow} pointerEvents="none" />
+      <View style={styles.liveRail} pointerEvents="none" />
 
       <View style={styles.liveTopRow}>
         <View style={styles.liveInfo}>
           <Text style={styles.liveTitle} numberOfLines={1}>
             {title}
           </Text>
+
+          <View style={styles.liveMetaRow}>
+            <Ionicons
+              name="people-outline"
+              size={12}
+              color="rgba(255,255,255,0.6)"
+            />
+            <Text style={styles.liveMeta} numberOfLines={1}>
+              {meta}
+            </Text>
+          </View>
         </View>
 
         <View style={styles.liveBadge}>
@@ -80,10 +94,6 @@ export default function LiveNowCard({
       </View>
 
       <View style={styles.liveBottomRow}>
-        <Text style={styles.liveMeta} numberOfLines={1}>
-          {meta}
-        </Text>
-
         <TouchableOpacity
           activeOpacity={0.9}
           style={styles.liveJoinBtn}
@@ -91,8 +101,15 @@ export default function LiveNowCard({
           accessibilityRole="button"
           accessibilityLabel={joinLabel}
         >
-          <Ionicons name={isRTL ? "arrow-back" : "arrow-forward"} size={14} color="#FFFFFF" />
-          <Text style={styles.liveJoinText}>{joinLabel}</Text>
+          <LinearGradient
+            colors={HOME_TOKENS.liveJoinGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.liveJoinInner}
+          >
+            <Ionicons name={isRTL ? "arrow-back" : "arrow-forward"} size={14} color="#FFFFFF" />
+            <Text style={styles.liveJoinText}>{joinLabel}</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     </View>

@@ -21,6 +21,7 @@ import PlansScreen from "@screens/plans/PlansScreen";
 import DetailPlanMettingScreen from "@screens/plans/DetailPlanMettingScreen";
 import TrailersScreen from "@screens/trailers/TrailersScreen";
 import CustomizeAvatarScreen from "@screens/child/customizeAvatar/CustomizeAvatarScreen";
+import TopupScreen from "@screens/wallet/TopupScreen/TopupScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -73,6 +74,11 @@ export default function AppTree() {
       <Stack.Screen
         name={PATHS.APP.CUSTOMIZE_AVATAR}
         component={CustomizeAvatarScreen}
+      />
+      <Stack.Screen
+        name={PATHS.APP.TOPUP}
+        component={TopupScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

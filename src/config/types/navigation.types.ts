@@ -74,6 +74,7 @@ export type RootStackParamList = {
   [PATHS.APP.NOTIFICATIONS]: undefined;
   [PATHS.APP.MATERIAL_HUB]: undefined;
   [PATHS.APP.CUSTOMIZE_AVATAR]: undefined;
+  [PATHS.APP.TOPUP]: { amount: number };
 };
 
 export type TabsParamList = {

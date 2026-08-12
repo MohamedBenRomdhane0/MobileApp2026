@@ -1,108 +1,149 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  withRepeat,
+  withDelay,
   interpolate,
   Easing,
 } from "react-native-reanimated";
 import { LIQUID } from "@styles/liquidTheme";
 
-function AnimatedGlassBackground({ style }: { style?: object }) {
-  const shimmer = useSharedValue(0);
+interface AnimatedGlassBackgroundProps {
+  /** Width of the surface, used to size the travelling specular sweep. */
+  width: number;
+  radius?: number;
+  style?: object;
+}
+
+const SWEEP_WIDTH = 130;
+
+/**
+ * The refraction stack that makes a surface read as real liquid glass:
+ * backdrop blur -> tint -> body gradient -> travelling specular sweep ->
+ * rim light. Every layer is non-interactive.
+ */
+function AnimatedGlassBackground({
+  width,
+  radius = LIQUID.borderRadius,
+  style,
+}: AnimatedGlassBackgroundProps) {
+  const sweep = useSharedValue(0);
 
   React.useEffect(() => {
-    shimmer.value = withTiming(1, { duration: 3000, easing: Easing.linear });
-  }, [shimmer]);
+    sweep.value = 0;
+    sweep.value = withRepeat(
+      withDelay(
+        1600,
+        withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.quad) })
+      ),
+      -1,
+      false
+    );
+  }, [sweep, width]);
 
-  const shimmerStyle = useAnimatedStyle(() => {
-    const tx = interpolate(shimmer.value, [0, 1], [-200, 200]);
-    return { transform: [{ translateX: tx }] };
-  });
+  const sweepStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateX: interpolate(
+          sweep.value,
+          [0, 1],
+          [-SWEEP_WIDTH, width + SWEEP_WIDTH]
+        ),
+      },
+      { rotate: "18deg" },
+    ],
+    opacity: interpolate(sweep.value, [0, 0.12, 0.85, 1], [0, 1, 1, 0]),
+  }));
 
   return (
-    <Animated.View style={[styles.container, style]}>
-      {/* Base blur layer */}
-      <BlurView intensity={LIQUID.backdropBlur} tint="light" style={StyleSheet.absoluteFill} />
+    <View style={[styles.container, { borderRadius: radius }, style]} pointerEvents="none">
+      {/* 1. Backdrop refraction */}
+      <BlurView
+        intensity={LIQUID.backdropBlur}
+        tint="light"
+        experimentalBlurMethod="dimezisBlurView"
+        style={StyleSheet.absoluteFill}
+      />
 
-      {/* Layer 1: Cyan base tint */}
-      <View style={styles.cyanBase} pointerEvents="none" />
+      {/* 2. Cyan tint — the liquid itself */}
+      <View style={[styles.fill, { backgroundColor: LIQUID.cyanBase }]} />
 
-      {/* Layer 2: White glass base */}
-      <View style={styles.glassBase} pointerEvents="none" />
+      {/* 3. Body gradient: brighter at the top, denser at the bottom */}
+      <LinearGradient
+        colors={[
+          "rgba(255,255,255,0.34)",
+          "rgba(255,255,255,0.12)",
+          "rgba(34,190,200,0.10)",
+        ]}
+        locations={[0, 0.55, 1]}
+        start={{ x: 0.15, y: 0 }}
+        end={{ x: 0.85, y: 1 }}
+        style={styles.fill}
+      />
 
-      {/* Layer 3: Specular highlight edge */}
-      <View style={styles.highlightEdge} pointerEvents="none" />
-
-      {/* Layer 4: Moving shimmer (specular reflection) */}
-      <Animated.View style={[styles.shimmer, shimmerStyle]} pointerEvents="none">
-        <View style={styles.shimmerInner} />
+      {/* 4. Travelling specular sweep */}
+      <Animated.View style={[styles.sweep, sweepStyle]}>
+        <LinearGradient
+          colors={[
+            "rgba(255,255,255,0)",
+            "rgba(255,255,255,0.42)",
+            "rgba(255,255,255,0)",
+          ]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={StyleSheet.absoluteFill}
+        />
       </Animated.View>
 
-      {/* Layer 5: Top glossy edge */}
-      <View style={styles.glossyEdge} pointerEvents="none" />
+      {/* 5. Rim light along the top edge */}
+      <LinearGradient
+        colors={["rgba(255,255,255,0.85)", "rgba(255,255,255,0.10)"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.rimTop}
+      />
 
-      {/* Layer 6: Subtle noise texture overlay */}
-      <View style={styles.noiseOverlay} pointerEvents="none" />
-    </Animated.View>
+      {/* 6. Soft contact shade along the bottom edge */}
+      <View style={styles.rimBottom} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: LIQUID.borderRadius,
     overflow: "hidden",
   },
-  cyanBase: {
+  fill: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: LIQUID.cyanBase,
-    borderRadius: LIQUID.borderRadius,
   },
-  glassBase: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: LIQUID.glassBase,
-    borderRadius: LIQUID.borderRadius,
+  sweep: {
+    position: "absolute",
+    top: -30,
+    bottom: -30,
+    left: 0,
+    width: SWEEP_WIDTH,
   },
-  highlightEdge: {
+  rimTop: {
     position: "absolute",
     top: 0,
-    left: 8,
-    right: 8,
-    height: 1,
-    backgroundColor: LIQUID.glassEdge,
-    borderRadius: 1,
+    left: 18,
+    right: 18,
+    height: 1.2,
   },
-  shimmer: {
+  rimBottom: {
     position: "absolute",
-    top: 0,
     bottom: 0,
-    width: 140,
-    alignItems: "center",
-  },
-  shimmerInner: {
-    width: 80,
-    flex: 1,
-    backgroundColor: LIQUID.glassHighlight,
-    borderRadius: 999,
-    opacity: 0.3,
-  },
-  glossyEdge: {
-    position: "absolute",
-    top: 0,
-    left: 16,
-    right: 16,
-    height: 2,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    borderRadius: 1,
-  },
-  noiseOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.01)",
-    borderRadius: LIQUID.borderRadius,
+    left: 24,
+    right: 24,
+    height: 1,
+    backgroundColor: "rgba(14,155,168,0.16)",
   },
 });
 
-export default AnimatedGlassBackground;
+export default React.memo(AnimatedGlassBackground);

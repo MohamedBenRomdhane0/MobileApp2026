@@ -90,4 +90,5 @@ export const common = {
   generic_error: "Une erreur est survenue. Veuillez réessayer.",
   unnamed: "Sans titre",
   close: "Fermer",
+  continue: "Continuer",
 }

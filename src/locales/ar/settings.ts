@@ -13,5 +13,10 @@ export default {
   favorite_courses: "دروسي الإضافية المفضلة",
   subscription: "إشتراكي",
 
+  plans: "الباقات",
+  wealth_level: "باقة كارتابا",
+  vip_club: "نادي VIP",
+  unlock_now: "فتح الآن",
+
   logout: "تسجيل خروج",
 };

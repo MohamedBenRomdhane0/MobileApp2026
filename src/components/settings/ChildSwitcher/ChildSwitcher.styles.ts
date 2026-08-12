@@ -6,7 +6,7 @@ export const createChildSwitcherStyles = (colors: AppColors) =>
     container: {
       alignItems: "center",
       justifyContent: "center",
-      marginBottom: 10,
+      marginBottom: 4,
       width: "100%",
     },
 
@@ -14,36 +14,36 @@ export const createChildSwitcherStyles = (colors: AppColors) =>
       flexGrow: 1,
       justifyContent: "center",
       alignItems: "center",
-      paddingHorizontal: 8,
+      paddingHorizontal: 4,
     },
 
     childWrapper: {
       alignItems: "center",
-      marginHorizontal: 6,
-      maxWidth: 70,
+      marginHorizontal: 5,
+      maxWidth: 64,
     },
 
     childProfileWrapper: {
       position: "relative",
       alignItems: "center",
       justifyContent: "center",
-      width: 65,
-      height: 65,
-      borderRadius: 33,
+      width: 64,
+      height: 64,
+      borderRadius: 32,
     },
 
     childProfile: {
-      width: 55,
-      height: 55,
+      width: 56,
+      height: 56,
       borderRadius: 28,
       backgroundColor: colors.card,
     },
 
     childName: {
-      fontSize: 12,
+      fontSize: 11,
       color: colors.header,
       textAlign: "center",
-      marginTop: 5,
+      marginTop: 4,
     },
 
     activeDot: {

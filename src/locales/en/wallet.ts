@@ -22,4 +22,18 @@ export const wallet = {
   swipe_to_topup: "Swipe to topup",
   decrease_amount: "Decrease amount",
   increase_amount: "Increase amount",
+
+  /* ── Topup screen ──────────────────────────────────────────────── */
+  topup_title: "Wallet Topup",
+  topup_amount: "Topup Amount",
+  select_payment_method: "Select Payment Method",
+  credit_debit_card: "Credit / Debit Card",
+  apple_pay: "Apple Pay",
+  google_pay: "Google Pay",
+  holder_name: "Cardholder Name",
+  add_card_and_pay: "Add Card & Pay",
+  apple_pay_hint: "Pay securely with Apple Pay",
+  google_pay_hint: "Pay securely with Google Pay",
+  continue_apple_pay: "Continue with Apple Pay",
+  continue_google_pay: "Continue with Google Pay",
 };
