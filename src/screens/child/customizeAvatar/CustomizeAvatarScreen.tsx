@@ -9,6 +9,7 @@ import {
   type TextStyle,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
@@ -166,10 +167,12 @@ export default function CustomizeAvatarScreen() {
       >
         {/* Hero preview */}
         <View style={s.heroPreview}>
-          <Image
+          <ExpoImage
             source={equipped.avatar}
             style={s.heroImage}
-            resizeMode="cover"
+            contentFit="cover"
+            transition={200}
+            cachePolicy="memory"
           />
           <View style={s.heroOverlay}>
             <View style={s.heroLevelLine}>
@@ -237,7 +240,7 @@ export default function CustomizeAvatarScreen() {
                   accessibilityRole="button"
                   accessibilityState={{ selected: isSelected }}
                 >
-                  <Image source={item.thumb} style={s.gridThumb} resizeMode="contain" />
+                  <ExpoImage source={item.thumb} style={s.gridThumb} contentFit="contain" cachePolicy="memory" />
                   <Text style={s.gridName} numberOfLines={1}>
                     {t(`customize.items.${item.nameKey}`)}
                   </Text>
