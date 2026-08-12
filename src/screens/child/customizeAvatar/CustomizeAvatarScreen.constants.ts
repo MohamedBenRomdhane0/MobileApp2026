@@ -128,7 +128,7 @@ export const HERO_ITEMS: HeroItem[] = [
     category: "skins",
     rarity: "rare",
     locked: false,
-    thumb: require("../../../../assets/kids/avatars/hero-pack.jpg"),
+    thumb: require("../../../../assets/kids/avatars/item-backpack.png"),
     avatar: require("../../../../assets/kids/avatars/hero-pack.jpg"),
   },
 ];
