@@ -53,11 +53,19 @@ export const bookApi = createApi({
         method: MethodsEnum.GET,
       }),
 
-      transformResponse: (response: GetBooksResponseApi): GetBooksResponse => ({
-        message: response.message,
-        meta: response.meta,
-        data: Array.isArray(response.data) ? response.data.map(toBookListItemUI) : [],
-      }),
+      transformResponse: (response: GetBooksResponseApi): GetBooksResponse => {
+        const raw: any = response;
+        const items: any[] = Array.isArray(raw.data)
+          ? raw.data
+          : Array.isArray(raw?.data?.data)
+            ? raw.data.data
+            : [];
+        return {
+          message: response.message,
+          meta: response.meta ?? (raw?.data?.meta ?? raw?.meta),
+          data: items.map(toBookListItemUI),
+        };
+      },
 
       serializeQueryArgs: ({ endpointName, queryArgs }) =>
         createGetBooksCacheKey(endpointName, queryArgs),

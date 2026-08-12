@@ -59,6 +59,10 @@ export type RootStackParamList = {
     meetingId: number | string;
   };
 
+  [PATHS.APP.RESERVED_MEETINGS]: undefined;
+
+  [PATHS.APP.JOIN_SESSION]: undefined;
+
   [PATHS.APP.VIDEO]: {
     bookId: number;
     iconId: number;
@@ -69,12 +73,15 @@ export type RootStackParamList = {
 
   [PATHS.APP.NOTIFICATIONS]: undefined;
   [PATHS.APP.MATERIAL_HUB]: undefined;
+  [PATHS.APP.CUSTOMIZE_AVATAR]: undefined;
+  [PATHS.APP.TOPUP]: { amount: number };
 };
 
 export type TabsParamList = {
   [PATHS.TABS.BOOKS]: undefined;
   [PATHS.TABS.COURSES]: undefined;
   [PATHS.TABS.MEETINGS]: undefined;
+  [PATHS.TABS.RESERVED_MEETINGS]: undefined;
   [PATHS.TABS.SETTINGS]: undefined;
   [PATHS.TABS.HOME]: undefined;
   [PATHS.TABS.PLANS]: undefined;

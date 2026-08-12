@@ -4,23 +4,35 @@ import { useNavigation } from "@react-navigation/native";
 
 import { PATHS } from "@config/constants/paths";
 import { useActiveChildHeaderData } from "@hooks/useActiveChildHeaderData";
+import { useActiveChild } from "@hooks/useActiveChild";
+import { useChildSkinAvatar } from "@hooks/useAvatarCustomization";
 import { styles } from "./ActiveChildHeaderAvatar.styles";
 
 export default function ActiveChildHeaderAvatar() {
   const navigation = useNavigation<any>();
   const data = useActiveChildHeaderData();
+  const child = useActiveChild();
+  const skinAvatar = useChildSkinAvatar(child?.id ?? null);
 
   if (!data) return null;
 
+  const hasSkin = skinAvatar != null;
+
   return (
     <TouchableOpacity
-      onPress={() => navigation.navigate(PATHS.ONBOARDING.ADD_KIDS as any)}
+      onPress={() => navigation.navigate(PATHS.APP.CUSTOMIZE_AVATAR as any)}
       style={styles.container}
       activeOpacity={0.85}
     >
       <View style={styles.column}>
         <View style={styles.avatarWrap}>
-          {data.avatarUrl ? (
+          {hasSkin ? (
+            <Image
+              source={skinAvatar}
+              style={styles.avatar}
+              resizeMode="cover"
+            />
+          ) : data.avatarUrl ? (
             <Image
               source={{ uri: data.avatarUrl }}
               style={styles.avatar}

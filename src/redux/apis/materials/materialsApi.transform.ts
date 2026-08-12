@@ -136,6 +136,7 @@ export function toMaterialUI(row: ApiLevelMaterialRow, locale: string = "ar"): M
 
   // 2) Otherwise fall back to the `translations` relation (if ever included).
   const translations: MaterialTranslation[] = [
+    ...(Array.isArray((row as any)?.material_translations) ? (row as any).material_translations : []),
     ...(Array.isArray((row as any)?.translations) ? (row as any).translations : []),
     ...(Array.isArray((row as any)?.material?.translations) ? (row as any).material.translations : []),
   ];

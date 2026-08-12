@@ -84,4 +84,7 @@ export const common = {
   hours: "hours",
   currency_tnd: "TND",
   generic_error: "An error occurred. Please try again.",
+  unnamed: "Untitled",
+  close: "Close",
+  continue: "Continue",
 }

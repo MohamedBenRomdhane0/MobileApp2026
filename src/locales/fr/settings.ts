@@ -1,7 +1,7 @@
 export default {
   title: "Paramètres",
  parent_account: "Compte parent",
-  switch_child_hint: "Appuyez sur la photo de votre enfant pour changer de compte",
+  switch_child_hint: "Appuyez sur la photo pour changer",
 
   dark_mode: "Mode sombre",
   enabled: "Activé",
@@ -12,6 +12,11 @@ export default {
   child_activity: "Activité de mon enfant",
   favorite_courses: "Mes cours favoris",
   subscription: "Mon abonnement",
+
+  plans: "Offres",
+  wealth_level: "Pack Cartaba",
+  vip_club: "Club VIP",
+  unlock_now: "Débloquer maintenant",
 
   logout: "Déconnexion",
 };

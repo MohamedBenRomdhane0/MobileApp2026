@@ -15,9 +15,13 @@ import MaterialHubScreen from "@screens/materialHub/MaterialHubScreen";
 import FavoriteCoursesScreen from "@screens/courses/FavoriteCoursesScreen";
 import CourseChaptersScreen from "@screens/courses/courseChapters/CourseChaptersScreen";
 import MeetingDetailsScreen from "@screens/meetings/meetingDetails/MeetingdetailsScreen";
+import ReservedMeetingsScreen from "@screens/meetings/reservedMeetings/ReservedMeetingsScreen";
+import JoinSessionScreen from "@screens/meetings/joinSession/JoinSessionScreen";
 import PlansScreen from "@screens/plans/PlansScreen";
 import DetailPlanMettingScreen from "@screens/plans/DetailPlanMettingScreen";
 import TrailersScreen from "@screens/trailers/TrailersScreen";
+import CustomizeAvatarScreen from "@screens/child/customizeAvatar/CustomizeAvatarScreen";
+import TopupScreen from "@screens/wallet/TopupScreen/TopupScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -53,12 +57,29 @@ export default function AppTree() {
         name={PATHS.APP.MEETING_DETAILS}
         component={MeetingDetailsScreen}
       />
+      <Stack.Screen
+        name={PATHS.APP.RESERVED_MEETINGS}
+        component={ReservedMeetingsScreen}
+      />
+      <Stack.Screen
+        name={PATHS.APP.JOIN_SESSION}
+        component={JoinSessionScreen}
+      />
       <Stack.Screen name={PATHS.APP.PLANS} component={PlansScreen} />
       <Stack.Screen
         name={PATHS.APP.DETAIL_PLAN_MEETING}
         component={DetailPlanMettingScreen}
       />
       <Stack.Screen name={PATHS.APP.TRAILERS} component={TrailersScreen} />
+      <Stack.Screen
+        name={PATHS.APP.CUSTOMIZE_AVATAR}
+        component={CustomizeAvatarScreen}
+      />
+      <Stack.Screen
+        name={PATHS.APP.TOPUP}
+        component={TopupScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }

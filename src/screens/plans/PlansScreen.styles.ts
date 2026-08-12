@@ -10,7 +10,19 @@ type ThemeColors = {
   primary?: string;
   card?: string;
   danger?: string;
+  gold?: string;
 } | undefined;
+
+const GOLD = "#F5A623";
+const CYAN = "#22BEC8";
+
+const sh = {
+  shadowColor: "#000",
+  shadowOpacity: 0.08,
+  shadowRadius: 14,
+  shadowOffset: { width: 0, height: 6 },
+  elevation: 5,
+};
 
 export function getPlansPalette(colors: ThemeColors, isDark: boolean) {
   return {
@@ -23,19 +35,13 @@ export function getPlansPalette(colors: ThemeColors, isDark: boolean) {
     danger: colors?.danger ?? "#EF4444",
     white: "#FFFFFF",
     gold: "#F5A623",
+    goldStrong: "#E8960F",
     success: "#16A34A",
     surface: isDark ? "#0B1422" : "#F8FBFF",
     surfaceAlt: isDark ? "#0F1B2D" : "#EEF6FF",
+    heroBand: isDark ? "#0E1A2E" : "#F5FAFF",
   };
 }
-
-const sh = {
-  shadowColor: "#000",
-  shadowOpacity: 0.08,
-  shadowRadius: 14,
-  shadowOffset: { width: 0, height: 6 },
-  elevation: 5,
-};
 
 export const plansStyles = StyleSheet.create({
   container: { flex: 1 },
@@ -372,3 +378,879 @@ export const plansStyles = StyleSheet.create({
     textAlign: "right",
   },
 });
+
+export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: boolean) {
+  const palette = getPlansPalette(colors, isDark);
+
+  const row = isRTL ? ("row-reverse" as const) : ("row" as const);
+  const textEnd = isRTL ? ("right" as const) : ("left" as const);
+  const alignEnd = isRTL ? ("flex-end" as const) : ("flex-start" as const);
+  const dir = isRTL ? ("rtl" as const) : ("ltr" as const);
+
+  return StyleSheet.create({
+    container: { flex: 1 },
+
+    scrollContent: { flexGrow: 1, paddingBottom: 300 },
+
+    header: {
+      paddingHorizontal: 16,
+      paddingBottom: 26,
+      overflow: "hidden",
+    },
+    headerGlowLeft: {
+      position: "absolute",
+      width: 240,
+      height: 240,
+      borderRadius: 999,
+      top: -90,
+      left: -80,
+      backgroundColor: "rgba(34,190,200,0.20)",
+    },
+    headerGlowRight: {
+      position: "absolute",
+      width: 200,
+      height: 200,
+      borderRadius: 999,
+      bottom: -70,
+      right: -60,
+      backgroundColor: "rgba(255,255,255,0.06)",
+    },
+    headerDotRing: {
+      position: "absolute",
+      width: 130,
+      height: 130,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.10)",
+      bottom: -40,
+      left: isRTL ? -50 : undefined,
+      right: isRTL ? undefined : -50,
+    },
+    headerTopRow: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 14,
+    },
+    headerBackBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: 14,
+      backgroundColor: "rgba(255,255,255,0.14)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.24)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    logoText: { flexDirection: row, alignItems: "baseline" },
+    logoA: { fontSize: 21, fontWeight: "900", color: CYAN },
+    logoB: { fontSize: 21, fontWeight: "900", color: "#FFFFFF" },
+    logoDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: CYAN,
+      marginStart: 3,
+      marginBottom: 3,
+    },
+    headerTitle: {
+      fontSize: 25,
+      fontWeight: "900",
+      color: "#FFFFFF",
+      textAlign: "center",
+      writingDirection: dir,
+    },
+    headerSubtitle: {
+      marginTop: 7,
+      fontSize: 12.5,
+      fontWeight: "700",
+      color: "rgba(255,255,255,0.82)",
+      textAlign: "center",
+      writingDirection: dir,
+      lineHeight: 20,
+      paddingHorizontal: 8,
+    },
+
+    body: {
+      paddingHorizontal: 16,
+      paddingTop: 14,
+      gap: 14,
+    },
+
+    centerState: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 14,
+      paddingHorizontal: 24,
+    },
+    stateText: {
+      fontSize: 14,
+      fontWeight: "700",
+      textAlign: "center",
+      writingDirection: dir,
+    },
+    retryBtn: {
+      paddingHorizontal: 22,
+      paddingVertical: 12,
+      borderRadius: 999,
+      flexDirection: row,
+      alignItems: "center",
+      gap: 8,
+      minWidth: 130,
+      justifyContent: "center",
+    },
+    retryBtnText: {
+      fontSize: 14,
+      fontWeight: "800",
+      color: "#FFFFFF",
+      writingDirection: dir,
+    },
+
+    emptyCard: {
+      borderRadius: 22,
+      padding: 20,
+      borderWidth: 1,
+      alignItems: "center",
+      ...sh,
+    },
+    emptyTitle: {
+      marginTop: 12,
+      fontSize: 18,
+      fontWeight: "900",
+      textAlign: "center",
+      writingDirection: dir,
+    },
+    emptyText: {
+      marginTop: 6,
+      fontSize: 13,
+      fontWeight: "600",
+      textAlign: "center",
+      writingDirection: dir,
+      lineHeight: 22,
+    },
+
+    periodWrap: {
+      flexDirection: row,
+      borderRadius: 999,
+      padding: 4,
+      borderWidth: 1,
+      gap: 2,
+    },
+    periodBtn: {
+      flex: 1,
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 5,
+      borderRadius: 999,
+      paddingVertical: 10,
+      paddingHorizontal: 8,
+    },
+    periodActiveBg: {
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      borderRadius: 999,
+    },
+    periodLabel: {
+      fontSize: 12.5,
+      fontWeight: "900",
+      writingDirection: dir,
+    },
+    periodLabelActive: {
+      color: "#FFFFFF",
+    },
+    periodBadge: {
+      borderRadius: 999,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+    },
+    periodBadgeText: {
+      fontSize: 9,
+      fontWeight: "900",
+      writingDirection: dir,
+    },
+
+    builderCard: {
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.card,
+      padding: 14,
+      gap: 12,
+      ...sh,
+    },
+    builderToggleWrap: {
+      flexDirection: row,
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: 999,
+      padding: 4,
+      gap: 2,
+    },
+    builderToggleBtn: {
+      flex: 1,
+      borderRadius: 999,
+      paddingVertical: 10,
+      paddingHorizontal: 6,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    builderToggleActiveBg: {
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      borderRadius: 999,
+    },
+    builderToggleLabel: {
+      fontSize: 12.5,
+      fontWeight: "900",
+      textAlign: "center",
+      writingDirection: dir,
+    },
+    builderToggleLabelActive: {
+      color: "#FFFFFF",
+    },
+    builderDivider: {
+      height: 1,
+      backgroundColor: palette.border,
+    },
+    matiereTitle: {
+      fontSize: 12.5,
+      fontWeight: "900",
+      textAlign: textEnd,
+      writingDirection: dir,
+    },
+    matiereChipsWrap: {
+      flexDirection: row,
+      flexWrap: "wrap",
+      gap: 8,
+    },
+    matiereChip: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 6,
+      borderRadius: 999,
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+      borderWidth: 1.5,
+    },
+    matiereChipText: {
+      fontSize: 12.5,
+      fontWeight: "800",
+      writingDirection: dir,
+    },
+    matiereChipImage: {
+      width: 20,
+      height: 20,
+      borderRadius: 6,
+    },
+    matiereChipSkeleton: {
+      width: 96,
+      height: 38,
+      borderRadius: 999,
+      backgroundColor: `${palette.muted}1A`,
+    },
+
+    selectorSection: {
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.card,
+      padding: 14,
+      gap: 12,
+      ...sh,
+    },
+    selectorTitleRow: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 8,
+    },
+    selectorTitle: {
+      fontSize: 13.5,
+      fontWeight: "900",
+      writingDirection: dir,
+      textAlign: textEnd,
+    },
+    selectorSubtitle: {
+      marginTop: 2,
+      fontSize: 11.5,
+      fontWeight: "600",
+      writingDirection: dir,
+      textAlign: textEnd,
+      color: palette.muted,
+    },
+    selectorList: {
+      gap: 10,
+    },
+    selectorCard: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 12,
+      borderRadius: 18,
+      borderWidth: 1.5,
+      padding: 12,
+    },
+    selectorCheck: {
+      width: 24,
+      height: 24,
+      borderRadius: 999,
+      borderWidth: 1.5,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    selectorAvatar: {
+      width: 44,
+      height: 44,
+      borderRadius: 999,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    selectorAvatarImage: {
+      width: 44,
+      height: 44,
+      borderRadius: 999,
+    },
+    selectorAvatarText: { fontSize: 20 },
+    selectorInfo: { flex: 1, gap: 3 },
+    selectorName: {
+      fontSize: 13.5,
+      fontWeight: "800",
+      writingDirection: dir,
+      textAlign: textEnd,
+    },
+    selectorMeta: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 6,
+    },
+    selectorMetaText: {
+      fontSize: 11.5,
+      fontWeight: "600",
+      writingDirection: dir,
+      color: palette.muted,
+    },
+    selectorRating: {
+      fontSize: 11.5,
+      fontWeight: "800",
+      color: palette.gold,
+    },
+    selectorBookCover: {
+      width: 44,
+      height: 56,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    selectorBookCoverImage: {
+      width: 44,
+      height: 56,
+      borderRadius: 8,
+    },
+    selectorBookTitle: {
+      fontSize: 13,
+      fontWeight: "800",
+      writingDirection: dir,
+      textAlign: textEnd,
+    },
+    selectorBookPrice: {
+      fontSize: 12.5,
+      fontWeight: "900",
+      color: palette.primary,
+    },
+    selectorSkeleton: {
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.card,
+      padding: 12,
+      flexDirection: row,
+      alignItems: "center",
+      gap: 12,
+    },
+    selectorSkeletonCircle: {
+      width: 44,
+      height: 44,
+      borderRadius: 999,
+      backgroundColor: `${palette.muted}1A`,
+    },
+    selectorSkeletonBook: {
+      width: 44,
+      height: 56,
+      borderRadius: 8,
+      backgroundColor: `${palette.muted}1A`,
+    },
+    selectorSkeletonLines: { flex: 1, gap: 6 },
+    selectorSkeletonLine: {
+      height: 10,
+      borderRadius: 999,
+      backgroundColor: `${palette.muted}1A`,
+    },
+    selectorEmpty: {
+      borderRadius: 18,
+      borderWidth: 1,
+      borderStyle: "dashed",
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      paddingVertical: 22,
+      paddingHorizontal: 16,
+      alignItems: "center",
+      gap: 8,
+    },
+    selectorEmptyText: {
+      fontSize: 12.5,
+      fontWeight: "700",
+      color: palette.muted,
+      textAlign: "center",
+      writingDirection: dir,
+      lineHeight: 20,
+    },
+
+    dock: {
+      position: "absolute",
+      left: 16,
+      right: 16,
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.card,
+      padding: 12,
+      gap: 10,
+      ...sh,
+    },
+    dockBubbles: {
+      flexDirection: isRTL ? ("row-reverse" as const) : ("row" as const),
+      flexWrap: "wrap",
+      gap: 8,
+    },
+    dockBubble: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 6,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: `${palette.primary}55`,
+      backgroundColor: `${palette.primary}14`,
+      paddingLeft: 4,
+      paddingTop: 4,
+      paddingBottom: 4,
+      paddingRight: 10,
+    },
+    dockBubbleAvatar: {
+      width: 26,
+      height: 26,
+      borderRadius: 7,
+      backgroundColor: palette.surface,
+    },
+    dockBubbleFallback: { fontSize: 14 },
+    dockBubbleLabel: {
+      fontSize: 11.5,
+      fontWeight: "800",
+      color: palette.text,
+      writingDirection: dir,
+      maxWidth: 130,
+    },
+    dockBubbleRemove: {
+      width: 16,
+      height: 16,
+      borderRadius: 999,
+      backgroundColor: "rgba(15,23,42,0.55)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    dockFooter: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 10,
+    },
+    dockPrice: { gap: 2, flexShrink: 1 },
+    dockPriceValue: {
+      fontSize: 16,
+      fontWeight: "900",
+      color: palette.primary,
+      writingDirection: dir,
+    },
+    dockPeriodHint: {
+      fontSize: 10.5,
+      fontWeight: "600",
+      color: palette.muted,
+      writingDirection: dir,
+    },
+    dockCtaWrap: { flex: 1 },
+    dockCta: {
+      borderRadius: 999,
+      overflow: "hidden",
+    },
+    dockCtaGradient: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      paddingVertical: 13,
+      paddingHorizontal: 18,
+      borderRadius: 999,
+    },
+    dockCtaText: {
+      fontSize: 14,
+      fontWeight: "900",
+      color: "#FFFFFF",
+      writingDirection: dir,
+    },
+    dockHelper: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      paddingHorizontal: 8,
+    },
+    dockHelperText: {
+      fontSize: 11,
+      fontWeight: "700",
+      color: palette.muted,
+      textAlign: "center",
+      writingDirection: dir,
+    },
+
+    stickyFooter: {
+      paddingHorizontal: 16,
+      paddingTop: 10,
+      gap: 10,
+      borderTopWidth: 1,
+      borderTopColor: palette.border,
+      backgroundColor: palette.bg,
+    },
+    summaryCard: {
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.card,
+      padding: 14,
+      gap: 8,
+      ...sh,
+    },
+    summaryRow: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 10,
+    },
+    summaryLabel: {
+      flexShrink: 1,
+      fontSize: 12,
+      fontWeight: "700",
+      color: palette.muted,
+      writingDirection: dir,
+      textAlign: textEnd,
+    },
+    summaryValue: {
+      fontSize: 12.5,
+      fontWeight: "800",
+      color: palette.text,
+      writingDirection: dir,
+      textAlign: textEnd,
+    },
+    summaryDivider: {
+      height: 1,
+      backgroundColor: palette.border,
+      marginVertical: 2,
+    },
+    summaryTotal: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 10,
+    },
+    summaryTotalLabel: {
+      fontSize: 14,
+      fontWeight: "900",
+      color: palette.text,
+      writingDirection: dir,
+      textAlign: textEnd,
+    },
+    summaryTotalValue: {
+      fontSize: 18,
+      fontWeight: "900",
+      color: palette.primary,
+    },
+    summaryPeriodHint: {
+      fontSize: 10.5,
+      fontWeight: "600",
+      color: palette.muted,
+      writingDirection: dir,
+      textAlign: textEnd,
+    },
+
+    ctaDisabled: { opacity: 0.5 },
+    ctaHelperWrap: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      paddingHorizontal: 8,
+    },
+    ctaHelperText: {
+      fontSize: 11.5,
+      fontWeight: "700",
+      color: palette.muted,
+      textAlign: "center",
+      writingDirection: dir,
+    },
+
+    planCard: {
+      borderRadius: 26,
+      borderWidth: 1.5,
+      padding: 18,
+      ...sh,
+    },
+    planCardPopular: {
+      shadowColor: GOLD,
+      shadowOpacity: 0.35,
+      shadowRadius: 20,
+      shadowOffset: { width: 0, height: 10 },
+      elevation: 10,
+    },
+    cardTopRow: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 8,
+      marginBottom: 12,
+    },
+    badgesRow: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 8,
+      flexWrap: "wrap",
+    },
+    popularPill: {
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      flexDirection: row,
+      alignItems: "center",
+      gap: 6,
+    },
+    popularPillText: {
+      color: "#FFFFFF",
+      fontSize: 11,
+      fontWeight: "900",
+      writingDirection: dir,
+    },
+    typeBadge: {
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+    },
+    typeBadgeText: {
+      fontSize: 10,
+      fontWeight: "800",
+      writingDirection: dir,
+    },
+    planTitle: {
+      fontSize: 20,
+      fontWeight: "900",
+      textAlign: textEnd,
+      writingDirection: dir,
+    },
+    planDescription: {
+      marginTop: 6,
+      fontSize: 13,
+      fontWeight: "600",
+      textAlign: textEnd,
+      writingDirection: dir,
+      lineHeight: 22,
+    },
+
+    priceHero: {
+      marginTop: 16,
+      borderRadius: 20,
+      padding: 14,
+      borderWidth: 1,
+      gap: 6,
+    },
+    priceHeroTop: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    priceHeroBottom: {
+      flexDirection: row,
+      alignItems: "baseline",
+      justifyContent: "space-between",
+      gap: 10,
+    },
+    priceHintLabel: {
+      fontSize: 11.5,
+      fontWeight: "800",
+      writingDirection: dir,
+    },
+    discountBadge: {
+      borderRadius: 999,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      backgroundColor: "rgba(245,166,35,0.16)",
+    },
+    discountBadgeText: {
+      fontSize: 10,
+      fontWeight: "900",
+      color: GOLD,
+    },
+    oldPrice: {
+      fontSize: 12,
+      fontWeight: "700",
+      textDecorationLine: "line-through",
+    },
+    priceValueRow: {
+      flexDirection: row,
+      alignItems: "baseline",
+      gap: 4,
+    },
+    priceValue: {
+      fontSize: 30,
+      fontWeight: "900",
+    },
+    pricePerMonth: {
+      fontSize: 12,
+      fontWeight: "800",
+    },
+    priceDivider: {
+      height: 1,
+      marginVertical: 6,
+    },
+    materialRow: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 10,
+      paddingVertical: 6,
+    },
+    materialLabel: {
+      flex: 1,
+      fontSize: 12.5,
+      fontWeight: "800",
+      textAlign: textEnd,
+      writingDirection: dir,
+    },
+    materialRowPrices: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 8,
+    },
+    materialFinalPrice: {
+      fontSize: 13.5,
+      fontWeight: "900",
+    },
+
+    sectionLabel: {
+      fontSize: 12.5,
+      fontWeight: "900",
+      textAlign: textEnd,
+      writingDirection: dir,
+      marginBottom: 10,
+      letterSpacing: 0.2,
+    },
+
+    featuresBlock: {
+      marginTop: 18,
+    },
+    featureRow: {
+      flexDirection: row,
+      alignItems: "flex-start",
+      gap: 10,
+      marginBottom: 10,
+    },
+    featureIconWrap: {
+      width: 26,
+      height: 26,
+      borderRadius: 9,
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 0,
+    },
+    featureTexts: {
+      flex: 1,
+      alignItems: alignEnd,
+    },
+    featureTitle: {
+      fontSize: 13,
+      fontWeight: "800",
+      textAlign: textEnd,
+      writingDirection: dir,
+    },
+    featureDescription: {
+      marginTop: 2,
+      fontSize: 11.5,
+      fontWeight: "600",
+      textAlign: textEnd,
+      writingDirection: dir,
+      lineHeight: 18,
+    },
+
+    accessibleWrap: {
+      marginTop: 18,
+    },
+    accessibleChipsRow: {
+      flexDirection: row,
+      flexWrap: "wrap",
+      gap: 8,
+    },
+    accessibleChip: {
+      maxWidth: W - 80,
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderWidth: 1,
+    },
+    accessibleChipText: {
+      fontSize: 11,
+      fontWeight: "800",
+      writingDirection: dir,
+      textAlign: textEnd,
+    },
+
+    ctaBtn: {
+      marginTop: 18,
+      borderRadius: 999,
+      overflow: "hidden",
+      ...sh,
+    },
+    ctaGradient: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      paddingVertical: 15,
+      borderRadius: 999,
+    },
+    ctaText: {
+      fontSize: 15,
+      fontWeight: "900",
+      color: "#FFFFFF",
+      writingDirection: dir,
+    },
+
+    guaranteeWrap: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 7,
+      paddingVertical: 12,
+      borderRadius: 999,
+    },
+    guaranteeText: {
+      fontSize: 12,
+      fontWeight: "800",
+      writingDirection: dir,
+    },
+  });
+}
+
+export type PlansScreenStyles = ReturnType<typeof createPlansStyles>;

@@ -1,0 +1,15 @@
+export const scan = {
+  title: "Scanner le Code QR",
+  loading: "Chargement de la caméra...",
+  permission_title: "Accès à la Caméra Requis",
+  permission_desc: "Nous avons besoin d'accéder à votre caméra pour scanner les codes QR. Veuillez accorder l'accès pour continuer.",
+  permission_btn: "Autoriser l'Accès",
+  hint: "Alignez le code QR dans le cadre",
+  resolving: "Chargement du livre...",
+  invalid_qr: "Code QR Invalide",
+  invalid_qr_desc: "Ce code QR ne contient pas de lien Abajim valide.",
+  no_videos: "Aucune Vidéo",
+  no_videos_desc: "Ce livre ne contient aucune icône vidéo.",
+  fetch_error: "Erreur",
+  fetch_error_desc: "Impossible de charger les données du livre. Veuillez réessayer.",
+};

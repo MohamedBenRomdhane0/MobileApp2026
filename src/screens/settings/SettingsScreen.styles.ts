@@ -2,254 +2,330 @@ import { StyleSheet } from "react-native";
 import type { AppColors } from "@theme/types";
 
 export const createSettingsStyles = (colors: AppColors, isDark: boolean) => {
-    const cardBg = isDark ? colors.card : "#F7F9FD";
-    const sectionBg = isDark ? colors.card : "#FFFFFF";
-    const borderColor = isDark ? "rgba(148,163,184,0.18)" : "#E6EBF3";
-    const mainText = isDark ? colors.text : "#1D3557";
-    const secondaryText = isDark ? colors.muted : "#7E8AA4";
+  const cardBg = isDark ? colors.card : "#F7F9FD";
+  const sectionBg = isDark ? colors.card : "#FFFFFF";
+  const borderColor = isDark ? "rgba(148,163,184,0.18)" : "#E6EBF3";
+  const mainText = isDark ? colors.text : "#1D3557";
+  const secondaryText = isDark ? colors.muted : "#7E8AA4";
 
-    return StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor: isDark ? colors.bg : "#F4F7FB",
-        },
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: isDark ? colors.bg : "#F4F7FB",
+    },
 
-        scrollContent: {
-            flexGrow: 1,
-        },
+    scrollContent: {
+      flexGrow: 1,
+    },
 
-        coverContainer: {
-            width: "100%",
-            minHeight: 80,
-            borderBottomLeftRadius: 30,
-            borderBottomRightRadius: 30,
-            overflow: "hidden",
-            paddingHorizontal: 24,
-            paddingBottom: 10,
-            position: "relative",
-            justifyContent: "flex-start",
-        },
+    coverContainer: {
+      width: "100%",
+      minHeight: 80,
+      borderBottomLeftRadius: 30,
+      borderBottomRightRadius: 30,
+      overflow: "hidden",
+      paddingHorizontal: 24,
+      paddingBottom: 10,
+      position: "relative",
+      justifyContent: "flex-start",
+    },
 
-        coverBubbleLeft: {
-            position: "absolute",
-            top: -14,
-            left: -24,
-            width: 80,
-            height: 80,
-            borderRadius: 60,
-            backgroundColor: "rgba(255,255,255,0.10)",
-        },
+    coverBubbleLeft: {
+      position: "absolute",
+      top: -14,
+      left: -24,
+      width: 80,
+      height: 80,
+      borderRadius: 60,
+      backgroundColor: "rgba(255,255,255,0.10)",
+    },
 
-        coverBubbleRight: {
-            position: "absolute",
-            bottom: -8,
-            right: -28,
-            width: 130,
-            height: 130,
-            borderRadius: 65,
-            backgroundColor: "rgba(255,255,255,0.08)",
-        },
+    coverBubbleRight: {
+      position: "absolute",
+      bottom: -8,
+      right: -28,
+      width: 130,
+      height: 130,
+      borderRadius: 65,
+      backgroundColor: "rgba(255,255,255,0.08)",
+    },
 
-        headerText: {
-            marginTop: 0,
-            textAlign: "center",
-            color: "#FFFFFF",
-            fontSize: 18,
-            fontWeight: "800",
-            letterSpacing: 0.2,
-        },
+    headerText: {
+      marginTop: 0,
+      textAlign: "center",
+      color: "#FFFFFF",
+      fontSize: 18,
+      fontWeight: "800",
+      letterSpacing: 0.2,
+    },
 
-        profileCard: {
-            marginTop: 6,
-            backgroundColor: "rgba(17,39,72,0.72)",
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.10)",
-            borderRadius: 22,
-            paddingVertical: 8,
-            paddingHorizontal: 10,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            shadowColor: "#000",
-            shadowOpacity: 0.14,
-            shadowRadius: 12,
-            shadowOffset: { width: 0, height: 5 },
-            elevation: 4,
-        },
+    profileCard: {
+      marginTop: 6,
+      backgroundColor: "rgba(17,39,72,0.72)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.10)",
+      borderRadius: 22,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      shadowColor: "#000",
+      shadowOpacity: 0.14,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 5 },
+      elevation: 4,
+    },
 
-        profileInfo: {
-            flex: 1,
-            alignItems: "flex-end",
-            marginLeft: 12,
-        },
+    profileInfo: {
+      flex: 1,
+      alignItems: "flex-end",
+      marginLeft: 12,
+    },
 
-        profileName: {
-            color: "#FFFFFF",
-            fontSize: 16,
-            fontWeight: "800",
-            textAlign: "right",
-            maxWidth: "100%",
-        },
+    profileName: {
+      color: "#FFFFFF",
+      fontSize: 16,
+      fontWeight: "800",
+      textAlign: "right",
+      maxWidth: "100%",
+    },
 
-        roleRow: {
-            marginTop: 5,
-            flexDirection: "row-reverse",
-            alignItems: "center",
-        },
+    roleRow: {
+      marginTop: 5,
+      flexDirection: "row-reverse",
+      alignItems: "center",
+    },
 
-        profileRoleText: {
-            color: "rgba(255,255,255,0.70)",
-            fontSize: 12,
-            fontWeight: "500",
-            textAlign: "right",
-            marginRight: 6,
-        },
+    profileRoleText: {
+      color: "rgba(255,255,255,0.70)",
+      fontSize: 12,
+      fontWeight: "500",
+      textAlign: "right",
+      marginRight: 6,
+    },
 
-        onlineDot: {
-            width: 8,
-            height: 8,
-            borderRadius: 4,
-            backgroundColor: "#28C7D1",
-            marginLeft: 6,
-        },
+    onlineDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: "#28C7D1",
+      marginLeft: 6,
+    },
 
-        avatarOuter: {
-            width: 64,
-            height: 64,
-            borderRadius: 32,
-            overflow: "hidden",
-            backgroundColor: "#1B3D68",
-            borderWidth: 2,
-            borderColor: "rgba(255,255,255,0.22)",
-            alignItems: "center",
-            justifyContent: "center",
-        },
+    avatarOuter: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      overflow: "hidden",
+      backgroundColor: "#1B3D68",
+      borderWidth: 2,
+      borderColor: "rgba(255,255,255,0.22)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
 
-        avatarImage: {
-            width: "100%",
-            height: "100%",
-            borderRadius: 32,
-        },
+    avatarImage: {
+      width: "100%",
+      height: "100%",
+      borderRadius: 32,
+    },
 
-        avatarFallback: {
-            width: "100%",
-            height: "100%",
-            borderRadius: 32,
-            alignItems: "center",
-            justifyContent: "center",
-        },
+    avatarFallback: {
+      width: "100%",
+      height: "100%",
+      borderRadius: 32,
+      alignItems: "center",
+      justifyContent: "center",
+    },
 
-        avatarInitials: {
-            color: "#FFFFFF",
-            fontSize: 22,
-            fontWeight: "800",
-        },
+    avatarInitials: {
+      color: "#FFFFFF",
+      fontSize: 22,
+      fontWeight: "800",
+    },
 
-        contentArea: {
-            paddingHorizontal: 20,
-            paddingTop: 14,
-        },
+    contentArea: {
+      paddingHorizontal: 20,
+      paddingTop: 14,
+    },
 
-        childSwitcherSection: {
-            backgroundColor: sectionBg,
-            borderRadius: 22,
-            paddingVertical: 16,
-            paddingHorizontal: 14,
-            borderWidth: 1,
-            borderColor,
-            shadowColor: "#0F172A",
-            shadowOpacity: isDark ? 0.12 : 0.05,
-            shadowRadius: 10,
-            shadowOffset: { width: 0, height: 4 },
-            elevation: 2,
-        },
+    childSwitcherSection: {
+      backgroundColor: sectionBg,
+      borderRadius: 20,
+      paddingVertical: 14,
+      paddingHorizontal: 10,
+      borderWidth: 1.5,
+      borderColor: isDark ? "rgba(168,85,247,0.25)" : "rgba(79,140,255,0.20)",
+      shadowColor: colors.primary,
+      shadowOpacity: 0.08,
+      shadowRadius: 14,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 3,
+    },
 
-        childSwitcherTitle: {
-            fontSize: 16,
-            fontWeight: "800",
-            color: mainText,
-            textAlign: "center",
-            marginBottom: 14,
-        },
+    childSwitcherHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      marginBottom: 6,
+    },
 
-        optionsWrapper: {
-            marginTop: 16,
-        },
+    childSwitcherTitle: {
+      fontSize: 13,
+      fontWeight: "700",
+      color: secondaryText,
+      textAlign: "center",
+    },
 
-        optionCard: {
-            minHeight: 74,
-            backgroundColor: cardBg,
-            borderRadius: 20,
-            borderWidth: 1,
-            borderColor,
-            paddingHorizontal: 15,
-            paddingVertical: 12,
-            marginBottom: 10,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            shadowColor: "#0F172A",
-            shadowOpacity: isDark ? 0.1 : 0.04,
-            shadowRadius: 8,
-            shadowOffset: { width: 0, height: 3 },
-            elevation: 2,
-        },
+    /* ── Plan cards ────────────────────────────────────────────── */
 
-        optionRightBlock: {
-            flex: 1,
-            flexDirection: "row-reverse",
-            alignItems: "center",
-            marginLeft: 12,
-        },
+    planSection: {
+      marginTop: 16,
+    },
 
-        optionIconBubble: {
-            width: 44,
-            height: 44,
-            borderRadius: 16,
-            alignItems: "center",
-            justifyContent: "center",
-        },
+    planSectionTitle: {
+      fontSize: 16,
+      fontWeight: "800",
+      color: mainText,
+      marginBottom: 12,
+    },
 
-        optionTextWrapper: {
-            flex: 1,
-            alignItems: "flex-end",
-            marginHorizontal: 10,
-        },
+    planCardsRow: {
+      flexDirection: "row",
+      gap: 10,
+    },
 
-        optionText: {
-            fontSize: 17,
-            fontWeight: "800",
-            color: mainText,
-            textAlign: "right",
-        },
+    planCard: {
+      flex: 1,
+      height: 80,
+      width: 175,
+      borderRadius: 16,
+      overflow: "hidden",
+      shadowColor: "#000",
+      shadowOpacity: 0.2,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 6,
+    },
 
-        optionSubText: {
-            marginTop: 3,
-            fontSize: 13,
-            color: secondaryText,
-            textAlign: "right",
-        },
+    planCardContent: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
 
-        logoutButton: {
-            marginTop: 6,
-            minHeight: 58,
-            borderRadius: 18,
-            borderWidth: 1.4,
-            borderColor: "rgba(225,84,84,0.28)",
-            backgroundColor: isDark ? "rgba(225,84,84,0.08)" : "#FFF7F7",
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "row-reverse",
-        },
+    planCardBgIcon: {
+      position: "absolute",
+      right: -6,
+      bottom: -10,
+    },
 
-        logoutIcon: {
-            marginHorizontal: 8,
-        },
+    planCardTop: {
+      alignItems: "center",
+    },
 
-        logoutText: {
-            color: "#E15454",
-            fontSize: 16,
-            fontWeight: "800",
-        },
-    });
+    planCardTitle: {
+      color: "#FFFFFF",
+      fontSize: 13,
+      fontWeight: "800",
+      lineHeight: 17,
+      textAlign: "center",
+    },
+
+    planCardBottom: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 4,
+      marginTop: 6,
+    },
+
+    planCardUnlock: {
+      color: "rgba(255,255,255,0.85)",
+      fontSize: 12,
+      fontWeight: "600",
+    },
+
+    optionsWrapper: {
+      marginTop: 16,
+    },
+
+    optionCard: {
+      minHeight: 74,
+      backgroundColor: cardBg,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor,
+      paddingHorizontal: 15,
+      paddingVertical: 12,
+      marginBottom: 10,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      shadowColor: "#0F172A",
+      shadowOpacity: isDark ? 0.1 : 0.04,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 2,
+    },
+
+    optionRightBlock: {
+      flex: 1,
+      flexDirection: "row-reverse",
+      alignItems: "center",
+      marginLeft: 12,
+    },
+
+    optionIconBubble: {
+      width: 44,
+      height: 44,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+
+    optionTextWrapper: {
+      flex: 1,
+      alignItems: "flex-end",
+      marginHorizontal: 10,
+    },
+
+    optionText: {
+      fontSize: 17,
+      fontWeight: "800",
+      color: mainText,
+      textAlign: "right",
+    },
+
+    optionSubText: {
+      marginTop: 3,
+      fontSize: 13,
+      color: secondaryText,
+      textAlign: "right",
+    },
+
+    logoutButton: {
+      marginTop: 6,
+      minHeight: 58,
+      borderRadius: 18,
+      borderWidth: 1.4,
+      borderColor: "rgba(225,84,84,0.28)",
+      backgroundColor: isDark ? "rgba(225,84,84,0.08)" : "#FFF7F7",
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "row-reverse",
+    },
+
+    logoutIcon: {
+      marginHorizontal: 8,
+    },
+
+    logoutText: {
+      color: "#E15454",
+      fontSize: 16,
+      fontWeight: "800",
+    },
+  });
 };
