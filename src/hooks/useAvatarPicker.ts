@@ -32,7 +32,7 @@ export const useAvatarPicker = (options?: UseAvatarPickerOptions) => {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing,
         aspect,
         quality,

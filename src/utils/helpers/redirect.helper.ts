@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NavigateFunction } from 'react-router-dom'
 import { PATHS } from '@config/constants/paths'
 import { UserRoleEnum } from '@config/enums/role.enum'

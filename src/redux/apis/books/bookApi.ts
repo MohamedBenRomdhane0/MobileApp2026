@@ -104,16 +104,16 @@ export const bookApi = createApi({
           : [{ type: "Books" as const, id: "LIST" }],
     }),
 
-    getBookById: build.query<GetBookByIdResponse, number>({
-      query: (id) => ({
-        url: `child/books/${id}`,
+    getBookById: build.query<GetBookByIdResponse, { bookId: number; childId: number }>({
+      query: ({ bookId, childId }) => ({
+        url: `parent/books/${bookId}?child_id=${childId}`,
         method: MethodsEnum.GET,
       }),
       transformResponse: (response: GetBookByIdResponseApi): GetBookByIdResponse => ({
         message: response.message,
         data: toBookDetailsUI(response.data),
       }),
-      providesTags: (_result, _error, id) => [{ type: "Book" as const, id }],
+      providesTags: (_result, _error, { bookId }) => [{ type: "Book" as const, id: bookId }],
     }),
 
     getIconVideos: build.query<GetIconVideosResponse, number>({

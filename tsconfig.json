@@ -3,6 +3,7 @@
   "compilerOptions": {
     "jsx": "react-native",
     "strict": true,
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     /*  PATHS  */
     "paths": {
@@ -21,10 +22,7 @@
       "@navigation/*": ["src/navigation/*"],
       "@theme/*": ["src/theme/*"],
       "@hooks/*": ["src/hooks/*"],
-      "@styles/*": ["src/styles/*"],
-
-
-
+      "@styles/*": ["src/styles/*"]
     }
   }
 }

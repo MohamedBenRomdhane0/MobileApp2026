@@ -6,9 +6,15 @@ import { useHomeCardEntrance, useHomeCardPress } from "@hooks/useHomeCardMotion"
 import type { ActivitiesCardProps } from "../HomeScreen.type";
 
 const CARD_INDEX = 8;
-const DAYS_IN_MONTH = 31;
-const FIRST_DAY_OFFSET = 6;
 const COLS = 7;
+
+function getMonthGrid(now: Date) {
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOffset = new Date(year, month, 1).getDay(); // 0=Sun
+  return { daysInMonth, firstDayOffset };
+}
 
 export default function ActivitiesCard({
   title,
@@ -16,6 +22,9 @@ export default function ActivitiesCard({
   weekDays,
   reservedDays,
   today,
+  monthLabel,
+  targetDate,
+  onMonthAdvance,
   styles,
   palette,
   isRTL,
@@ -29,7 +38,12 @@ export default function ActivitiesCard({
     return map;
   }, [reservedDays]);
 
-  const totalCells = FIRST_DAY_OFFSET + DAYS_IN_MONTH;
+  const { daysInMonth, firstDayOffset } = useMemo(
+    () => getMonthGrid(targetDate ?? new Date()),
+    [targetDate]
+  );
+
+  const totalCells = firstDayOffset + daysInMonth;
   const totalRows = Math.ceil(totalCells / COLS);
 
   const rows = useMemo(() => {
@@ -39,7 +53,7 @@ export default function ActivitiesCard({
       const row: (number | null)[] = [];
       for (let c = 0; c < COLS; c++) {
         const cellIndex = r * COLS + c;
-        if (cellIndex < FIRST_DAY_OFFSET || day > DAYS_IN_MONTH) {
+        if (cellIndex < firstDayOffset || day > daysInMonth) {
           row.push(null);
         } else {
           row.push(day);
@@ -62,10 +76,13 @@ export default function ActivitiesCard({
       <View style={styles.activitiesHeader}>
         <View style={styles.activitiesHeaderText}>
           <Text style={styles.activitiesSubtitle}>{subtitle}</Text>
-          <Text style={styles.activitiesTitle}>{title}</Text>
+          <Text style={styles.activitiesTitle}>
+            {title}{monthLabel ? ` (${monthLabel})` : ""}
+          </Text>
         </View>
         <TouchableOpacity
           activeOpacity={0.8}
+          onPress={onMonthAdvance}
           onPressIn={onPressIn}
           onPressOut={onPressOut}
           style={styles.activitiesArrowBtn}

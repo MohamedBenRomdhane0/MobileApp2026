@@ -5,7 +5,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAppDispatch } from "@redux/hooks";
+import { useAppDispatch, useAppSelector } from "@redux/hooks";
+import { selectActiveChildId } from "@redux/slices/authSlice";
 import { PATHS } from "@config/constants/paths";
 import { bookApi } from "@redux/apis/books/bookApi";
 import type { BookIconUI } from "@redux/apis/books/bookApi.type";
@@ -42,6 +43,7 @@ export default function ScanQRCodeScreen() {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
+  const activeChildId = useAppSelector(selectActiveChildId);
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [flashOn, setFlashOn] = useState(false);
@@ -92,10 +94,20 @@ export default function ScanQRCodeScreen() {
         return;
       }
 
+      if (!activeChildId) {
+        Alert.alert(t("scan.invalid_qr"), t("scan.invalid_qr_desc"), [
+          { text: "OK", onPress: () => { setScanned(false); setLoading(false); } },
+        ]);
+        return;
+      }
+
       try {
         // Fetch book from API to get the real icon IDs
         const result = await dispatch(
-          bookApi.endpoints.getBookById.initiate(parsed.bookId)
+          bookApi.endpoints.getBookById.initiate({
+            bookId: parsed.bookId,
+            childId: activeChildId,
+          })
         ).unwrap() as { data?: { icons?: BookIconUI[]; materialName?: string } };
 
         const book = result?.data;

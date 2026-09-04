@@ -13,7 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { ResizeMode, Video } from "expo-av";
+import { VideoView, useVideoPlayer } from "expo-video";
 
 import { useAppTheme } from "@theme/ThemeProvider";
 import { createCourseChaptersStyles } from "./CourseChaptersScreen.styles";
@@ -275,6 +275,21 @@ function CourseChaptersHeader({
   );
 }
 
+function ChapterVideo({ uri, styles }: { uri: string; styles: ReturnType<typeof createCourseChaptersStyles> }) {
+  const player = useVideoPlayer(uri, (p) => {
+    p.loop = false;
+  });
+
+  return (
+    <VideoView
+      player={player}
+      style={styles.video}
+      contentFit="contain"
+      nativeControls
+    />
+  );
+}
+
 function ChapterCard({
   item,
   index,
@@ -328,19 +343,7 @@ function ChapterCard({
           {(item.videoUrls ?? []).length ? (
             item.videoUrls.map((uri, videoIndex) => (
               <View key={`${item.id}_${videoIndex}`} style={styles.videoWrap}>
-                <Video
-                  source={{ uri }}
-                  style={styles.video}
-                  useNativeControls
-                  resizeMode={ResizeMode.CONTAIN}
-                  shouldPlay={false}
-                  isLooping={false}
-                  isMuted={false}
-                  volume={1.0}
-                  onError={(error) => {
-                    console.log("[CourseChapters] VIDEO ERROR:", error);
-                  }}
-                />
+                <ChapterVideo uri={uri} styles={styles} />
               </View>
             ))
           ) : (

@@ -73,13 +73,13 @@ export const MATERIAL_COLOR: Record<string, string> = {
 };
 
 export const MATERIAL_GRADIENT: Record<string, readonly [string, string]> = {
-  mat_arabic: ["#2D0A13", "#E8294C"],
-  mat_math: ["#062B2E", "#22BEC8"],
-  mat_french: ["#091933", "#3A86D8"],
-  mat_science: ["#062B14", "#27AE60"],
-  mat_social: ["#180A2E", "#7C5CBF"],
-  mat_english: ["#2E1A03", "#4A2C06"],
-  default: ["#0D1B2A", "#F5A623"],
+  mat_arabic: ["#5C0E2A", "#FF4D6D"],
+  mat_math: ["#053A41", "#2BD9E3"],
+  mat_french: ["#0A2E5C", "#5BA3F5"],
+  mat_science: ["#0A3B22", "#3DDC84"],
+  mat_social: ["#2A1650", "#8E6BE0"],
+  mat_english: ["#4A2C06", "#F5A623"],
+  default: ["#0D1B2A", "#22BEC8"],
 };
 
 export const MATERIAL_TINT: Record<string, string> = {

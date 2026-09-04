@@ -7,8 +7,8 @@ import { TEACHER_COLORS } from "@screens/home/HomeScreen.constants";
 import type { TeachersRowProps } from "@screens/home/HomeScreen.type";
 
 /**
- * Horizontal row of the available teachers — the 3 real mock entries, each
- * with a ringed avatar, name, subject and a rating pill. No filler cards.
+ * Horizontal row of available teachers — each with a ringed avatar,
+ * name, subject and a rating pill. Supports both local and remote avatars.
  */
 export default function TeachersRow({
   styles,
@@ -26,6 +26,13 @@ export default function TeachersRow({
     >
       {teachers.map((teacher, index) => {
         const ringColor = TEACHER_COLORS[index % TEACHER_COLORS.length];
+        const avatarSource = teacher.avatarUrl
+          ? { uri: teacher.avatarUrl }
+          : teacher.avatar;
+        const displayRating =
+          typeof teacher.rating === "number" && teacher.rating > 0
+            ? teacher.rating.toFixed(1)
+            : "4.0";
 
         return (
           <TouchableOpacity
@@ -50,7 +57,11 @@ export default function TeachersRow({
               style={styles.teacherAvatarRing}
             >
               <View style={styles.teacherAvatar}>
-                <Image source={teacher.avatar} style={styles.teacherImg} />
+                {avatarSource ? (
+                  <Image source={avatarSource} style={styles.teacherImg} />
+                ) : (
+                  <View style={[styles.teacherImg, { backgroundColor: ringColor + "33" }]} />
+                )}
               </View>
             </LinearGradient>
 
@@ -63,7 +74,7 @@ export default function TeachersRow({
 
             <View style={styles.teacherBadge}>
               <Ionicons name="star" size={10} color="#F59E0B" />
-              <Text style={styles.teacherBadgeText}>4.0</Text>
+              <Text style={styles.teacherBadgeText}>{displayRating}</Text>
             </View>
           </TouchableOpacity>
         );

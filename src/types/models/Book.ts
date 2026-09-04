@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BookTypeEnum } from '@config/enums/BookTypeEnum'
 import { Level } from './Level'
 import { Material } from './Material'

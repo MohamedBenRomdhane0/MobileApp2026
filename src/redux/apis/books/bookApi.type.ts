@@ -136,6 +136,8 @@ export type MediaApi = {
 export type MaterialApi = {
   id: number;
   name: string;
+  /** Optional accent color sent by the API for this material. */
+  color?: string | null;
 };
 
 export type LevelApi = {
@@ -299,12 +301,14 @@ export type BookDetailsApi = {
   media?: MediaApi[];
   icons?: BookIconApi[];
   pages?: BookPageApi[];
+  modules?: BookModuleApi[] | null;
 };
 
 export type GetBooksQueryArgs = {
   page?: number;
   perPage?: number;
   keyword?: string;
+  childId?: number;
   materialId?: number;
   levelId?: number;
   levelMaterialId?: number;
@@ -331,6 +335,8 @@ export type BookListItemUI = {
   videosCount: number;
   progress: number;
   materialName: string;
+  /** Optional accent color provided by the API for the book's material. */
+  materialColor: string | null;
   coverUrl: string | null;
   teachersCount: number;
   teachers: BookTeacherUI[];
@@ -372,6 +378,7 @@ export type BookDetailsUI = {
   language: string | null;
   pages: BookPageUI[];
   icons: BookIconUI[];
+  modules: BookModuleUI[];
   user: BookUserUI | null;
   creatorId: number | null;
 };

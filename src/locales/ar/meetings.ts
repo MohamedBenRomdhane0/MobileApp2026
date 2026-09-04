@@ -69,5 +69,22 @@ export const meetings = {
   followers_label: "متابع",
   reviews_label: "تقييم",
   private_label: "خاص",
-  detail_years_experience: "{{count}} سنوات خبرة"
+  detail_years_experience: "{{count}} سنوات خبرة",
+
+  record_meeting_silver_welcome_back: "مرحباً بعودتك",
+  record_meeting_silver_my_projects: "مشاريعي",
+  record_meeting_silver_section_title: "مشاريعي",
+  record_meeting_silver_search_placeholder: "ابحث في التسجيلات...",
+  record_meeting_silver_empty_title: "لا توجد تسجيلات بعد",
+  record_meeting_silver_empty_subtitle: "ستظهر جلساتك المسجلة هنا.",
+  record_meeting_silver_home: "الرئيسية",
+  record_meeting_silver_projects: "المشاريع",
+  record_meeting_silver_add: "إضافة",
+  record_meeting_silver_notifications: "الإشعارات",
+  record_meeting_silver_profile: "الملف الشخصي",
+
+  record_timeline_title: "مارين",
+  record_timeline_subtitle: "استكشاف",
+  record_timeline_color: "اللون",
+  record_timeline_close: "إغلاق",
 };

@@ -38,8 +38,8 @@ const FORCE_PARENT_ENDPOINTS = new Set<string>([
 ]);
 
 const FORCE_CHILD_ENDPOINTS = new Set<string>([
-  "getBooks",
-  "getBookById",
+  // Removed "getBooks" - now uses parent/books endpoint with parent token
+  // "getBookById" still uses child/books/{id} endpoint
 ]);
 
 function getUrlFromArgs(args: string | FetchArgs): string {

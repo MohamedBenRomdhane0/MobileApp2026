@@ -12,6 +12,7 @@ export const home = {
   subscribe_title: "اشترك في الباقة المميزة",
   subscribe_subtitle: "وصول غير محدود لجميع المواد",
   subscribe_cta: "اشترك",
+  plans_title: "الباقات",
   school_books_title: "الكتب المدرسية",
   live_meetings_title: "الحصص المباشرة",
   join: "انضم",
@@ -43,6 +44,7 @@ export const home = {
   summary_live_now: "مباشر الآن",
   summary_participants: "{{count}} مشارك",
   summary_join: "انضم",
+  summary_reserve: "احجز",
   activities_title: "الأنشطة",
   activities_subtitle: "هذا الشهر",
   notif_live_now: "مباشر الآن",
@@ -50,6 +52,8 @@ export const home = {
   notif_meeting: "{{subject}} — {{time}}",
   notif_join: "انضم",
   notif_just_now: "الآن",
+  record_meetings: "التسجيلات",
+  record_timeline: "الخط الزمني",
   emoji: {
     love: {
       title: "حبّك للتعلّم ملهم! 💖",

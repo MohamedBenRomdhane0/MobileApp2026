@@ -196,16 +196,14 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
     elevation: 16,
   },
-  tint: {
-    ...StyleSheet.absoluteFillObject,
+  tint: [StyleSheet.absoluteFill, {
     backgroundColor: LIQUID.menuTint,
-  },
-  rim: {
-    ...StyleSheet.absoluteFillObject,
+  }] as unknown as import("react-native").ViewStyle,
+  rim: [StyleSheet.absoluteFill, {
     borderRadius: LIQUID.menuRadius,
     borderWidth: 1,
     borderColor: LIQUID.menuBorder,
-  },
+  }] as unknown as import("react-native").ViewStyle,
   rimTop: {
     position: "absolute",
     top: 0,
@@ -254,12 +252,11 @@ const styles = StyleSheet.create({
   chipFill: {
     borderRadius: CHIP / 2,
   },
-  chipRim: {
-    ...StyleSheet.absoluteFillObject,
+  chipRim: [StyleSheet.absoluteFill, {
     borderRadius: CHIP / 2,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.6)",
-  },
+  }] as unknown as import("react-native").ViewStyle,
   itemLabel: {
     fontSize: 9.5,
     fontWeight: "800",

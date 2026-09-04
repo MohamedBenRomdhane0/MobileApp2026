@@ -5,13 +5,13 @@ import { useTranslation } from "react-i18next";
 
 import { getMaterialEmoji } from "@utils/helpers/materialIcon.helper";
 import { getMaterialDisplayName } from "@utils/helpers/material.display.helper";
-import type { MaterialPricingUI } from "@redux/apis/plans/plansApi.type";
+import type { PlanMaterialPriceUI } from "@redux/apis/plans/plansApi.type";
 import type { SelectedMaterials } from "@screens/plans/PlansScreen.type";
 import { plansStyles as styles } from "@screens/plans/PlansScreen.styles";
 import type { getPlansPalette } from "@screens/plans/PlansScreen.styles";
 
 interface Props {
-  materials: MaterialPricingUI[];
+  materials: PlanMaterialPriceUI[];
   selected:  SelectedMaterials;
   onToggle:  (materialId: number) => void;
   palette:   ReturnType<typeof getPlansPalette>;

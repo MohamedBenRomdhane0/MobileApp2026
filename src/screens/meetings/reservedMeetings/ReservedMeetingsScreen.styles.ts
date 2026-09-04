@@ -82,11 +82,41 @@ const S = StyleSheet.create({
     letterSpacing: -0.3,
   },
 
+  subtitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 2,
+  },
+
   subtitle: {
     fontSize: 12,
     fontWeight: "600",
     color: C.sub,
-    marginTop: 2,
+  },
+
+  dayChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    height: 44,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: C.hairline,
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#0D2A52",
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+  },
+
+  dayChipText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: C.ink,
   },
 
   monthBtn: {
@@ -114,6 +144,49 @@ const S = StyleSheet.create({
     paddingHorizontal: 20,
   },
 
+  /* View mode selector (Semaine / Mois / Agenda) --------------------------- */
+
+  viewModeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingHorizontal: 20,
+    marginBottom: 14,
+  },
+
+  viewModeBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    height: 34,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    backgroundColor: "#F0F4F9",
+    overflow: "hidden",
+  },
+
+  viewModeBtnActive: {
+    backgroundColor: C.dark,
+    shadowColor: "#0D2A52",
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+  },
+
+  viewModeText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: C.sub,
+  },
+
+  viewModeTextActive: {
+    color: "#FFFFFF",
+    fontWeight: "800",
+  },
+
   /* Calendar card -------------------------------------------------------- */
 
   calendarCard: {
@@ -126,6 +199,7 @@ const S = StyleSheet.create({
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
     elevation: 4,
+    marginBottom: 10,
   },
 
   pickerRow: {
@@ -197,12 +271,14 @@ const S = StyleSheet.create({
   },
 
   dayNumberWrapSelected: {
+    width: 42,
+    height: 42,
     backgroundColor: C.teal,
     shadowColor: C.teal,
-    shadowOpacity: 0.45,
-    shadowRadius: 12,
+    shadowOpacity: 0.5,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
+    elevation: 8,
   },
 
   dayNumber: {
@@ -317,6 +393,26 @@ const S = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
     color: C.teal,
+  },
+
+  sectionHeaderRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  sectionAddBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: C.teal,
+    shadowColor: C.teal,
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
 
   /* Teacher strip -------------------------------------------------------- */
@@ -631,27 +727,133 @@ const S = StyleSheet.create({
     textAlign: "center",
   },
 
-  /* FAB ------------------------------------------------------------------ */
+  /* Agenda view ---------------------------------------------------------- */
 
-  fab: {
-    position: "absolute",
-    right: 22,
-    width: 58,
-    height: 58,
-    borderRadius: 999,
-    shadowColor: C.teal,
-    shadowOpacity: 0.45,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
+  agendaDateBlock: {
+    marginBottom: 18,
   },
 
-  fabInner: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 999,
+  agendaDateRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: 8,
+    marginBottom: 10,
+    paddingHorizontal: 2,
+  },
+
+  agendaDateDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: C.teal,
+  },
+
+  agendaDateText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "800",
+    color: C.ink,
+  },
+
+  agendaCountBadge: {
+    backgroundColor: C.tealSoft,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+
+  agendaCountText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: C.teal,
+  },
+
+  agendaCard: {
+    flexDirection: "row",
+    backgroundColor: C.surface,
+    borderRadius: 16,
+    marginBottom: 8,
+    overflow: "hidden",
+    shadowColor: "#0D2A52",
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+
+  agendaAccentBar: {
+    width: 4,
+  },
+
+  agendaCardBody: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingLeft: 12,
+    paddingRight: 14,
+  },
+
+  agendaCardTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  agendaAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: C.hairline,
+  },
+
+  agendaCardTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: C.ink,
+  },
+
+  agendaCardTeacher: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: C.sub,
+    marginTop: 1,
+  },
+
+  agendaCardMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 8,
+  },
+
+  agendaMetaChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: C.tealSoft,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+
+  agendaMetaText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: C.ink,
+  },
+
+  agendaStatusChip: {
+    backgroundColor: "#FEF3C7",
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+
+  agendaStatusText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#92400E",
   },
 
   /* Month picker sheet ---------------------------------------------------- */

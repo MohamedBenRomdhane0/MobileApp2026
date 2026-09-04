@@ -1,4 +1,4 @@
-export type MaterialHubTabKey = "exercises" | "live" | "lessons" | "book";
+export type MaterialHubTabKey = "book" | "live";
 
 export type MaterialHubRouteParams = {
   levelId: number;

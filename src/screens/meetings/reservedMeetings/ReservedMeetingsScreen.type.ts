@@ -7,6 +7,8 @@ export type ReservedSession = {
   subject: string;
   accent: string;
   date: number;
+  month: number;
+  year: number;
   dayLabel: string;
   /** Decimal hours on a 24h clock — 13.5 means 13:30. */
   start: number;
@@ -16,7 +18,8 @@ export type ReservedSession = {
   status: ReservedSessionStatus;
   /** Course completion shown on the timeline block, 0–100. */
   progress: number;
-  photo: number;
+  photo?: number | string | null;
+  avatarUrl?: string | null;
 };
 
 export type TeacherItem = {
@@ -26,7 +29,8 @@ export type TeacherItem = {
   accent: string;
   sessionsCount: number;
   rating: number;
-  photo: number;
+  photo?: number | string | null;
+  avatarUrl?: string | null;
 };
 
 export type CalendarDay = {

@@ -401,6 +401,9 @@ export function toBookListItemUI(api: BookListItemApi): BookListItemUI {
     videosCount: toSafeNumber(api.videos_count, 0),
     progress: toSafeNumber(api.progress, 0),
     materialName: resolveMaterialName(api),
+    materialColor: toNullableString(
+      api.material?.color ?? api.level_material?.material?.color
+    ),
     coverUrl: pickCoverUrl(api.media),
     teachersCount: toSafeNumber(api.teachers_count, teachers.length),
     teachers,
@@ -426,6 +429,10 @@ export function toBookDetailsUI(api: BookDetailsApi): BookDetailsUI {
     ? api.icons.map((icon, index) => toBookIconUI(icon, index))
     : [];
 
+  const modules: BookModuleUI[] = Array.isArray(api.modules)
+    ? api.modules.map(toBookModuleUI)
+    : [];
+
   const userId = toSafeNumber(api.user?.id, 0);
   const userFullName = toSafeString(api.user?.full_name ?? api.user?.name ?? "");
 
@@ -439,6 +446,7 @@ export function toBookDetailsUI(api: BookDetailsApi): BookDetailsUI {
     language: typeof api.language === "string" ? api.language : null,
     pages,
     icons,
+    modules,
     creatorId:
       api.creator_id != null ? toSafeNumber(api.creator_id, 0) : null,
     user:

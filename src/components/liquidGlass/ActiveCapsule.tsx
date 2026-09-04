@@ -105,10 +105,9 @@ const styles = StyleSheet.create({
     left: -3,
     right: -3,
   },
-  rim: {
-    ...StyleSheet.absoluteFillObject,
+  rim: [StyleSheet.absoluteFill, {
     borderWidth: 1,
-  },
+  }] as unknown as import("react-native").ViewStyle,
   gloss: {
     position: "absolute",
     top: 3,

@@ -483,6 +483,10 @@ export function mapTeacherProfileVM(
     reviewItems,
     lessonItems,
     badges: buildBadges(t, subject, yearsExperience, ratingAverage),
+
+    trailerUrl: pickNonEmpty(rawTeacher.trailerUrl) || null,
+    trailerThumbnail: pickNonEmpty(rawTeacher.trailerThumbnail) || null,
+    trailerMimeType: pickNonEmpty(rawTeacher.trailerMimeType) || null,
   };
 }
 

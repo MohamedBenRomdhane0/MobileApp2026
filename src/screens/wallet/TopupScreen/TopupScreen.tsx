@@ -37,6 +37,7 @@ import {
 } from "./TopupScreen.constants";
 import type { PaymentMethod, TopupStep } from "./TopupScreen.type";
 import type { TopupScreenProps } from "./TopupScreen.type";
+import { useRechargeWalletMutation } from "@redux/apis/parent/parentApi";
 
 /* ── Step indicator ────────────────────────────────────────────────── */
 function StepIndicator({ step }: { step: TopupStep }) {
@@ -104,6 +105,9 @@ export default function TopupScreen({ route, navigation }: TopupScreenProps) {
 
   const brand = getCardBrand(cardNumber);
 
+  // Recharge wallet mutation
+  const [rechargeWallet, { isLoading: isRecharging }] = useRechargeWalletMutation();
+
   /* ── Animated button press ──────────────────────────────────────── */
   const btnScale = useSharedValue(1);
   const btnPressStyle = useAnimatedStyle(() => ({
@@ -147,10 +151,33 @@ export default function TopupScreen({ route, navigation }: TopupScreenProps) {
     }
   }, [step, navigation]);
 
-  const handlePay = useCallback(() => {
+  const handlePay = useCallback(async () => {
     if (!selectedMethod) return;
-    // TODO: integrate payment SDK
-  }, [selectedMethod]);
+
+    try {
+      // Map payment method to API format
+      const paymentMethodMap: Record<PaymentMethod, string> = {
+        card: "online",
+        apple_pay: "apple_pay",
+        google_pay: "google_pay",
+      };
+
+      // Submit recharge request
+      const result = await rechargeWallet({
+        amount,
+        payment_method: paymentMethodMap[selectedMethod],
+        code: selectedMethod === "card" ? cardNumber.replace(/\s/g, "") : undefined,
+        reason: "Wallet recharge",
+      }).unwrap();
+
+      // Show success message
+      // TODO: Show success dialog or navigate to confirmation screen
+      navigation.goBack();
+    } catch (error) {
+      // TODO: Show error message
+      console.error("Recharge failed:", error);
+    }
+  }, [selectedMethod, amount, cardNumber, rechargeWallet, navigation]);
 
   /* ── Helpers ────────────────────────────────────────────────────── */
 
@@ -339,10 +366,12 @@ export default function TopupScreen({ route, navigation }: TopupScreenProps) {
 
       {/* ═══ Step 2a: Credit / Debit card form ══════════════════════ */}
       {step === "card_form" && (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1 }} key="card_form">
           <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
             style={{ flex: 1 }}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+            enabled={Platform.OS === "ios"}
           >
             {/* Live card preview */}
             <View style={topupStyles.liveCard}>
@@ -555,13 +584,14 @@ export default function TopupScreen({ route, navigation }: TopupScreenProps) {
                     onPress={handlePay}
                     onPressIn={onPressIn}
                     onPressOut={onPressOut}
+                    disabled={isRecharging}
                     style={topupStyles.payBtnInner}
                     accessibilityRole="button"
                     accessibilityLabel={t("wallet.add_card_and_pay")}
                   >
                     <Ionicons name="lock-closed" size={18} color="#FFFFFF" />
                     <Text style={topupStyles.payBtnText}>
-                      {t("wallet.add_card_and_pay")}
+                      {isRecharging ? t("common.loading") : t("wallet.add_card_and_pay")}
                     </Text>
                   </Pressable>
                 </LinearGradient>
@@ -604,13 +634,14 @@ export default function TopupScreen({ route, navigation }: TopupScreenProps) {
                   onPress={handlePay}
                   onPressIn={onPressIn}
                   onPressOut={onPressOut}
+                  disabled={isRecharging}
                   style={topupStyles.payBtnInner}
                   accessibilityRole="button"
                   accessibilityLabel={t("wallet.continue_apple_pay")}
                 >
                   <Ionicons name="logo-apple" size={20} color="#FFFFFF" />
                   <Text style={topupStyles.payBtnText}>
-                    {t("wallet.continue_apple_pay")}
+                    {isRecharging ? t("common.loading") : t("wallet.continue_apple_pay")}
                   </Text>
                 </Pressable>
               </LinearGradient>
@@ -652,13 +683,14 @@ export default function TopupScreen({ route, navigation }: TopupScreenProps) {
                   onPress={handlePay}
                   onPressIn={onPressIn}
                   onPressOut={onPressOut}
+                  disabled={isRecharging}
                   style={topupStyles.payBtnInner}
                   accessibilityRole="button"
                   accessibilityLabel={t("wallet.continue_google_pay")}
                 >
                   <Ionicons name="logo-google" size={20} color="#FFFFFF" />
                   <Text style={topupStyles.payBtnText}>
-                    {t("wallet.continue_google_pay")}
+                    {isRecharging ? t("common.loading") : t("wallet.continue_google_pay")}
                   </Text>
                 </Pressable>
               </LinearGradient>

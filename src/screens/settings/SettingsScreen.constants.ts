@@ -4,6 +4,11 @@ import type { SettingsOptionKey, SettingsOptionConfig } from "./SettingsScreen.t
 
 export const STORAGE_BASE_URL = String(ConfigEnv.MEDIA_BASE_URL ?? "");
 
+export const PLAN_CARD_IMAGES = {
+  cartaba: require("../../../assets/plans/gift-box-hd.png"),
+  vip: require("../../../assets/plans/crown-hd.png"),
+} as const;
+
 export const SETTINGS_OPTIONS: Record<SettingsOptionKey, SettingsOptionConfig> = {
   theme: {
     key: "theme",

@@ -13,6 +13,7 @@ export const home = {
   subscribe_title: "Abonne-toi au Pack Premium",
   subscribe_subtitle: "Accès illimité à toutes les matières",
   subscribe_cta: "S’abonner",
+  plans_title: "Abonnements",
   school_books_title: "Livres Scolaires",
   live_meetings_title: "Cours en Direct",
   join: "Rejoindre",
@@ -22,7 +23,7 @@ export const home = {
   live_meta_mock: "M.Tarek ",
   available_teachers: "Enseignants disponibles",
   subjects_title: "Matières",
-  continue_title: "Continuer l’apprentissage",
+  continue_title: "Continue",
   continue_cta: "Continuer",
   progress_label: "progression",
   no_live_now: "Aucun cours en direct pour le moment",
@@ -44,6 +45,7 @@ export const home = {
   summary_live_now: "En direct",
   summary_participants: "{{count}} participants",
   summary_join: "Rejoindre",
+  summary_reserve: "Réserver",
   activities_title: "Activités",
   activities_subtitle: "Ce mois",
   notif_live_now: "En direct maintenant",
@@ -51,6 +53,8 @@ export const home = {
   notif_meeting: "{{subject}} — {{time}}",
   notif_join: "Rejoindre",
   notif_just_now: "À l'instant",
+  record_meetings: "Enregistrements",
+  record_timeline: "Chronologie",
   emoji: {
     love: {
       title: "Ton amour pour l'apprentissage inspire ! 💖",

@@ -21,7 +21,7 @@ import { getLiquidBarReserved } from "@utils/helpers/liquidBar.helpers";
 
 export type SelectionBubble = {
   id: string;
-  kind: "teacher" | "book";
+  kind: "teacher" | "book" | "material";
   label: string;
   source: ImageSourcePropType | null;
   fallback: string;

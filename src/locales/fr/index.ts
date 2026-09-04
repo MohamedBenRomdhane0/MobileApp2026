@@ -19,6 +19,11 @@ import { learning } from './learning'
 import { wallet } from './wallet'
 import { scan } from './scan'
 import { customize } from './customize'
+import { book } from './book'
+import plan from './plan'
+import plan_ui from './plan_ui'
+import pro_pricing from './pro_pricing'
+import unlock from './unlock'
 
 const fr = {
   topbar,
@@ -42,5 +47,10 @@ const fr = {
   wallet,
   scan,
   customize,
+  book,
+  plan,
+  plan_ui,
+  pro_pricing,
+  unlock,
 }
 export default fr

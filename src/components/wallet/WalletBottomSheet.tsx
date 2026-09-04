@@ -36,6 +36,7 @@ import {
   WALLET_SPRING,
 } from "./wallet.constants";
 import { walletStyles } from "./wallet.styles";
+import { useGetWalletQuery } from "@redux/apis/parent/parentApi";
 
 type WalletBottomSheetProps = {
   visible: boolean;
@@ -247,6 +248,11 @@ export default function WalletBottomSheet({
 
   const [amount, setAmount] = useState(100);
 
+  // Fetch wallet data from API
+  const { data: wallet, isLoading: walletLoading } = useGetWalletQuery(undefined, {
+    skip: !visible, // Only fetch when sheet is visible
+  });
+
   const snapPoints = useMemo(() => ["88%", "100%"], []);
 
   const selectAmount = useCallback((next: number) => {
@@ -264,6 +270,7 @@ export default function WalletBottomSheet({
   if (!visible) return null;
 
   const row = isRTL ? ("row-reverse" as const) : ("row" as const);
+  const balance = wallet?.balance ? parseFloat(wallet.balance) : 0;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -285,6 +292,19 @@ export default function WalletBottomSheet({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {/* ─── Wallet Balance Display ─── */}
+          <View style={walletStyles.balanceSection}>
+            <Text style={walletStyles.balanceLabel}>
+              {t("wallet.current_balance")}
+            </Text>
+            <View style={walletStyles.balanceRow}>
+              <Text style={walletStyles.balanceCurrency}>$</Text>
+              <Text style={walletStyles.balanceAmount}>
+                {walletLoading ? "..." : balance.toFixed(2)}
+              </Text>
+            </View>
+          </View>
+
           {/* ─── Set Amount section ─── */}
           <View style={[walletStyles.setAmountHeader, { flexDirection: row }]}>
             <View>

@@ -13,6 +13,7 @@ export const home = {
   subscribe_title: "Subscribe to Premium",
   subscribe_subtitle: "Unlimited access to all subjects",
   subscribe_cta: "Subscribe",
+  plans_title: "Plans",
   school_books_title: "School Books",
   live_meetings_title: "Live Classes",
   join: "Join",
@@ -44,6 +45,7 @@ export const home = {
   summary_live_now: "Live now",
   summary_participants: "{{count}} participants",
   summary_join: "Join",
+  summary_reserve: "Reserve",
   activities_title: "Activities",
   activities_subtitle: "This Month",
   notif_live_now: "Live now",
@@ -51,6 +53,8 @@ export const home = {
   notif_meeting: "{{subject}} — {{time}}",
   notif_join: "Join",
   notif_just_now: "Just now",
+  record_meetings: "Recordings",
+  record_timeline: "Timeline",
   emoji: {
     love: {
       title: "Your love for learning is inspiring! 💖",

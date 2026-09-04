@@ -107,8 +107,18 @@ export default function CustomizeAvatarScreen() {
 
   return (
     <View style={s.screen}>
-      {/* Header */}
-      <View style={s.header}>
+      {/* Decorative bubbles */}
+      <View style={s.headerGlowA} pointerEvents="none" />
+      <View style={s.headerGlowB} pointerEvents="none" />
+      <View style={s.headerGlowC} pointerEvents="none" />
+
+      {/* Header with gradient */}
+      <LinearGradient
+        colors={["#142E52", "#1A3A64", "#162F50"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[s.header, { borderBottomLeftRadius: 30, borderBottomRightRadius: 30, paddingBottom: 16, overflow: "hidden" }]}
+      >
         <TouchableOpacity
           style={s.headerBtn}
           onPress={() => navigation.goBack()}
@@ -128,7 +138,7 @@ export default function CustomizeAvatarScreen() {
         >
           <Ionicons name="checkmark" size={20} color="#0B1B33" />
         </TouchableOpacity>
-      </View>
+      </LinearGradient>
 
       {/* Name */}
       <View style={s.nameRow}>
@@ -161,7 +171,7 @@ export default function CustomizeAvatarScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={{ paddingBottom: 16 }}
       >
         {/* Hero preview */}
         <View style={s.heroPreview}>

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppState, type AppStateStatus } from "react-native";
-import type { RefObject } from "react";
-import type { AVPlaybackStatus, Video } from "expo-av";
+import type { VideoPlayer } from "expo-video";
 
 import {
   useEndVideoSessionMutation,
@@ -9,17 +8,26 @@ import {
   useUpdateVideoSessionProgressMutation,
 } from "@redux/apis/videos/videoSessionApi";
 
+type PlaybackStatus = {
+  isLoaded: boolean;
+  isPlaying: boolean;
+  positionMillis: number;
+  durationMillis: number;
+  isBuffering: boolean;
+  didJustFinish: boolean;
+};
+
 type UseVideoSessionTrackerArgs = {
   videoId: number;
   videoDurationMillis: number;
-  playerRef: RefObject<Video | null>;
+  playerRef: React.RefObject<VideoPlayer | null>;
   enabled?: boolean;
   heartbeatMs?: number;
 };
 
 type UseVideoSessionTrackerResult = {
-  onPlaybackStatusUpdate: (status: AVPlaybackStatus) => void;
-  onVideoLoad: (status: AVPlaybackStatus) => void;
+  onPlaybackStatusUpdate: (status: PlaybackStatus) => void;
+  onVideoLoad: (status: PlaybackStatus) => void;
   flushProgress: () => Promise<void>;
   endTrackingSession: () => Promise<void>;
   isSessionLoading: boolean;
@@ -93,9 +101,7 @@ export function useVideoSessionTracker({
     resumeAppliedRef.current = true;
 
     try {
-      await playerRef.current.setPositionAsync(
-        Math.round(pendingResumeSecRef.current * 1000)
-      );
+      playerRef.current.currentTime = pendingResumeSecRef.current;
     } catch {
       resumeAppliedRef.current = false;
     }
@@ -237,7 +243,7 @@ export function useVideoSessionTracker({
 
         if (!nextCanWatch) {
           try {
-            await playerRef.current?.pauseAsync();
+            playerRef.current?.pause();
           } catch {
             // noop
           }
@@ -328,7 +334,7 @@ export function useVideoSessionTracker({
   }, [trialEnabled, trialRemainingSeconds]);
 
   const onVideoLoad = useCallback(
-    (status: AVPlaybackStatus) => {
+    (status: PlaybackStatus) => {
       if (!status.isLoaded) {
         return;
       }
@@ -340,7 +346,7 @@ export function useVideoSessionTracker({
   );
 
   const onPlaybackStatusUpdate = useCallback(
-    (status: AVPlaybackStatus) => {
+    (status: PlaybackStatus) => {
       if (!status.isLoaded) {
         return;
       }

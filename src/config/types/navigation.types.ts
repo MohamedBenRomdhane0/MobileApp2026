@@ -32,10 +32,22 @@ export type RootStackParamList = {
   [PATHS.APP.ADD_KIDS]: undefined;
 [PATHS.APP.TEACHER_PROFILE]: {
   teacherId: number;
-};  [PATHS.APP.PARENT_DASHBOARD]: undefined;
+};
+[PATHS.APP.ALL_TEACHERS]: undefined;
+[PATHS.APP.PARENT_DASHBOARD]: undefined;
   [PATHS.APP.COURSE_CHAPTERS]: undefined;
   [PATHS.APP.FAVORITE_COURSES]: undefined;
   [PATHS.APP.PLANS]: undefined;
+  [PATHS.APP.PLANS_CHECKOUT]: {
+    planId: number;
+    planTitle: string;
+    periodLabel: string;
+    price: number;
+    currency?: string;
+  };
+  [PATHS.APP.PLAN_UI]: undefined;
+  [PATHS.APP.PLAN_PRO_PRICING]: undefined;
+  [PATHS.APP.PLAN_UNLOCK]: { packId?: "pack1" | "pack2" } | undefined;
   [PATHS.APP.DETAIL_PLAN_MEETING]: undefined;
 
   [PATHS.APP.START_LEARNING]: undefined;
@@ -71,10 +83,24 @@ export type RootStackParamList = {
     materialName?: string;
   };
 
+  [PATHS.APP.AUDIO]: {
+    bookId: number;
+    iconId: number;
+    materialName?: string;
+  };
+
+  [PATHS.APP.DOCS]: {
+    bookId: number;
+    iconId: number;
+    materialName?: string;
+  };
+
   [PATHS.APP.NOTIFICATIONS]: undefined;
-  [PATHS.APP.MATERIAL_HUB]: undefined;
+  [PATHS.APP.MATERIAL_HUB]: { levelId?: number; materialId?: number; materialName?: string } | undefined;
   [PATHS.APP.CUSTOMIZE_AVATAR]: undefined;
   [PATHS.APP.TOPUP]: { amount: number };
+  [PATHS.APP.RECORD_MEETING_SILVER]: undefined;
+  [PATHS.APP.RECORD_TIMELINE]: undefined;
 };
 
 export type TabsParamList = {

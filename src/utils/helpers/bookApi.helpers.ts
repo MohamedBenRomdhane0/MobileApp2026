@@ -8,6 +8,7 @@ type NormalizedGetBooksQueryArgs = {
   page: number;
   perPage: number;
   keyword: string;
+  childId: number;
   materialId: number;
   levelId: number;
   levelMaterialId: number;
@@ -72,6 +73,7 @@ export function normalizeGetBooksQueryArgs(
     page: Number(args?.page ?? 0) || 0,
     perPage: Number(args?.perPage ?? 0) || 0,
     keyword: String(args?.keyword ?? "").trim(),
+    childId: toValidId(args?.childId),
     materialId: toValidId(args?.materialId),
     levelId: toValidId(args?.levelId),
     levelMaterialId: toValidId(args?.levelMaterialId),
@@ -104,6 +106,7 @@ export function buildGetBooksUrl(args?: GetBooksQueryArgs | void): string {
     perPage: args?.perPage,
     keyword: trimOrUndefined(args?.keyword),
 
+    child_id: toValidId(args?.childId) || undefined,
     materialId: toValidId(args?.materialId) || undefined,
     levelId: toValidId(args?.levelId) || undefined,
     levelMaterialId: toValidId(args?.levelMaterialId) || undefined,
@@ -113,5 +116,5 @@ export function buildGetBooksUrl(args?: GetBooksQueryArgs | void): string {
     direction: args?.direction,
   };
 
-  return injectPaginationParamsToUrl("child/books", queryParams);
+  return injectPaginationParamsToUrl("parent/books", queryParams as any);
 }

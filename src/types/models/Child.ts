@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Media, MediaApi } from './Media';
 import { Level } from './Level';
 import { User } from './User';

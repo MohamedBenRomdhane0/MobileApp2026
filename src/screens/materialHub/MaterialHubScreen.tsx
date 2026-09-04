@@ -6,14 +6,20 @@ import {
   ScrollView,
   StatusBar,
   ActivityIndicator,
-  FlatList,
   Image,
-  ImageBackground,
-  RefreshControl,
+  Pressable,
   I18nManager,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  withSpring,
+  Easing,
+} from "react-native-reanimated";
 import { useNavigation, useRoute, type RouteProp } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -29,26 +35,31 @@ import { useSwitchToChildMutation } from "@redux/apis/child/childApi";
 import { useGetBooksQuery } from "@redux/apis/books/bookApi";
 import type { BookListItemUI } from "@redux/apis/books/bookApi.type";
 
-import { useGetCoursesQuery } from "@redux/apis/courses/coursesApi";
-import type { CourseListItemUI } from "@redux/apis/courses/coursesApi.type";
+import { useGetMeetingsQuery } from "@redux/apis/meetings/meetingApi";
+import type { MeetingListItemUI } from "@redux/apis/meetings/meetingApi.type";
 
 import type { MaterialHubTabKey } from "./MaterialHubScreen.types";
-import { HUB_MOCK, HUB_UI } from "./MaterialHubScreen.constants";
+import { HUB_UI } from "./MaterialHubScreen.constants";
 import { createMaterialHubStyles } from "./MaterialHubScreen.styles";
 
 import {
-  courseCoverSource,
-  getLastRowStartIndex,
   normalizeMaterialKey,
   progressToPct,
   toValidId,
-  chevronIconName,
 } from "@utils/helpers/MaterialHub.helpers";
+
+import {
+  buildBooksFileParams,
+  getAccent,
+  getGradient,
+  resolveMaterialKey,
+} from "@utils/helpers/bookScreen.helpers";
+import type { BookLearningResume } from "@utils/helpers/bookLearningResume.helpers";
+import { loadBookResume } from "@utils/helpers/bookLearningResume.helpers";
 
 type MaterialHubRouteProp = RouteProp<RootStackParamList, typeof PATHS.APP.MATERIAL_HUB>;
 
-const COLUMNS = 2;
-const TAB_KEYS: MaterialHubTabKey[] = ["book", "lessons", "live", "exercises"];
+const TAB_KEYS: MaterialHubTabKey[] = ["book", "live"];
 
 export default function MaterialHubScreen() {
   const navigation = useNavigation<any>();
@@ -59,6 +70,46 @@ export default function MaterialHubScreen() {
   const { colors, mode } = useAppTheme();
   const isDark = mode === "dark";
   const styles = useMemo(() => createMaterialHubStyles(colors, isDark), [colors, isDark]);
+
+  const COVER_SWAY_MS = 2600;
+  const BookCover3D = useCallback(
+    ({ children, onPress }: { children: React.ReactNode; onPress?: () => void }) => {
+      const sway = useSharedValue(0);
+      const pressed = useSharedValue(0);
+
+      useEffect(() => {
+        sway.value = withRepeat(
+          withTiming(1, { duration: COVER_SWAY_MS, easing: Easing.inOut(Easing.quad) }),
+          -1,
+          true
+        );
+      }, [sway]);
+
+      const animatedStyle = useAnimatedStyle(() => ({
+        transform: [
+          { perspective: 700 },
+          { translateY: sway.value * -7 },
+          { rotateY: `${sway.value * 10 - 5}deg` },
+          { rotateX: `${-sway.value * 8 + 4}deg` },
+          { scale: 1 + pressed.value * 0.05 },
+        ],
+      }));
+
+      return (
+        <Pressable
+          onPress={onPress}
+          onPressIn={() => { pressed.value = withSpring(1, { damping: 15, stiffness: 200 }); }}
+          onPressOut={() => { pressed.value = withSpring(0, { damping: 15, stiffness: 200 }); }}
+          style={styles.coverStage}
+        >
+          <Animated.View style={[styles.coverStage, animatedStyle]}>
+            {children}
+          </Animated.View>
+        </Pressable>
+      );
+    },
+    [styles]
+  );
 
   const levelId = toValidId(route.params?.levelId);
   const materialId = toValidId(route.params?.materialId);
@@ -105,6 +156,8 @@ export default function MaterialHubScreen() {
 
   const isChildReady = canSwitch && !!childAccessToken;
 
+  const [resumeMap, setResumeMap] = useState<Record<number, BookLearningResume>>({});
+
   const canFetchBooks = isChildReady && materialId > 0;
   const {
     data: booksData,
@@ -112,46 +165,62 @@ export default function MaterialHubScreen() {
     isFetching: booksFetching,
     isError: booksError,
     refetch: refetchBooks,
-  } = useGetBooksQuery({ page: 1, perPage: 50, materialId }, { skip: !canFetchBooks });
+  } = useGetBooksQuery({ page: 1, perPage: 50, materialId, childId: activeChildId ?? undefined }, { skip: !canFetchBooks });
 
   const books: BookListItemUI[] = useMemo(
     () => (Array.isArray((booksData as any)?.data) ? ((booksData as any).data as BookListItemUI[]) : []),
     [booksData]
   );
 
-  const canFetchCourses = isChildReady && materialId > 0 && activeTab === "lessons";
+  const loadResumeMap = useCallback(async () => {
+    if (!books.length) return;
+    const entries: Array<[number, BookLearningResume]> = [];
+    for (const b of books) {
+      const id = Number(b?.id ?? 0);
+      if (id <= 0) continue;
+      try {
+        const r = await loadBookResume(id);
+        if (r) entries.push([id, r]);
+      } catch {}
+    }
+    if (entries.length) setResumeMap((prev) => ({ ...prev, ...Object.fromEntries(entries) }));
+  }, [books]);
+
+  useEffect(() => {
+    void loadResumeMap();
+  }, [loadResumeMap]);
+
+  const canFetchMeetings = isChildReady && materialId > 0 && activeTab === "live";
   const {
-    data: coursesData,
-    isLoading: coursesLoading,
-    isFetching: coursesFetching,
-    isError: coursesError,
-    refetch: refetchCourses,
-  } = useGetCoursesQuery({ page: 1, perPage: 50, levelId, materialId }, { skip: !canFetchCourses });
+    data: meetingsData,
+    isLoading: meetingsLoading,
+    isFetching: meetingsFetching,
+    isError: meetingsError,
+    refetch: refetchMeetings,
+  } = useGetMeetingsQuery(
+    { childId: activeChildId ?? undefined, page: 1, perPage: 50, materialId },
+    { skip: !canFetchMeetings }
+  );
 
-  const courses: CourseListItemUI[] = useMemo(() => {
-    const items = (coursesData as any)?.items;
-    return Array.isArray(items) ? (items as CourseListItemUI[]) : [];
-  }, [coursesData]);
-
-  const lastBooksRowStartIndex = useMemo(() => getLastRowStartIndex(books.length, COLUMNS), [books.length]);
-  const lastCoursesRowStartIndex = useMemo(() => getLastRowStartIndex(courses.length, COLUMNS), [courses.length]);
+  const meetings: MeetingListItemUI[] = useMemo(() => {
+    const items = (meetingsData as any)?.data?.items ?? (meetingsData as any)?.items;
+    return Array.isArray(items) ? (items as MeetingListItemUI[]) : [];
+  }, [meetingsData]);
 
   const goBack = useCallback(() => navigation.goBack(), [navigation]);
 
   const openBookFile = useCallback(
-    (bookId: number) => {
-      const id = toValidId(bookId);
-      if (!id) return;
-      navigation.navigate(PATHS.APP.BOOKS_FILE, { bookId: id });
+    (book: BookListItemUI) => {
+      const params = buildBooksFileParams(book, resumeMap);
+      if (!params) return;
+      navigation.navigate(PATHS.APP.BOOKS_FILE, params);
     },
-    [navigation]
+    [navigation, resumeMap]
   );
 
-  const openCourse = useCallback(
-    (courseId: number) => {
-      const id = toValidId(courseId);
-      if (!id) return;
-      navigation.navigate(PATHS.APP.COURSE_CHAPTERS, { courseId: id });
+  const openMeeting = useCallback(
+    (meetingId: number) => {
+      navigation.navigate(PATHS.APP.MEETING_DETAILS, { meetingId });
     },
     [navigation]
   );
@@ -181,119 +250,148 @@ export default function MaterialHubScreen() {
   );
 
   const renderBook = useCallback(
-    ({ item, index }: { item: BookListItemUI; index: number }) => {
+    ({ item }: { item: BookListItemUI }) => {
       const title = String(item?.title ?? "").trim() || t("common.unnamed");
-      const count = Number((item as any)?.pagesTotal ?? 0);
+      const pagesCount = Math.max(0, Number((item as any)?.pagesTotal ?? 0));
+      const videosCount = Math.max(0, Number((item as any)?.videosCount ?? 0));
       const pct = progressToPct(item);
+      const materialKey = resolveMaterialKey(item?.materialName);
+      const accent = getAccent(materialKey, (item as any)?.materialColor);
+      const green = "#22C55E";
 
-      const isInLastIncompleteRow = lastBooksRowStartIndex >= 0 && index >= lastBooksRowStartIndex;
+      const bookId = Number(item?.id ?? 0);
+      const resume = bookId > 0 ? resumeMap[bookId] : null;
+      const hasResume = Boolean(
+        resume && (
+          (typeof resume.pageNumber === "number" && resume.pageNumber > 0) ||
+          (typeof resume.iconId === "number" && resume.iconId > 0) ||
+          (typeof resume.videoId === "number" && resume.videoId > 0)
+        )
+      );
+
+      const lessonTitle = String(resume?.lessonTitle ?? "").trim();
+      const resumeIsBookName =
+        lessonTitle.length > 0 &&
+        (lessonTitle === title ||
+          lessonTitle === String(item?.title ?? "").trim() ||
+          lessonTitle === String(item?.materialName ?? "").trim());
+      const showResumeTitle = lessonTitle.length > 0 && !resumeIsBookName;
+
+      const gradient = getGradient(materialKey, (item as any)?.materialColor);
 
       return (
-        <View style={[styles.gridCardWrap, isInLastIncompleteRow ? { marginLeft: "auto" } : null]}>
-          <TouchableOpacity activeOpacity={0.92} style={styles.gridCard} onPress={() => openBookFile(item.id)}>
-            {item?.coverUrl ? (
-              <ImageBackground source={{ uri: item.coverUrl }} style={styles.gridCoverBg} resizeMode="cover">
-                <View style={styles.gridCoverOverlay} />
-                <View style={styles.gridThumbWrap}>
-                  <Image source={{ uri: item.coverUrl }} style={styles.gridThumb} resizeMode="cover" />
-                </View>
-              </ImageBackground>
-            ) : (
-              <View style={styles.gridCoverEmpty}>
-                <Ionicons name="book-outline" size={28} color={colors.primary} />
-                <Text style={styles.gridCoverEmptyText}>{t("book.no_cover")}</Text>
-              </View>
-            )}
+        <View style={styles.hBookCardShadow}>
+          <LinearGradient
+            colors={gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.hBookCard}
+          >
+            <View style={styles.hBookCoverWrap}>
+              <View style={styles.hBookCoverPad}>
+                <BookCover3D onPress={() => openBookFile(item)}>
+                  <LinearGradient
+                    colors={gradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.hBookCoverCard}
+                  >
+                    {item?.coverUrl ? (
+                      <Image source={{ uri: item.coverUrl }} style={styles.hBookCoverImg} resizeMode="cover" />
+                    ) : (
+                      <View style={styles.hBookCoverFallback}>
+                        <Ionicons name="book-outline" size={30} color="rgba(255,255,255,0.95)" />
+                      </View>
+                    )}
 
-            <View style={styles.gridBody}>
-              <Text numberOfLines={2} style={styles.gridTitle}>
-                {title}
-              </Text>
+                    <LinearGradient
+                      colors={["rgba(255,255,255,0.30)", "rgba(255,255,255,0)"]}
+                      start={{ x: 0.5, y: 0 }}
+                      end={{ x: 0.5, y: 1 }}
+                      style={styles.hBookCoverGloss}
+                      pointerEvents="none"
+                    />
+                  </LinearGradient>
+                </BookCover3D>
 
-              <TouchableOpacity activeOpacity={0.9} style={styles.gridPill} onPress={() => openBookFile(item.id)}>
-                <Ionicons name="play-circle" size={16} color={colors.header} />
-                <Text style={styles.gridPillText}>{t("book.pages_counts", { count })}</Text>
-              </TouchableOpacity>
-
-              <View style={styles.gridProgressRow}>
-                <Text style={styles.gridPct}>{`${pct}%`}</Text>
-                <View style={styles.gridTrack}>
-                  <View style={[styles.gridFill, { width: `${pct}%`, backgroundColor: colors.primary }]} />
-                </View>
-              </View>
-
-              <View style={styles.gridCtaRow}>
-                <Ionicons name={chevronIconName()} size={18} color={colors.muted} />
+                {videosCount > 0 ? (
+                  <View style={styles.hBookBadge}>
+                    <Text style={styles.hBookBadgeText}>{videosCount}</Text>
+                    <Ionicons name="play" size={10} color="#FFFFFF" />
+                  </View>
+                ) : null}
               </View>
             </View>
-          </TouchableOpacity>
-        </View>
-      );
-    },
-    [colors.header, colors.muted, colors.primary, lastBooksRowStartIndex, openBookFile, styles, t]
-  );
 
-  const renderCourse = useCallback(
-    ({ item, index }: { item: CourseListItemUI; index: number }) => {
-      const title = String(item?.title ?? "").trim() || t("common.unnamed");
-      const teacherName = (item as any)?.teacher?.fullName ? String((item as any).teacher.fullName) : "";
-      const teacherAvatarUrl = String((item as any)?.teacher?.avatarUrl ?? "").trim() || null;
-
-      const coverSrc = courseCoverSource(item);
-      const isInLastIncompleteRow = lastCoursesRowStartIndex >= 0 && index >= lastCoursesRowStartIndex;
-
-      return (
-        <View style={[styles.gridCardWrap, isInLastIncompleteRow ? { marginLeft: "auto" } : null]}>
-          <TouchableOpacity activeOpacity={0.92} style={styles.gridCard} onPress={() => openCourse(item.id)}>
-            <ImageBackground source={coverSrc} style={styles.gridCoverBg} resizeMode="cover">
-              <View style={styles.gridCoverOverlay} />
-              <View style={styles.gridThumbWrap}>
-                <Image source={coverSrc} style={styles.gridThumb} resizeMode="cover" />
+            <View style={styles.hBookInfo}>
+              <View style={styles.hBookTitleBlock}>
+                {hasResume ? (
+                  <View style={styles.hResumeHeaderRow}>
+                    <Text style={styles.hResumeHeaderText}>{t("common.progress")}</Text>
+                    <Ionicons name="location-sharp" size={12} color={green} />
+                  </View>
+                ) : null}
+                <Text numberOfLines={2} style={styles.hBookTitleText}>{title}</Text>
               </View>
-            </ImageBackground>
 
-            <View style={styles.gridBody}>
-              <Text numberOfLines={2} style={styles.gridTitle}>
-                {title}
-              </Text>
+              <View style={styles.hBookMiddle}>
+                {hasResume ? (
+                  <>
+                    {showResumeTitle ? (
+                      <Text numberOfLines={1} style={styles.hResumeTitle}>{lessonTitle}</Text>
+                    ) : null}
+                    {resume?.lastWatchedTime ? (
+                      <View style={styles.hResumeTimeRow}>
+                        <Ionicons name="time-outline" size={11} color="rgba(255,255,255,0.58)" />
+                        <Text numberOfLines={1} style={styles.hResumeTimeText}>{resume.lastWatchedTime}</Text>
+                      </View>
+                    ) : null}
+                    {pct > 0 ? (
+                      <View style={styles.hProgressRow}>
+                        <View style={styles.hProgressTrack}>
+                          <View style={[styles.hProgressFill, { width: `${pct}%`, backgroundColor: green }]} />
+                        </View>
+                        <Text style={styles.hProgressPct}>{Math.round(pct)}%</Text>
+                      </View>
+                    ) : null}
+                  </>
+                ) : pct > 0 ? (
+                  <>
+                    <View style={styles.hResumeRow}>
+                      <Text style={styles.hResumeLabel}>{t("common.progress")}</Text>
+                      <Ionicons name="location-sharp" size={12} color={green} />
+                    </View>
+                    <View style={styles.hProgressRow}>
+                      <View style={styles.hProgressTrack}>
+                        <View style={[styles.hProgressFill, { width: `${pct}%`, backgroundColor: green }]} />
+                      </View>
+                      <Text style={styles.hProgressPct}>{Math.round(pct)}%</Text>
+                    </View>
+                  </>
+                ) : (
+                  <View style={styles.hPageChip}>
+                    <Ionicons name="document-text-outline" size={13} color="rgba(255,255,255,0.84)" />
+                    <Text style={styles.hPageChipText}>{t("book.pages_counts", { count: pagesCount })}</Text>
+                  </View>
+                )}
+              </View>
 
-              {teacherName ? (
-                <View style={styles.teacherRow}>
-                  {teacherAvatarUrl ? (
-                    <Image source={{ uri: teacherAvatarUrl }} style={styles.teacherAvatar} />
-                  ) : (
-                    <Ionicons name="person-circle-outline" size={22} color={colors.muted} />
-                  )}
-                  <Text numberOfLines={1} style={styles.teacherName}>
-                    {teacherName}
-                  </Text>
-                </View>
-              ) : null}
-
-              <TouchableOpacity activeOpacity={0.95} onPress={() => openCourse(item.id)} style={styles.courseCtaWrap}>
-                <LinearGradient
-                  colors={[colors.primary, colors.header]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.courseCta}
+              <View style={styles.hBookFooter}>
+                <TouchableOpacity
+                  activeOpacity={0.88}
+                  style={[styles.hOpenButton, { backgroundColor: hasResume ? green : accent }]}
+                  onPress={() => openBookFile(item)}
                 >
-                  <Ionicons name="play-circle" size={18} color="#FFFFFF" />
-                  <Text style={styles.courseCtaText}>{t("course.start_now")}</Text>
-                  <Ionicons
-                    name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"}
-                    size={16}
-                    color="rgba(255,255,255,0.92)"
-                  />
-                </LinearGradient>
-              </TouchableOpacity>
-
-              <View style={styles.gridCtaRow} />
+                  <Text style={styles.hOpenButtonText}>{t("common.open")}</Text>
+                  <Ionicons name="play" size={13} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
             </View>
-          </TouchableOpacity>
+          </LinearGradient>
         </View>
       );
     },
-    [colors.header, colors.muted, colors.primary, lastCoursesRowStartIndex, openCourse, styles, t]
+    [isDark, openBookFile, resumeMap, styles, t]
   );
 
   const showSwitchLoading = needsChildToken && canSwitch && switchState.isLoading;
@@ -345,10 +443,8 @@ export default function MaterialHubScreen() {
               const fg = isActive ? "#FFFFFF" : colors.text;
 
               const iconMap: Record<MaterialHubTabKey, any> = {
-                book: "albums",
-                lessons: "film",
+                book: "book",
                 live: "radio",
-                exercises: "pencil",
               };
 
               return (
@@ -375,131 +471,180 @@ export default function MaterialHubScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {activeTab === "book" ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t(HUB_MOCK.book.titleKey)}</Text>
-            <Text style={styles.sectionSub}>{t(HUB_MOCK.book.subtitleKey)}</Text>
+            <Text style={styles.sectionTitle}>{t(HUB_UI.bookTitle)}</Text>
+            <Text style={styles.sectionSub}>{t(HUB_UI.bookSubtitle)}</Text>
 
             {showSwitchLoading ? (
-              <View style={styles.centerState}>
-                <ActivityIndicator />
-                <Text style={styles.centerStateText}>{t("common.loading")}</Text>
+              <View style={styles.skeletonGrid}>
+                {[1, 2, 3, 4].map((i) => (
+                  <View key={String(i)} style={styles.skeletonCard}>
+                    <View style={styles.skeletonCover} />
+                    <View style={styles.skeletonBody}>
+                      <View style={styles.skeletonLineLong} />
+                      <View style={styles.skeletonLineShort} />
+                      <View style={styles.skeletonLineMedium} />
+                    </View>
+                  </View>
+                ))}
               </View>
             ) : !canSwitch ? (
-              <View style={styles.centerState}>
-                <Ionicons name="alert-circle-outline" size={26} color={colors.primary} />
-                <Text style={styles.centerStateText}>{t("book.no_active_child")}</Text>
+              <View style={styles.emptyStateBox}>
+                <View style={styles.emptyStateIconWrap}>
+                  <Ionicons name="person-outline" size={32} color={colors.primary} />
+                </View>
+                <Text style={styles.emptyStateTitle}>{t("book.no_active_child")}</Text>
+                <Text style={styles.emptyStateSub}>{t("book.no_active_child_sub")}</Text>
               </View>
             ) : !canFetchBooks ? (
-              <View style={styles.centerState}>
-                <Ionicons name="alert-circle-outline" size={26} color={colors.primary} />
-                <Text style={styles.centerStateText}>{t("common.missing_params")}</Text>
+              <View style={styles.emptyStateBox}>
+                <View style={styles.emptyStateIconWrap}>
+                  <Ionicons name="alert-circle-outline" size={32} color={colors.primary} />
+                </View>
+                <Text style={styles.emptyStateTitle}>{t("common.missing_params")}</Text>
               </View>
             ) : booksLoading && books.length === 0 ? (
-              <View style={styles.centerState}>
-                <ActivityIndicator />
-                <Text style={styles.centerStateText}>{t("common.loading")}</Text>
+              <View style={styles.skeletonGrid}>
+                {[1, 2, 3, 4].map((i) => (
+                  <View key={String(i)} style={styles.skeletonCard}>
+                    <View style={styles.skeletonCover} />
+                    <View style={styles.skeletonBody}>
+                      <View style={styles.skeletonLineLong} />
+                      <View style={styles.skeletonLineShort} />
+                      <View style={styles.skeletonLineMedium} />
+                    </View>
+                  </View>
+                ))}
               </View>
             ) : booksError ? (
               <TouchableOpacity activeOpacity={0.9} onPress={refetchBooks} style={styles.retryBox}>
-                <Ionicons name="refresh" size={18} color={colors.primary} />
+                <View style={styles.retryIconWrap}>
+                  <Ionicons name="refresh" size={22} color={colors.primary} />
+                </View>
+                <Text style={styles.retryTitle}>{t("common.error")}</Text>
                 <Text style={styles.retryText}>{t("common.tap_to_retry")}</Text>
               </TouchableOpacity>
             ) : (
-              <FlatList
-                data={books}
-                keyExtractor={(it) => String(it.id)}
-                renderItem={renderBook}
-                numColumns={2}
-                scrollEnabled={false}
-                showsVerticalScrollIndicator={false}
-                columnWrapperStyle={styles.gridColWrapper}
-                contentContainerStyle={styles.gridListContent}
-                refreshControl={<RefreshControl refreshing={booksFetching} onRefresh={refetchBooks} />}
-                ListEmptyComponent={
-                  <View style={styles.centerState}>
-                    <Ionicons name="library-outline" size={26} color={colors.primary} />
-                    <Text style={styles.centerStateText}>{t("book.empty_title")}</Text>
-                    <Text style={styles.centerStateSub}>{t("book.empty_subtitle")}</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.bookHList}
+              >
+                {books.map((book) => (
+                  <View key={String(book.id)} style={styles.bookHItem}>
+                    {renderBook({ item: book })}
                   </View>
-                }
-              />
-            )}
-          </View>
-        ) : activeTab === "lessons" ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t("course.title")}</Text>
-            <Text style={styles.sectionSub}>{t("course.by_material_sub")}</Text>
-
-            {showSwitchLoading ? (
-              <View style={styles.centerState}>
-                <ActivityIndicator />
-                <Text style={styles.centerStateText}>{t("common.loading")}</Text>
-              </View>
-            ) : !canSwitch ? (
-              <View style={styles.centerState}>
-                <Ionicons name="alert-circle-outline" size={26} color={colors.primary} />
-                <Text style={styles.centerStateText}>{t("book.no_active_child")}</Text>
-              </View>
-            ) : !canFetchCourses ? (
-              <View style={styles.centerState}>
-                <Ionicons name="alert-circle-outline" size={26} color={colors.primary} />
-                <Text style={styles.centerStateText}>{t("common.missing_params")}</Text>
-              </View>
-            ) : coursesLoading && courses.length === 0 ? (
-              <View style={styles.centerState}>
-                <ActivityIndicator />
-                <Text style={styles.centerStateText}>{t("common.loading")}</Text>
-              </View>
-            ) : coursesError ? (
-              <TouchableOpacity activeOpacity={0.9} onPress={refetchCourses} style={styles.retryBox}>
-                <Ionicons name="refresh" size={18} color={colors.primary} />
-                <Text style={styles.retryText}>{t("common.tap_to_retry")}</Text>
-              </TouchableOpacity>
-            ) : (
-              <FlatList
-                data={courses}
-                keyExtractor={(it) => String(it.id)}
-                renderItem={renderCourse}
-                numColumns={2}
-                scrollEnabled={false}
-                showsVerticalScrollIndicator={false}
-                columnWrapperStyle={styles.gridColWrapper}
-                contentContainerStyle={styles.gridListContent}
-                refreshControl={<RefreshControl refreshing={coursesFetching} onRefresh={refetchCourses} />}
-                ListEmptyComponent={
-                  <View style={styles.centerState}>
-                    <Ionicons name="film-outline" size={26} color={colors.primary} />
-                    <Text style={styles.centerStateText}>{t("course.empty_by_material")}</Text>
-                    <Text style={styles.centerStateSub}>{t("course.empty")}</Text>
-                  </View>
-                }
-              />
+                ))}
+              </ScrollView>
             )}
           </View>
         ) : activeTab === "live" ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t(HUB_MOCK.live.liveTitleKey)}</Text>
-            <Text style={styles.sectionSub}>{t(HUB_MOCK.live.liveMetaKey)}</Text>
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>{t(HUB_MOCK.live.upcomingTitleKey)}</Text>
-              {HUB_MOCK.live.upcoming.map((x: any, idx: number) => (
-                <View key={String(x.id)} style={[styles.listRow, idx === 0 ? styles.listRowFirst : null]}>
-                  <Text style={styles.listTitle} numberOfLines={1}>
-                    {t(x.titleKey)}
-                  </Text>
-                  <Text style={styles.listMeta} numberOfLines={1}>
-                    {t(x.metaKey)}
-                  </Text>
-                </View>
-              ))}
-            </View>
+            <Text style={styles.sectionTitle}>{t(HUB_UI.liveNowTitle)}</Text>
+            <Text style={styles.sectionSub}>{t(HUB_UI.liveNowMeta)}</Text>
+
+            {showSwitchLoading ? (
+              <View style={styles.centerState}>
+                <ActivityIndicator />
+                <Text style={styles.centerStateText}>{t("common.loading")}</Text>
+              </View>
+            ) : !canSwitch ? (
+              <View style={styles.centerState}>
+                <Ionicons name="alert-circle-outline" size={26} color={colors.primary} />
+                <Text style={styles.centerStateText}>{t("book.no_active_child")}</Text>
+              </View>
+            ) : !canFetchMeetings ? (
+              <View style={styles.centerState}>
+                <Ionicons name="alert-circle-outline" size={26} color={colors.primary} />
+                <Text style={styles.centerStateText}>{t("common.missing_params")}</Text>
+              </View>
+            ) : meetingsLoading && meetings.length === 0 ? (
+              <View style={styles.centerState}>
+                <ActivityIndicator />
+                <Text style={styles.centerStateText}>{t("common.loading")}</Text>
+              </View>
+            ) : meetingsError ? (
+              <TouchableOpacity activeOpacity={0.9} onPress={refetchMeetings} style={styles.retryBox}>
+                <Ionicons name="refresh" size={18} color={colors.primary} />
+                <Text style={styles.retryText}>{t("common.tap_to_retry")}</Text>
+              </TouchableOpacity>
+            ) : meetings.length === 0 ? (
+              <View style={styles.centerState}>
+                <Ionicons name="radio-outline" size={26} color={colors.primary} />
+                <Text style={styles.centerStateText}>{t("hub.live_empty")}</Text>
+                <Text style={styles.centerStateSub}>{t("hub.live_empty_sub")}</Text>
+              </View>
+            ) : (
+              meetings.map((m, idx) => {
+                const teacherName = m.teacherName || "";
+                const accent = m.materialColor || colors.primary;
+                const nextDate = m.nextSessionAt ? new Date(m.nextSessionAt) : null;
+                const isLive = m.status === "live" || m.status === "active";
+                const hasDiscount = m.hasDiscount && m.discount > 0;
+
+                return (
+                  <TouchableOpacity
+                    key={String(m.id)}
+                    activeOpacity={0.88}
+                    style={[styles.meetingCard, idx === 0 && styles.meetingCardFirst]}
+                    onPress={() => openMeeting(m.id)}
+                  >
+                    <View style={[styles.meetingCardAccent, { backgroundColor: accent }]} />
+
+                    <View style={styles.meetingCardBody}>
+                      <View style={styles.meetingCardHeader}>
+                        <Text numberOfLines={1} style={styles.meetingCardName}>{m.name}</Text>
+                        {isLive ? (
+                          <View style={styles.liveIndicator}>
+                            <View style={styles.liveDot} />
+                            <Text style={styles.liveText}>LIVE</Text>
+                          </View>
+                        ) : null}
+                      </View>
+
+                      <View style={styles.meetingMetaRow}>
+                        <Ionicons name="person-circle-outline" size={16} color={colors.muted} />
+                        <Text numberOfLines={1} style={styles.meetingMetaText}>{teacherName}</Text>
+                      </View>
+
+                      {nextDate ? (
+                        <View style={styles.meetingMetaRow}>
+                          <Ionicons name="time-outline" size={16} color={colors.muted} />
+                          <Text numberOfLines={1} style={styles.meetingMetaText}>
+                            {nextDate.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })}
+                            {" - "}
+                            {nextDate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                          </Text>
+                        </View>
+                      ) : null}
+
+                      <View style={styles.meetingFooter}>
+                        <View style={styles.meetingPriceRow}>
+                          {hasDiscount ? (
+                            <Text style={styles.meetingPriceOld}>{m.price.toLocaleString("fr-FR")} DA</Text>
+                          ) : null}
+                          <Text style={[styles.meetingPrice, { color: accent }]}>
+                            {(hasDiscount ? m.finalPrice : m.price).toLocaleString("fr-FR")} DA
+                          </Text>
+                        </View>
+
+                        <View style={[styles.meetingCta, { backgroundColor: accent }]}>
+                          <Text style={styles.meetingCtaText}>{t("common.open")}</Text>
+                          <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={14} color="#FFFFFF" />
+                        </View>
+                      </View>
+
+                      {m.upcomingSessionsCount > 0 ? (
+                        <Text style={styles.meetingSessionCount}>
+                          {m.upcomingSessionsCount} {t("hub.sessions_remaining")}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
           </View>
-        ) : (
-          <View style={styles.emptyState}>
-            <Ionicons name="pencil" size={28} color={colors.primary} />
-            <Text style={styles.emptyTitle}>{t(HUB_UI.exercisesSoonTitle)}</Text>
-            <Text style={styles.emptySub}>{t(HUB_UI.exercisesSoonSub)}</Text>
-          </View>
-        )}
+        ) : null}
       </ScrollView>
     </View>
   );

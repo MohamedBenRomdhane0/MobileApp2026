@@ -113,4 +113,8 @@ export const teacher = {
   cancel_note: "يمكنك إلغاء اشتراكك في أي وقت من دون أي التزام.",
   free_trial_action: "جرب حصة تجريبية مجانية",
   subscribe_cta: "اشترك الآن",
+
+  all_teachers_title: "جميع الأساتذة",
+  all_teachers_empty_title: "لم يتم العثور على أساتذة",
+  all_teachers_empty_subtitle: "سيظهر الأساتذة المختصون بمستوى قريب منك قريباً.",
 } as const;

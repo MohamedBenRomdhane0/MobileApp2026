@@ -29,6 +29,7 @@ export const HOME_UI = {
   subscribeTitle: "home.subscribe_title",
   subscribeSub: "home.subscribe_subtitle",
   subscribeCta: "home.subscribe_cta",
+  plansTitle: "home.plans_title",
   schoolBooks: "home.school_books_title",
   liveMeetings: "home.live_meetings_title",
   join: "home.join",
@@ -97,6 +98,7 @@ export const HOME_SECTION_ACCENT = {
   books: "#7C5CFC",
   live: "#EF4444",
   teachers: "#F59E0B",
+  plans: "#8B5CF6",
 } as const;
 
 /** Reactions shown as circular glass emoji quick actions in the hero. */

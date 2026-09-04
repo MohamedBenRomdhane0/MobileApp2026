@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   useFollowTeacherMutation,
   useGetTeacherByIdQuery,
@@ -6,7 +7,7 @@ import {
 } from "@redux/apis/teachers/teacherApi";
 
 import type { FollowerVM, TeacherProfileVM } from "@screens/teacher/TeacherProfileScreen.type";
-import { mapFollowersToVM, mapTeacherToVM, toValidId } from "@utils/helpers/teacherProfile.helpers";
+import { mapFollowers, mapTeacherProfileVM, toValidId } from "@utils/helpers/teacherProfile.helpers";
 
 export type UseTeacherProfileResult = {
   teacherVM: TeacherProfileVM | null;
@@ -29,6 +30,7 @@ export type UseTeacherProfileResult = {
 
 export function useTeacherProfile(teacherIdInput: number): UseTeacherProfileResult {
   const teacherId = toValidId(teacherIdInput);
+  const { t } = useTranslation();
 
   const [followersModalVisible, setFollowersModalVisible] = useState(false);
 
@@ -42,7 +44,7 @@ export function useTeacherProfile(teacherIdInput: number): UseTeacherProfileResu
 
   const teacherVM = useMemo(() => {
     const raw = teacherResp?.data ?? null;
-    return raw ? mapTeacherToVM(raw) : null;
+    return raw ? mapTeacherProfileVM(raw, t) : null;
   }, [teacherResp?.data]);
 
   const showLoading = isLoading || (isFetching && !teacherVM);
@@ -64,12 +66,12 @@ export function useTeacherProfile(teacherIdInput: number): UseTeacherProfileResu
     isError: isFollowersError,
     refetch: refetchFollowers,
   } = useGetTeacherFollowersQuery(
-    { teacherId, page: 1, per_page: 50 },
+    { teacherId, page: 1, perPage: 50 },
     { skip: !teacherId || !followersModalVisible }
   );
 
   const followersVM: FollowerVM[] = useMemo(
-    () => mapFollowersToVM(followersResp?.data ?? []),
+    () => mapFollowers(followersResp?.data ?? []),
     [followersResp?.data]
   );
 

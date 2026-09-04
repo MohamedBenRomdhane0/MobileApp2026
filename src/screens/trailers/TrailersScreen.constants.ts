@@ -15,6 +15,8 @@ export const TRAILERS_UI = {
   tomorrow:           "trailers.tomorrow",
   sessionsSuffix:     "meetings.sessions_suffix",
   watchBtn: "trailers.watch_btn",
+  chooseTitle: "trailers.choose_title",
+  chooseSub: "trailers.choose_sub",
 } as const;
 
 export const TRAILERS_HEADER_GRADIENT = [

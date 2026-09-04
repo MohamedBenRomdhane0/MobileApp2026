@@ -61,4 +61,21 @@ export const meetings = {
   reviews_label: "avis",
   private_label: "Privé",
   detail_years_experience: "{{count}} années d'expérience",
+
+  record_meeting_silver_welcome_back: "Bienvenue",
+  record_meeting_silver_my_projects: "Mes projets",
+  record_meeting_silver_section_title: "Mes projets",
+  record_meeting_silver_search_placeholder: "Rechercher des enregistrements...",
+  record_meeting_silver_empty_title: "Aucun enregistrement",
+  record_meeting_silver_empty_subtitle: "Vos séances enregistrées apparaîtront ici.",
+  record_meeting_silver_home: "Accueil",
+  record_meeting_silver_projects: "Projets",
+  record_meeting_silver_add: "Ajouter",
+  record_meeting_silver_notifications: "Notifications",
+  record_meeting_silver_profile: "Profil",
+
+  record_timeline_title: "Marine",
+  record_timeline_subtitle: "exploration",
+  record_timeline_color: "Couleur",
+  record_timeline_close: "Fermer",
 };

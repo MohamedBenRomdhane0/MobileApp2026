@@ -3,6 +3,7 @@ import type { Ionicons } from "@expo/vector-icons";
 import type { AppColors } from "@theme/types";
 import type { BookListItemUI } from "@redux/apis/books/bookApi.type";
 import type { MaterialUI } from "@redux/apis/materials/materialsApi.type";
+import type { PlanUI } from "@redux/apis/plans/plansApi.type";
 
 export type ThemeColors = AppColors;
 
@@ -130,11 +131,23 @@ export type SubscribeBannerProps = HomeBlockBaseProps & {
   onPress: () => void;
 };
 
+/** Compact plan cards in a 2-column grid — monthly-priced mini tiles. */
+export type MiniPlanCardsProps = HomeBlockBaseProps & {
+  plans: PlanUI[];
+  currencyLabel: string;
+  perMonthLabel: string;
+  popularLabel: string;
+  ctaLabel: string;
+  onPress: () => void;
+};
+
 export type TeacherCard = {
   id: number;
   fullName: string;
   subject: string;
-  avatar: ImageSourcePropType;
+  avatar?: ImageSourcePropType;
+  avatarUrl?: string | null;
+  rating?: number | null;
   isFollowed?: boolean;
   followersCount?: number;
 };
@@ -174,7 +187,7 @@ export type DailySnippet = {
 
 export type ReservedDay = {
   day: number;
-  teacherPhoto: number;
+  teacherPhoto: number | { uri: string };
   accent: string;
 };
 
@@ -196,10 +209,17 @@ export type SummaryLiveInfo = {
 export type SummaryCardProps = HomeBlockBaseProps & {
   title: string;
   meta: string;
-  teacherPhoto: number;
+  teacherPhoto: number | { uri: string };
   liveLabel: string;
   joinLabel: string;
+  isLive: boolean;
+  startTimeLabel: string;
+  nextSessionDate?: string;
+  participants: number;
+  hasReservedMeeting: boolean;
+  reserveLabel?: string;
   onJoin: () => void;
+  onReserve?: () => void;
 };
 
 export type ActivitiesCardProps = HomeBlockBaseProps & {
@@ -208,12 +228,15 @@ export type ActivitiesCardProps = HomeBlockBaseProps & {
   weekDays: string[];
   reservedDays: ReservedDay[];
   today: number;
+  monthLabel?: string;
+  targetDate?: Date;
+  onMonthAdvance?: () => void;
   onSeeAll?: () => void;
 };
 
 export type DynamicIslandNotificationProps = {
   visible: boolean;
-  teacherPhoto: number;
+  teacherPhoto: number | { uri: string };
   liveLabel: string;
   teacherName: string;
   meetingTitle: string;

@@ -54,12 +54,7 @@ export const PERIOD_LABEL_KEYS: Record<SelectedPeriod, string> = {
 export const PERIOD_MONTHS_MAP: Record<SelectedPeriod, number> = {
   monthly:   1,
   quarterly: 3,
-  yearly:    9,
-};
-
-export const PERIOD_DISCOUNT_LABELS: Partial<Record<SelectedPeriod, string>> = {
-  quarterly: "10%",
-  yearly:    "30%",
+  yearly:    10,
 };
 
 export const PLANS_HEADER_GRADIENT = ["#0D2A52", "#163867", "#1A4A82"] as const;

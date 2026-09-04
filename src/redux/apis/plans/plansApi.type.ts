@@ -10,11 +10,21 @@ export interface ApiTranslation {
 export interface ApiMaterial {
   id: number;
   name: string;
+  color?: string | null;
 }
 
 export interface ApiPlanFeature {
   id: number;
   is_available: number | boolean;
+  translations?: ApiTranslation[];
+}
+
+export interface ApiPlanDiscount {
+  id: number;
+  plan_id: number;
+  type: string;
+  duration_months: number;
+  value: number | string | null;
   translations?: ApiTranslation[];
 }
 
@@ -55,14 +65,21 @@ export interface ApiAccessibleEntity {
 export interface ApiPlan {
   id: number;
   is_popular: boolean;
-  creator_id: number;
+  creator_id?: number;
   level_id: number;
-  plan_type: string;
-  has_meeting: boolean;
+  level_section_id?: number | null;
+  plan_type?: string;
+  has_meeting?: boolean;
+  icon?: string | null;
+  color?: string | null;
+  display_tier?: string | null;
+  status?: string | number;
+  grandfather_pricing?: boolean | number;
   translations?: ApiTranslation[];
   features?: ApiPlanFeature[];
   plan_pricings?: ApiPlanPricing[];
   accessible_entities?: ApiAccessibleEntity[];
+  discounts?: ApiPlanDiscount[];
 }
 
 export interface PlansListResponse {
@@ -100,6 +117,7 @@ export interface PlanMaterialPriceUI {
   materialId: number;
   materialKey: string;
   materialName: string;
+  materialColor: string;
   price: number;
   discount: number;
   finalPrice: number;
@@ -124,7 +142,15 @@ export interface PlanAccessibleEntityUI {
   accessibleId: number;
   materialId: number | null;
   materialKey: string;
+  materialColor: string;
   title: string;
+}
+
+export interface PlanDiscountUI {
+  id: number;
+  durationMonths: number;
+  value: number;
+  label: string;
 }
 
 export interface PlanUI {
@@ -135,7 +161,13 @@ export interface PlanUI {
   planType: string;
   isPopular: boolean;
   hasMeeting: boolean;
+  icon: string;
+  color: string;
+  displayTier: string;
+  status: string;
+  grandfatherPricing: boolean;
   features: PlanFeatureUI[];
   pricings: PlanPricingUI[];
   accessibleEntities: PlanAccessibleEntityUI[];
+  discounts: PlanDiscountUI[];
 }

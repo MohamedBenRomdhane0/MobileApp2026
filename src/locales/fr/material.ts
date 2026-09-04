@@ -6,4 +6,5 @@ export const material = {
   arabic: "Arabe",
   science: "Sciences",
   english: "Anglais",
+  social: "Sciences sociales",
 }

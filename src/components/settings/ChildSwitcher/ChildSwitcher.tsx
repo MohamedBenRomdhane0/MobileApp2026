@@ -28,7 +28,7 @@ import {
 import { buildAvatarUri } from "@utils/helpers/mediaUrl.helper";
 
 function ChildSwitcherComponent({
-  onSwitchedNavigateTo = PATHS.APP.BOOKS,
+  onSwitchedNavigateTo = PATHS.TABS.HOME,
 }: ChildSwitcherProps) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
@@ -52,7 +52,7 @@ function ChildSwitcherComponent({
       try {
         await switchToChild({ childId }).unwrap();
         dispatch(setActiveChildId(childId));
-        navigation.navigate(onSwitchedNavigateTo);
+        navigation.navigate(onSwitchedNavigateTo as never);
       } catch (e) {
         Alert.alert(
           t("common.error"),

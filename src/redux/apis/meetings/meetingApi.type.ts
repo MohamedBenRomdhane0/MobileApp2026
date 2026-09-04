@@ -48,6 +48,7 @@ export type MeetingsCollectionApiResponse =
   | ApiPaginatedCollectionResponse<MeetingApi>;
 
 export interface GetMeetingsArgs {
+  childId?: number | null;
   page?: number;
   perPage?: number;
   keyword?: string;
@@ -59,10 +60,23 @@ export interface GetMeetingsArgs {
   direction?: MeetingDirection;
 }
 
+export interface TeacherDetailApi {
+  id: number;
+  full_name?: string | null;
+  fullName?: string | null;
+  avatar_url?: string | null;
+  avatarUrl?: string | null;
+  avatar?: string | null;
+  about?: string | null;
+  bio?: string | null;
+}
+
 export interface MeetingTeacherApi {
   id?: number | string | null;
   full_name?: string | null;
   fullName?: string | null;
+  avatar_url?: string | null;
+  avatarUrl?: string | null;
 }
 
 export interface MeetingLevelApi {
@@ -73,6 +87,7 @@ export interface MeetingLevelApi {
 export interface MeetingMaterialApi {
   id?: number | string | null;
   name?: string | null;
+  color?: string | null;
 }
 
 export interface MeetingTimeApi {
@@ -92,6 +107,15 @@ export interface MeetingTimeApi {
   updated_at?: string | null;
 }
 
+export interface MeetingGroupSubscriptionApi {
+  id?: number | string | null;
+  cycle_start_date?: string | null;
+  cycleStartDate?: string | null;
+  cycle_end_date?: string | null;
+  cycleEndDate?: string | null;
+  status?: string | null;
+}
+
 export interface MeetingGroupApi {
   id?: number | string | null;
   meeting_id?: number | string | null;
@@ -101,6 +125,33 @@ export interface MeetingGroupApi {
   sessionsPerWeek?: number | string | null;
   meeting_times?: MeetingTimeApi[] | null;
   meetingTimes?: MeetingTimeApi[] | null;
+  schedule_days?: number[] | null;
+  scheduleDays?: number[] | null;
+  start_time?: string | null;
+  startTime?: string | null;
+  end_time?: string | null;
+  endTime?: string | null;
+  next_session_at?: string | null;
+  nextSessionAt?: string | null;
+
+  is_private?: boolean | null;
+  isPrivate?: boolean | null;
+  max_students?: number | string | null;
+  maxStudents?: number | string | null;
+  enrolled_count?: number | string | null;
+  enrolledCount?: number | string | null;
+  spots_left?: number | string | null;
+  spotsLeft?: number | string | null;
+  unit_price?: number | string | null;
+  unitPrice?: number | string | null;
+  discounted_price?: number | string | null;
+  discountedPrice?: number | string | null;
+  has_discount?: boolean | null;
+  hasDiscount?: boolean | null;
+
+  meeting_group_subscriptions?: MeetingGroupSubscriptionApi[] | null;
+  meetingGroupSubscriptions?: MeetingGroupSubscriptionApi[] | null;
+
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -138,6 +189,8 @@ export interface MeetingApi {
   totalSessions?: number | string | null;
 
   price?: number | string | null;
+  starting_price?: number | string | null;
+  startingPrice?: number | string | null;
   discount?: number | string | null;
   final_price?: number | string | null;
   finalPrice?: number | string | null;
@@ -164,6 +217,7 @@ export interface MeetingApi {
   material?: MeetingMaterialApi | null;
   teacher?: MeetingTeacherApi | null;
 
+  groups?: MeetingGroupApi[] | null;
   meeting_groups?: MeetingGroupApi[] | null;
   meetingGroups?: MeetingGroupApi[] | null;
 }
@@ -186,6 +240,19 @@ export interface MeetingGroupUI {
   name: string;
   sessionsPerWeek: number;
   meetingTimes: MeetingTimeUI[];
+  scheduleDays: number[];
+  startTime: string;
+  endTime: string;
+  nextSessionAt: string | null;
+  isPrivate: boolean;
+  maxStudents: number | null;
+  enrolledCount: number | null;
+  spotsLeft: number | null;
+  unitPrice: number;
+  discountedPrice: number;
+  hasDiscount: boolean;
+  cycleStartDate: string | null;
+  cycleEndDate: string | null;
 }
 
 export interface ScheduleLineUI {
@@ -203,9 +270,11 @@ export interface MeetingListItemUI {
 
   materialId: number | null;
   materialName: string;
+  materialColor: string;
 
   teacherId: number | null;
   teacherName: string;
+  teacherAvatarUrl: string | null;
 
   isPrivate: boolean;
   maxStudents: number | null;
@@ -224,6 +293,8 @@ export interface MeetingListItemUI {
   status: MeetingStatusEnum | string;
   timezone: string;
 
+  meetingGroups: MeetingGroupUI[];
+
   createdAt: string | null;
   updatedAt: string | null;
 }
@@ -241,4 +312,93 @@ export interface MeetingsListPayloadUI {
   total: number;
   lastPage: number;
   hasNextPage: boolean;
+}
+
+export interface ReservedMeetingTimeMeetingApi {
+  id: number;
+  name: string;
+  status: string;
+  timezone: string;
+  level_id?: number | null;
+  level_name?: string | null;
+  material_id?: number | null;
+  material_name?: string | null;
+  material_color?: string | null;
+  teacher_id?: number | null;
+  teacher_name?: string | null;
+  teacher_avatar_url?: string | null;
+  teacher_avatar?: string | null;
+}
+
+export interface ReservedMeetingTimeGroupApi {
+  id: number;
+  name: string;
+  sessions_per_week?: number | null;
+  sessions_per_day?: number | null;
+  unit_price?: number | string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+}
+
+export interface ReservedMeetingTimeApi {
+  id: number;
+  group_id: number;
+  meeting_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  duration?: number | null;
+  day_of_week?: number | null;
+  occurrence_in_day?: number | null;
+  status: string;
+  is_free_trial_session?: boolean | null;
+  reschedule_details?: unknown;
+  cancellation_reason?: string | null;
+  cancellation_comment?: string | null;
+  has_supports?: boolean;
+  entitlement_status?: string | null;
+  meeting?: ReservedMeetingTimeMeetingApi | null;
+  group?: ReservedMeetingTimeGroupApi | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface ReservedMeetingTimeUI {
+  id: number;
+  groupId: number;
+  meetingDate: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  duration: number | null;
+  dayOfWeek: number | null;
+  status: string;
+  isFreeTrialSession: boolean;
+  hasSupports: boolean;
+  entitlementStatus: string | null;
+  teacherId: number | null;
+  teacherName: string | null;
+  teacherAvatarUrl: string | null;
+  materialName: string | null;
+  materialColor: string | null;
+  materialId: number | null;
+  meetingName: string | null;
+  groupName: string | null;
+  startsAt: string | null;
+  endsAt: string | null;
+}
+
+export interface SubscribeToGroupArgs {
+  groupId: number;
+  billingCycle?: "monthly" | "yearly";
+}
+
+export interface SubscribeToGroupResponse {
+  message: string;
+  data: {
+    id: number;
+    child_id: number;
+    meeting_group_id: number;
+    status: string;
+    billing_cycle: string;
+    created_at: string;
+  };
 }

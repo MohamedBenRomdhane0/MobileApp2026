@@ -9,13 +9,13 @@ export type SelectedPeriod = "monthly" | "quarterly" | "yearly";
 export type PERIOD_MONTHS_MAP = {
   monthly: 1;
   quarterly: 3;
-  yearly: 9;
+  yearly: 10;
 };
 
 export const PERIOD_MONTHS: PERIOD_MONTHS_MAP = {
   monthly: 1,
   quarterly: 3,
-  yearly: 9,
+  yearly: 10,
 };
 
 export type PlanTab = "live" | "books" | "bundle";
@@ -27,6 +27,7 @@ export type PlanSelectionState = {
   selectedMatiere: number | null;
   selectedTeachers: number[];
   selectedBooks: number[];
+  selectedPlanMaterialIds: number[];
 };
 
 export type SelectedMaterials = Record<number, boolean>;

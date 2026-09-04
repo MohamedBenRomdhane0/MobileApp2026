@@ -254,10 +254,9 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
-  scrimTint: {
-    ...StyleSheet.absoluteFillObject,
+  scrimTint: [StyleSheet.absoluteFill, {
     backgroundColor: LIQUID.scrimColor,
-  },
+  }] as unknown as import("react-native").ViewStyle,
   dock: {
     position: "absolute",
     left: 0,
@@ -292,17 +291,15 @@ const styles = StyleSheet.create({
     borderRadius: LIQUID.borderRadius,
     backgroundColor: "rgba(12,58,74,0.06)",
   },
-  barClip: {
-    ...StyleSheet.absoluteFillObject,
+  barClip: [StyleSheet.absoluteFill, {
     borderRadius: LIQUID.borderRadius,
     overflow: "hidden",
-  },
-  barRim: {
-    ...StyleSheet.absoluteFillObject,
+  }] as unknown as import("react-native").ViewStyle,
+  barRim: [StyleSheet.absoluteFill, {
     borderRadius: LIQUID.borderRadius,
     borderWidth: 1.2,
     borderColor: LIQUID.border,
-  },
+  }] as unknown as import("react-native").ViewStyle,
   tabsRow: {
     flex: 1,
     flexDirection: "row",
