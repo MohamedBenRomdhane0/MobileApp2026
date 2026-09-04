@@ -20,6 +20,11 @@ export const VIDEO_UI = {
   loading: "common.loading",
   retry: "common.retry",
   bookFallback: "book.title",
+  tabVideos: "video.tab_videos",
+  tabAudio: "video.tab_audio",
+  tabLinks: "video.tab_links",
+  tabDocs: "video.tab_docs",
+  bookOpen: "book.open_book",
 } as const;
 
 export const VIDEO_PLAYER = {

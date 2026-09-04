@@ -328,6 +328,43 @@ export function createHomeStyles(
       textAlign: "center",
     },
 
+    /* ── Record bubbles (navigation to recording screens) ────────────── */
+
+    recordBubblesCard: {
+      marginTop: 22,
+      marginHorizontal: 16,
+      backgroundColor: C.surface,
+      borderRadius: 20,
+      paddingVertical: 16,
+      paddingHorizontal: 12,
+      borderWidth: isDark ? 1 : 0,
+      borderColor: C.hairline,
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-around",
+      ...neutralShadow(isDark),
+    },
+
+    recordBubbleItem: {
+      flex: 1,
+      alignItems: "center",
+      gap: 8,
+    },
+
+    recordBubbleIcon: {
+      width: 56,
+      height: 56,
+      borderRadius: 20,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+
+    recordBubbleLabel: {
+      fontSize: 12,
+      fontWeight: "700",
+      textAlign: "center",
+    },
+
     /* ── Body / sections ─────────────────────────────────────────────── */
 
     body: { paddingHorizontal: 16 },
@@ -687,6 +724,41 @@ export function createHomeStyles(
       letterSpacing: 0.7,
     },
 
+    pendingBadge: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 6,
+      marginTop: 10,
+      paddingHorizontal: 12,
+      height: 30,
+      borderRadius: 999,
+      backgroundColor: "rgba(34,190,200,0.18)",
+      borderWidth: 1,
+      borderColor: "rgba(34,190,200,0.35)",
+    },
+
+    pendingBadgeText: {
+      color: "#5EEAD4",
+      fontSize: 11.5,
+      fontWeight: "700",
+      letterSpacing: 0.3,
+    },
+
+    pendingTimeRow: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      flex: 1,
+      height: 42,
+    },
+
+    pendingTimeText: {
+      color: "#5EEAD4",
+      fontSize: 12,
+      fontWeight: "600",
+    },
+
     liveDot: {
       width: 8,
       height: 8,
@@ -966,6 +1038,106 @@ export function createHomeStyles(
 
     teacherBadgeText: { fontSize: 10, fontWeight: "900", color: C.teal },
 
+    /* ── Plans mini-cards (2-column grid) ─────────────────────────────── */
+
+    plansGrid: {
+      flexDirection: row,
+      flexWrap: "wrap",
+      gap: 12,
+    },
+
+    miniPlanCard: {
+      flexBasis: "47%",
+      flexGrow: 1,
+      borderRadius: 18,
+      backgroundColor: C.surface,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 14,
+      gap: 8,
+      ...neutralShadow(isDark),
+    },
+
+    miniPlanTop: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 6,
+    },
+
+    miniPlanIconTile: {
+      width: 30,
+      height: 30,
+      borderRadius: 10,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+    },
+
+    miniPlanPopular: {
+      paddingHorizontal: 7,
+      height: 18,
+      borderRadius: 999,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+
+    miniPlanPopularText: {
+      color: "#FFFFFF",
+      fontSize: 8.5,
+      fontWeight: "900",
+    },
+
+    miniPlanTitle: {
+      color: C.ink,
+      fontSize: 13,
+      fontWeight: "800",
+      lineHeight: 17,
+      textAlign: textEnd,
+      minHeight: 34,
+    },
+
+    miniPlanPriceRow: {
+      flexDirection: row,
+      alignItems: "baseline",
+      gap: 4,
+    },
+
+    miniPlanPrice: {
+      fontSize: 18,
+      fontWeight: "900",
+      letterSpacing: -0.3,
+    },
+
+    miniPlanPerMonth: {
+      color: C.sub,
+      fontSize: 11,
+      fontWeight: "700",
+    },
+
+    miniPlanOldPrice: {
+      color: C.muted,
+      fontSize: 11.5,
+      fontWeight: "700",
+      textDecorationLine: "line-through",
+    },
+
+    miniPlanCta: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 5,
+      height: 34,
+      borderRadius: 11,
+      marginTop: 2,
+    },
+
+    miniPlanCtaText: {
+      color: "#FFFFFF",
+      fontSize: 12,
+      fontWeight: "900",
+    },
+
     /* ── Subscribe CTA ───────────────────────────────────────────────── */
 
     subscribeOuter: {
@@ -1055,10 +1227,9 @@ export function createHomeStyles(
     /* Bottom sheet: the search owns the screen instead of floating mid-air. */
     searchModalRoot: { flex: 1, justifyContent: "flex-end" },
 
-    searchBackdrop: {
-      ...StyleSheet.absoluteFillObject,
+    searchBackdrop: [StyleSheet.absoluteFill, {
       backgroundColor: "rgba(4,10,22,0.66)",
-    },
+    }] as unknown as import("react-native").ViewStyle,
 
     searchSheet: {
       height: "90%",
@@ -1309,7 +1480,7 @@ export function createHomeStyles(
     summaryRow: {
       flexDirection: row,
       gap: 12,
-      paddingHorizontal: 16,
+      paddingHorizontal: 4,
     },
 
     summaryCard: {
@@ -1318,8 +1489,8 @@ export function createHomeStyles(
       backgroundColor: C.navy,
       borderWidth: 1,
       borderColor: isDark ? C.hairline : "rgba(255,255,255,0.06)",
-      paddingHorizontal: 16,
-      paddingVertical: 18,
+      paddingHorizontal: 20,
+      paddingVertical: 22,
       overflow: "hidden",
       ...neutralShadow(isDark),
     },
@@ -1334,7 +1505,7 @@ export function createHomeStyles(
     summaryTitle: {
       color: "#FFFFFF",
       fontSize: 14,
-      fontWeight: "900",
+      fontWeight: "700",
       letterSpacing: -0.2,
     },
     summaryTitleTeacher: {
@@ -1581,6 +1752,7 @@ export function createHomeStyles(
     calLabels: {
       flexDirection: row,
       justifyContent: "space-between",
+      marginTop: 20,
     },
 
     calLabel: {

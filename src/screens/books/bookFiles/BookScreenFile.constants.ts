@@ -6,6 +6,13 @@ export const BOOK_FILE_UI = {
   pageOf: "book.page_of",
   loading: "common.loading",
   retry: "common.retry",
+  fullscreen: "book.fullscreen",
+  exitFullscreen: "book.exit_fullscreen",
+  zoomIn: "book.zoom_in",
+  zoomOut: "book.zoom_out",
+  chapters: "book.chapters",
+  pageNumber: "book.page_number",
+  chapterListTitle: "book.chapter_list_title",
 } as const;
 
 export const BOOK_FILE_ROUTES = {
@@ -14,8 +21,8 @@ export const BOOK_FILE_ROUTES = {
 } as const;
 
 export const BOOK_FILE_LAYOUT = {
-  minHitSize: 40,
-  maxHitSize: 56,
+  minHitSize: 36,
+  maxHitSize: 50,
   viewAreaCoveragePercentThreshold: 60,
   defaultIconPx: 24,
 } as const;

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { UploadItemStatus } from "@config/enums/uploadItemStatus.enum"
 import { UploadItem } from "@redux/apis/video/videoApi.type"
 

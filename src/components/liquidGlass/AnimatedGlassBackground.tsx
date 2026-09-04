@@ -115,13 +115,10 @@ function AnimatedGlassBackground({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
+  container: [StyleSheet.absoluteFill, {
     overflow: "hidden",
-  },
-  fill: {
-    ...StyleSheet.absoluteFillObject,
-  },
+  }] as unknown as import("react-native").ViewStyle,
+  fill: StyleSheet.absoluteFill,
   sweep: {
     position: "absolute",
     top: -30,

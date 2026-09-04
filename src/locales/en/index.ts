@@ -13,6 +13,9 @@ import { uploads } from './uploads'
 import { user } from './user'
 import { course } from './course'
 import plan from './plan'
+import plan_ui from './plan_ui'
+import pro_pricing from './pro_pricing'
+import unlock from './unlock'
 import child from "./child";
 import settings from "./settings";
 import { child_switcher } from './child_switcher';
@@ -41,6 +44,9 @@ const en = {
   uploads,
   course,
   plan,
+  plan_ui,
+  pro_pricing,
+  unlock,
   child,
   settings,
   child_switcher,

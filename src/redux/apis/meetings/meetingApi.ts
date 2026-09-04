@@ -10,11 +10,17 @@ import type {
   MeetingDetailsUI,
   MeetingsCollectionApiResponse,
   MeetingsListPayloadUI,
+  ReservedMeetingTimeApi,
+  ReservedMeetingTimeUI,
+  SubscribeToGroupArgs,
+  SubscribeToGroupResponse,
+  TeacherDetailApi,
 } from "./meetingApi.type";
 
 import {
   toMeetingDetailsUI,
   toMeetingsListPayloadUI,
+  toReservedMeetingTimesUI,
 } from "./meetingApi.transform";
 
 const buildGetMeetingsUrl = (args?: GetMeetingsArgs): string => {
@@ -64,7 +70,7 @@ const buildGetMeetingsUrl = (args?: GetMeetingsArgs): string => {
 export const meetingApi = createApi({
   reducerPath: "meetingApi",
   baseQuery: baseQueryConfig,
-  tagTypes: ["Meetings", "Meeting"],
+  tagTypes: ["Meetings", "Meeting", "Teacher", "Reserved"],
   endpoints: (build) => ({
     getMeetings: build.query<
       ApiSuccess<MeetingsListPayloadUI>,
@@ -84,6 +90,7 @@ export const meetingApi = createApi({
         const args: GetMeetingsArgs = queryArgs ?? {};
 
         return `${endpointName}|${JSON.stringify({
+          childId: args.childId ?? null,
           keyword: args.keyword ?? "",
           materialId: args.materialId ?? null,
           teacherId: args.teacherId ?? null,
@@ -97,9 +104,8 @@ export const meetingApi = createApi({
       merge: (currentCache, newCache, { arg }) => {
         const page = arg?.page ?? 1;
 
-        if (page <= 1) {
-          currentCache.data = newCache.data;
-          return;
+        if (page <= 1 || !currentCache) {
+          return newCache;
         }
 
         const existingIds = new Set(
@@ -114,9 +120,12 @@ export const meetingApi = createApi({
           }
         }
 
-        currentCache.data = {
-          ...newCache.data,
-          items: mergedItems,
+        return {
+          ...currentCache,
+          data: {
+            ...newCache.data,
+            items: mergedItems,
+          },
         };
       },
       forceRefetch: ({ currentArg, previousArg }) =>
@@ -153,6 +162,100 @@ export const meetingApi = createApi({
         { type: "Meeting", id: meetingId },
       ],
     }),
+
+    getTeacherById: build.query<
+      ApiSuccess<TeacherDetailApi>,
+      number
+    >({
+      query: (teacherId) => ({
+        url: `child/teachers/${teacherId}`,
+        method: MethodsEnum.GET,
+      }),
+      transformResponse: (
+        response: ApiSuccess<TeacherDetailApi>
+      ): ApiSuccess<TeacherDetailApi> => response,
+      providesTags: (_result, _error, teacherId) => [
+        { type: "Teacher" as const, id: teacherId },
+      ],
+    }),
+
+    getReservedMeetings: build.query<
+      ApiSuccess<MeetingsListPayloadUI>,
+      number | void
+    >({
+      query: () => ({
+        url: "child/meetings/reserved",
+        method: MethodsEnum.GET,
+      }),
+      serializeQueryArgs: ({ queryArgs }) => {
+        return `getReservedMeetings|${queryArgs ?? "default"}`;
+      },
+      transformResponse: (
+        response: MeetingsCollectionApiResponse
+      ): ApiSuccess<MeetingsListPayloadUI> => {
+        const payload = toMeetingsListPayloadUI(response);
+        console.log("[ReservedMeetings] Raw response shape:", JSON.stringify({
+          hasData: !!response.data,
+          dataIsArray: Array.isArray(response.data),
+          dataLength: Array.isArray(response.data) ? response.data.length : "not array",
+          firstItemKeys: Array.isArray(response.data) && response.data[0] ? Object.keys(response.data[0]) : [],
+          hasGroups: Array.isArray(response.data) && response.data[0] ? ("groups" in (response.data[0] as any)) : false,
+          groupsCount: (Array.isArray(response.data) && response.data[0]) ? ((response.data[0] as any)?.groups?.length ?? 0) : 0,
+        }, null, 2));
+        return {
+          message: response.message,
+          data: payload,
+        };
+      },
+      providesTags: (result) => {
+        const baseTags = [{ type: "Meetings" as const, id: "RESERVED" }];
+        if (!result?.data?.items?.length) return baseTags;
+        return [
+          ...baseTags,
+          ...result.data.items.map((item) => ({
+            type: "Meeting" as const,
+            id: item.id,
+          })),
+        ];
+      },
+    }),
+
+    getReservedMeetingTimes: build.query<
+      ApiSuccess<ReservedMeetingTimeUI[]>,
+      number | void
+    >({
+      query: () => ({
+        url: "child/meetings/reserved/meeting-times",
+        method: MethodsEnum.GET,
+      }),
+      serializeQueryArgs: ({ queryArgs }) => {
+        return `getReservedMeetingTimes|${queryArgs ?? "default"}`;
+      },
+      transformResponse: (
+        response: ApiSuccess<ReservedMeetingTimeApi[]>
+      ): ApiSuccess<ReservedMeetingTimeUI[]> => ({
+        message: response.message,
+        data: toReservedMeetingTimesUI(response.data),
+      }),
+      providesTags: (_result, _error, arg) => [
+        { type: "Meetings" as const, id: `RESERVED_TIMES|${arg ?? "default"}` },
+      ],
+    }),
+
+    subscribeToGroup: build.mutation<
+      ApiSuccess<SubscribeToGroupResponse["data"]>,
+      SubscribeToGroupArgs
+    >({
+      query: ({ groupId, billingCycle = "monthly" }) => ({
+        url: `child/meeting-groups/${groupId}/subscribe`,
+        method: MethodsEnum.POST,
+        body: { billing_cycle: billingCycle },
+      }),
+      invalidatesTags: (_result, _error, { groupId }) => [
+        { type: "Meetings", id: "LIST" },
+        { type: "Meetings", id: "RESERVED" },
+      ],
+    }),
   }),
 });
 
@@ -161,4 +264,9 @@ export const {
   useLazyGetMeetingsQuery,
   useGetMeetingByIdQuery,
   useLazyGetMeetingByIdQuery,
+  useGetTeacherByIdQuery,
+  useLazyGetTeacherByIdQuery,
+  useGetReservedMeetingsQuery,
+  useGetReservedMeetingTimesQuery,
+  useSubscribeToGroupMutation,
 } = meetingApi;

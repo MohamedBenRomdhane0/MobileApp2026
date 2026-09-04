@@ -20,7 +20,10 @@ import { selectParentUser } from "@redux/slices/authSlice";
 
 import CustomTextField from "@components/inputs/customTextField/CutsomTextField";
 import { useAvatarPicker } from "@hooks/useAvatarPicker";
-import { useUpdateParentProfileMutation } from "@redux/apis/parent/parentApi";
+import {
+  useUpdateParentProfileMutation,
+  useLazyGetParentMeQuery,
+} from "@redux/apis/parent/parentApi";
 
 import { createParentInfoStyles } from "./ParentInfoScreen.styles";
 import {
@@ -77,6 +80,7 @@ function ParentInfoScreenComponent() {
   const [pickedAvatar, setPickedAvatar] = useState<PickedAvatar | null>(null);
 
   const [updateParentProfile, updateState] = useUpdateParentProfileMutation();
+  const [refetchParent] = useLazyGetParentMeQuery();
   const isSubmitting = updateState.isLoading;
 
   const form = useForm<ParentInfoFormValues>({
@@ -128,6 +132,7 @@ function ParentInfoScreenComponent() {
 
       try {
         await updateParentProfile(body).unwrap();
+        await refetchParent();
         navigation.goBack();
       } catch (error: unknown) {
         const apiErrors = (error as UpdateProfileErrorShape)?.data?.errors;

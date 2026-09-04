@@ -10,6 +10,8 @@ import type {
   MeetingTimeApi,
   MeetingTimeUI,
   MeetingsListPayloadUI,
+  ReservedMeetingTimeApi,
+  ReservedMeetingTimeUI,
   ScheduleLineUI,
 } from "./meetingApi.type";
 
@@ -210,25 +212,49 @@ export const toMeetingGroupUI = (item: MeetingGroupApi): MeetingGroupUI => {
     item.meeting_times ?? item.meetingTimes
   ).map(toMeetingTimeUI);
 
+  const subscriptions = toArray(
+    item.meeting_group_subscriptions ?? item.meetingGroupSubscriptions
+  );
+  const activeSub = subscriptions.find(
+    (s) => toStringSafe(s.status, "") === "active"
+  ) ?? subscriptions[0] ?? null;
+
   return {
     id: toNumber(item.id, 0),
     meetingId: toNullableNumber(item.meeting_id ?? item.meetingId),
     name: toStringSafe(item.name, ""),
     sessionsPerWeek: toNumber(item.sessions_per_week ?? item.sessionsPerWeek, 0),
     meetingTimes,
+    scheduleDays: toArray(item.schedule_days ?? item.scheduleDays),
+    startTime: toStringSafe(item.start_time ?? item.startTime, ""),
+    endTime: toStringSafe(item.end_time ?? item.endTime, ""),
+    nextSessionAt: toNullableString(item.next_session_at ?? item.nextSessionAt),
+    isPrivate: toBoolean(item.is_private ?? item.isPrivate, false),
+    maxStudents: toNullableNumber(item.max_students ?? item.maxStudents),
+    enrolledCount: toNullableNumber(item.enrolled_count ?? item.enrolledCount),
+    spotsLeft: toNullableNumber(item.spots_left ?? item.spotsLeft),
+    unitPrice: toNumber(item.unit_price ?? item.unitPrice, 0),
+    discountedPrice: toNumber(item.discounted_price ?? item.discountedPrice, 0),
+    hasDiscount: toBoolean(item.has_discount ?? item.hasDiscount, false),
+    cycleStartDate: activeSub
+      ? toNullableString(activeSub.cycle_start_date ?? activeSub.cycleStartDate)
+      : null,
+    cycleEndDate: activeSub
+      ? toNullableString(activeSub.cycle_end_date ?? activeSub.cycleEndDate)
+      : null,
   };
 };
 
 export const toMeetingListItemUI = (item: MeetingApi): MeetingListItemUI => {
   const meetingGroups = toArray(
-    item.meeting_groups ?? item.meetingGroups
+    item.groups ?? item.meeting_groups ?? item.meetingGroups
   ).map(toMeetingGroupUI);
 
   const derivedStats = deriveMeetingStats(meetingGroups);
 
-  const price = toNumber(item.price, 0);
+  const price = toNumber(item.price ?? item.starting_price ?? item.startingPrice, 0);
   const discount = toNumber(item.discount, 0);
-  const rawFinalPrice = toNumber(item.final_price ?? item.finalPrice, 0);
+  const rawFinalPrice = toNumber(item.final_price ?? item.finalPrice ?? (item as any).discounted_price, 0);
   const finalPrice = computeFinalPrice(price, discount, rawFinalPrice);
   const hasDiscount = computeHasDiscount(
     price,
@@ -266,6 +292,10 @@ export const toMeetingListItemUI = (item: MeetingApi): MeetingListItemUI => {
       item.material_name ?? item.materialName ?? item.material?.name,
       ""
     ),
+    materialColor: toStringSafe(
+      item.material?.color,
+      "#22BEC8"
+    ),
 
     teacherId: toNullableNumber(
       item.teacher_id ?? item.teacherId ?? item.teacher?.id
@@ -276,6 +306,9 @@ export const toMeetingListItemUI = (item: MeetingApi): MeetingListItemUI => {
         item.teacher?.full_name ??
         item.teacher?.fullName,
       ""
+    ),
+    teacherAvatarUrl: toNullableString(
+      item.teacher?.avatar_url ?? item.teacher?.avatarUrl
     ),
 
     isPrivate: toBoolean(item.is_private ?? item.isPrivate, false),
@@ -295,6 +328,8 @@ export const toMeetingListItemUI = (item: MeetingApi): MeetingListItemUI => {
     status: normalizeMeetingStatus(item.status),
     timezone: toStringSafe(item.timezone, "Africa/Tunis"),
 
+    meetingGroups,
+
     createdAt: toNullableString(item.created_at),
     updatedAt: toNullableString(item.updated_at),
   };
@@ -303,7 +338,7 @@ export const toMeetingListItemUI = (item: MeetingApi): MeetingListItemUI => {
 export const toMeetingDetailsUI = (item: MeetingApi): MeetingDetailsUI => {
   const base = toMeetingListItemUI(item);
   const meetingGroups = toArray(
-    item.meeting_groups ?? item.meetingGroups
+    item.groups ?? item.meeting_groups ?? item.meetingGroups
   ).map(toMeetingGroupUI);
 
   const derivedStats = deriveMeetingStats(meetingGroups);
@@ -345,4 +380,47 @@ export const toMeetingsListPayloadUI = (
     lastPage: 1,
     hasNextPage: false,
   };
+};
+
+export const toReservedMeetingTimeUI = (
+  item: ReservedMeetingTimeApi
+): ReservedMeetingTimeUI => {
+  const meetingDate = toStringSafe(item.meeting_date, "");
+  const startTime = toStringSafe(item.start_time, "");
+  const endTime = toStringSafe(item.end_time, "");
+
+  const meeting = item.meeting ?? null;
+  const group = item.group ?? null;
+
+  return {
+    id: toNumber(item.id, 0),
+    groupId: toNumber(item.group_id, 0),
+    meetingDate: toNullableString(meetingDate),
+    startTime: toNullableString(startTime),
+    endTime: toNullableString(endTime),
+    duration: toNullableNumber(item.duration),
+    dayOfWeek: toNullableNumber(item.day_of_week),
+    status: toStringSafe(item.status, ""),
+    isFreeTrialSession: toBoolean(item.is_free_trial_session, false),
+    hasSupports: toBoolean(item.has_supports, false),
+    entitlementStatus: toNullableString(item.entitlement_status),
+    teacherId: toNullableNumber(meeting?.teacher_id),
+    teacherName: toNullableString(meeting?.teacher_name),
+    teacherAvatarUrl: toNullableString(
+      meeting?.teacher_avatar_url ?? meeting?.teacher_avatar
+    ),
+    materialId: toNullableNumber(meeting?.material_id),
+    materialName: toNullableString(meeting?.material_name),
+    materialColor: toNullableString(meeting?.material_color),
+    meetingName: toNullableString(meeting?.name),
+    groupName: toNullableString(group?.name),
+    startsAt: buildDateTime(meetingDate, startTime),
+    endsAt: buildDateTime(meetingDate, endTime),
+  };
+};
+
+export const toReservedMeetingTimesUI = (
+  payload: ReservedMeetingTimeApi[]
+): ReservedMeetingTimeUI[] => {
+  return toArray(payload).map(toReservedMeetingTimeUI);
 };

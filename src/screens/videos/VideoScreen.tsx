@@ -5,13 +5,14 @@ import {
   I18nManager,
   Image,
   ImageBackground,
+  Pressable,
   Share,
   StatusBar,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type {
   NavigationProp,
   ParamListBase,
@@ -19,14 +20,15 @@ import type {
 } from "@react-navigation/native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import {
-  ResizeMode,
-  Video,
-  type AVPlaybackStatus,
-} from "expo-av";
+  VideoView,
+  useVideoPlayer,
+  type VideoPlayer,
+} from "expo-video";
 import { useTranslation } from "react-i18next";
+import { LinearGradient } from "expo-linear-gradient";
 
+import ActiveChildHeaderAvatar from "@components/header/ActiveChildHeaderAvatar";
 import { useAppTheme } from "@theme/ThemeProvider";
 import {
   useGetBookByIdQuery,
@@ -38,11 +40,16 @@ import {
   useFollowTeacherMutation,
   useGetTeacherByIdQuery,
 } from "@redux/apis/teachers/teacherApi";
+import { useAppSelector } from "@redux/hooks";
+import { selectActiveChildId } from "@redux/slices/authSlice";
 import { PATHS } from "@config/constants/paths";
+import { MATERIAL_TINT } from "@screens/books/BooksScreen.tokens";
+import { getAccent, getGradient } from "@utils/helpers/bookScreen.helpers";
 
 import { VIDEO_UI } from "./VideoScreen.constants";
 import type { VideoListItem, VideoRouteParams } from "./VideoScreen.types";
 import { makeVideoStyles } from "./VideoScreen.styles";
+import { getBookFilePalette } from "@screens/books/bookFiles/BookFileScreen.style";
 import { useVideoSessionTracker } from "@hooks/useVideoSessionTracker";
 import { saveBookPageResume } from "@utils/helpers/bookLearningResume.helpers";
 import {
@@ -68,10 +75,6 @@ import {
 
 const VIDEO_PLACEHOLDER = require("@assets/images/cover_video.png");
 
-const HERO_GRADIENT_DARK = ["#071325", "#0B1B33", "#0D1F3A"] as const;
-const HERO_GRADIENT_LIGHT = ["#EDF5FF", "#F7FBFF", "#FFFFFF"] as const;
-const FOLLOW_GRADIENT_DARK = ["#22BEC8", "#46D4C1"] as const;
-const FOLLOW_GRADIENT_LIGHT = ["#1CBED1", "#4DD6C6"] as const;
 const THUMB_OVERLAY_COLORS = [
   "rgba(0,0,0,0.04)",
   "rgba(0,0,0,0.34)",
@@ -87,6 +90,8 @@ type FollowUiState =
       followersCount: number;
     }
   | null;
+
+type TabKey = "videos" | "audio" | "links" | "docs";
 
 function keyExtractor(item: VideoListItem, index: number): string {
   const id = toValidId(item.id);
@@ -132,24 +137,28 @@ export default function VideoScreen() {
   const route = useRoute<VideoScreenRoute>();
   const { t } = useTranslation();
   const { colors, mode } = useAppTheme();
+  const insets = useSafeAreaInsets();
 
   const isDark = mode === "dark";
   const isRTL = I18nManager.isRTL;
-  const styles = makeVideoStyles(colors, isDark);
 
   const params = route.params ?? {};
   const iconId = toValidId(params.iconId);
   const bookId = toValidId(params.bookId);
+  const activeChildId = useAppSelector(selectActiveChildId);
   const initialVideoId = toValidId((params as Record<string, unknown>).videoId);
 
-  const accentColor = colors.primary ?? "#22BEC8";
+  const materialRawName = params.materialName ?? null;
+  const materialKey = normalizeMaterialKey(materialRawName);
+  const matAccent = getAccent(materialKey, null);
+  const matGradient = getGradient(materialKey, null);
+  const matTint = MATERIAL_TINT[materialKey] ?? MATERIAL_TINT.default;
+  const styles = makeVideoStyles(colors, isDark, matAccent, matGradient, matTint);
+  const palette = getBookFilePalette(colors, isDark);
+
+  const accentColor = matAccent;
   const mutedColor = colors.muted ?? (isDark ? "#9FB1C8" : "#677B96");
   const dangerColor = colors.danger ?? "#EF4444";
-
-  const heroGradientColors = isDark ? HERO_GRADIENT_DARK : HERO_GRADIENT_LIGHT;
-  const followGradientColors = isDark
-    ? FOLLOW_GRADIENT_DARK
-    : FOLLOW_GRADIENT_LIGHT;
 
   const {
     data: videosResp,
@@ -221,9 +230,12 @@ export default function VideoScreen() {
     });
   }, [activeMediaId, activeVideo, bookId, iconId, params.materialName]);
 
-  const { data: bookResp } = useGetBookByIdQuery(bookId, {
-    skip: bookId <= 0,
-  });
+  const { data: bookResp } = useGetBookByIdQuery(
+    { bookId, childId: activeChildId ?? 0 },
+    {
+      skip: bookId <= 0 || !activeChildId,
+    }
+  );
 
   const book = bookResp?.data ?? null;
   const teacherId = pickTeacherId(activeVideo, book);
@@ -422,15 +434,116 @@ export default function VideoScreen() {
 
   const [trackView] = useTrackMediaViewMutation();
   const trackedMediaIdRef = useRef(0);
-  const playerRef = useRef<Video | null>(null);
+  const videoViewRef = useRef<VideoView>(null);
 
   const [positionMillis, setPositionMillis] = useState(0);
   const [durationMillis, setDurationMillis] = useState(0);
   const [isBuffering, setIsBuffering] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
   const visiblePositionSecondRef = useRef(-1);
   const visibleDurationSecondRef = useRef(-1);
   const visibleBufferingRef = useRef(false);
+
+  const onTrackingVideoLoadRef = useRef<(status: any) => void>(() => {});
+  const onTrackingPlaybackStatusUpdateRef = useRef<(status: any) => void>(() => {});
+  // Stable ref holding the player; a fresh object per render would re-trigger
+  // the session-tracker effect every render (→ "Maximum update depth exceeded").
+  const playerRef = useRef<import("expo-video").VideoPlayer | null>(null);
+
+  const player = useVideoPlayer(videoUri || null, (p) => {
+    p.loop = false;
+    p.muted = false;
+    p.volume = 1.0;
+    p.timeUpdateEventInterval = 0.5;
+
+    p.addListener("timeUpdate", (payload) => {
+      const nextPositionMs = Math.round(payload.currentTime * 1000);
+      const nextPositionSecond = toWholeSecond(nextPositionMs);
+
+      if (visiblePositionSecondRef.current !== nextPositionSecond) {
+        visiblePositionSecondRef.current = nextPositionSecond;
+        setPositionMillis(nextPositionMs);
+      }
+    });
+
+    p.addListener("statusChange", (payload) => {
+      if (payload.status === "readyToPlay") {
+        const nextDuration = Math.round(p.duration * 1000);
+        const nextDurationSecond = toWholeSecond(nextDuration);
+
+        if (visibleDurationSecondRef.current !== nextDurationSecond) {
+          visibleDurationSecondRef.current = nextDurationSecond;
+          setDurationMillis(nextDuration > 0 ? nextDuration : 0);
+        }
+
+        if (visibleBufferingRef.current !== false) {
+          visibleBufferingRef.current = false;
+          setIsBuffering(false);
+        }
+
+        onTrackingVideoLoadRef.current({
+          isLoaded: true,
+          isPlaying: p.playing,
+          positionMillis: Math.round(p.currentTime * 1000),
+          durationMillis: Math.round(p.duration * 1000),
+          isBuffering: false,
+          didJustFinish: false,
+        });
+      }
+
+      if (payload.status === "loading") {
+        if (visibleBufferingRef.current !== true) {
+          visibleBufferingRef.current = true;
+          setIsBuffering(true);
+        }
+      }
+
+      if (payload.status === "error") {
+        if (visibleBufferingRef.current !== false) {
+          visibleBufferingRef.current = false;
+          setIsBuffering(false);
+        }
+      }
+    });
+
+    p.addListener("playingChange", (payload) => {
+      setIsPlaying(payload.isPlaying);
+
+      onTrackingPlaybackStatusUpdateRef.current({
+        isLoaded: true,
+        isPlaying: payload.isPlaying,
+        positionMillis: Math.round(p.currentTime * 1000),
+        durationMillis: Math.round(p.duration * 1000),
+        isBuffering: visibleBufferingRef.current,
+        didJustFinish: false,
+      });
+    });
+
+    p.addListener("playToEnd", () => {
+      visiblePositionSecondRef.current = 0;
+      setPositionMillis(0);
+      setIsPlaying(false);
+
+      if (visibleBufferingRef.current !== false) {
+        visibleBufferingRef.current = false;
+        setIsBuffering(false);
+      }
+
+      onTrackingPlaybackStatusUpdateRef.current({
+        isLoaded: true,
+        isPlaying: false,
+        positionMillis: 0,
+        durationMillis: Math.round(p.duration * 1000),
+        isBuffering: false,
+        didJustFinish: true,
+      });
+    });
+  });
+
+  playerRef.current = player;
 
   useEffect(() => {
     const initialDuration = pickDurationMillis(activeVideo);
@@ -438,17 +551,11 @@ export default function VideoScreen() {
     setPositionMillis(0);
     setDurationMillis(initialDuration);
     setIsBuffering(false);
+    setIsPlaying(false);
 
     visiblePositionSecondRef.current = 0;
     visibleDurationSecondRef.current = toWholeSecond(initialDuration);
     visibleBufferingRef.current = false;
-
-    return () => {
-      const player = playerRef.current;
-      if (player) {
-        void player.pauseAsync().catch(() => undefined);
-      }
-    };
   }, [activeMediaId, activeVideo]);
 
   const {
@@ -467,102 +574,12 @@ export default function VideoScreen() {
   } = useVideoSessionTracker({
     videoId: activeMediaId,
     videoDurationMillis: durationMillis || pickDurationMillis(activeVideo),
-    playerRef,
+    playerRef: playerRef,
     enabled: activeMediaId > 0 && Boolean(videoUri),
   });
 
-  const onVideoLoad = useCallback(
-    (status: AVPlaybackStatus) => {
-      if (!status.isLoaded) {
-        if (visibleBufferingRef.current !== false) {
-          visibleBufferingRef.current = false;
-          setIsBuffering(false);
-        }
-        return;
-      }
-
-      const nextDuration =
-        pickDurationMillis(activeVideo) || Number(status.durationMillis ?? 0);
-      const nextDurationSecond = toWholeSecond(nextDuration);
-
-      if (visibleDurationSecondRef.current !== nextDurationSecond) {
-        visibleDurationSecondRef.current = nextDurationSecond;
-        setDurationMillis(nextDuration > 0 ? nextDuration : 0);
-      }
-
-      if (visibleBufferingRef.current !== false) {
-        visibleBufferingRef.current = false;
-        setIsBuffering(false);
-      }
-
-      onTrackingVideoLoad(status);
-    },
-    [activeVideo, onTrackingVideoLoad]
-  );
-
-  const onPlaybackStatusUpdate = useCallback(
-    (status: AVPlaybackStatus) => {
-      if (!status.isLoaded) {
-        if (visibleBufferingRef.current !== false) {
-          visibleBufferingRef.current = false;
-          setIsBuffering(false);
-        }
-        return;
-      }
-
-      const nextPosition = Number(status.positionMillis ?? 0);
-      const nextDuration =
-        pickDurationMillis(activeVideo) || Number(status.durationMillis ?? 0);
-      const nextIsBuffering = Boolean(status.isBuffering);
-
-      const nextPositionSecond = toWholeSecond(nextPosition);
-      const nextDurationSecond = toWholeSecond(nextDuration);
-
-      if (visiblePositionSecondRef.current !== nextPositionSecond) {
-        visiblePositionSecondRef.current = nextPositionSecond;
-        setPositionMillis(nextPosition);
-      }
-
-      if (visibleDurationSecondRef.current !== nextDurationSecond) {
-        visibleDurationSecondRef.current = nextDurationSecond;
-        setDurationMillis(nextDuration > 0 ? nextDuration : 0);
-      }
-
-      if (visibleBufferingRef.current !== nextIsBuffering) {
-        visibleBufferingRef.current = nextIsBuffering;
-        setIsBuffering(nextIsBuffering);
-      }
-
-      if (status.didJustFinish) {
-        visiblePositionSecondRef.current = 0;
-        setPositionMillis(0);
-
-        if (visibleBufferingRef.current !== false) {
-          visibleBufferingRef.current = false;
-          setIsBuffering(false);
-        }
-      }
-
-      if (
-        iconId > 0 &&
-        activeMediaId > 0 &&
-        status.isPlaying &&
-        trackedMediaIdRef.current !== activeMediaId
-      ) {
-        trackedMediaIdRef.current = activeMediaId;
-        void trackView({ iconId, mediaId: activeMediaId }).catch(() => undefined);
-      }
-
-      onTrackingPlaybackStatusUpdate(status);
-    },
-    [
-      activeMediaId,
-      activeVideo,
-      iconId,
-      onTrackingPlaybackStatusUpdate,
-      trackView,
-    ]
-  );
+  onTrackingVideoLoadRef.current = onTrackingVideoLoad;
+  onTrackingPlaybackStatusUpdateRef.current = onTrackingPlaybackStatusUpdate;
 
   const goBack = useCallback(async () => {
     await endTrackingSession();
@@ -581,17 +598,69 @@ export default function VideoScreen() {
   }, [bookId, endTrackingSession, navigation]);
 
   const openFullscreen = useCallback(async () => {
-    const player = playerRef.current;
-    if (!player) {
-      return;
-    }
-
     try {
-      await player.presentFullscreenPlayer();
+      await videoViewRef.current?.enterFullscreen();
     } catch {
       // noop
     }
   }, []);
+
+  const openParentProfile = useCallback(() => {
+    navigation.navigate("ProfileParent");
+  }, [navigation]);
+
+  const togglePlayPause = useCallback(async () => {
+    try {
+      if (player.playing) {
+        player.pause();
+      } else {
+        player.play();
+      }
+    } catch {
+      // noop
+    }
+  }, [player]);
+
+  const seekForward = useCallback(async () => {
+    try {
+      const currentSec = player.currentTime;
+      const dur = player.duration;
+      player.currentTime = Math.min(currentSec + 10, dur);
+    } catch {
+      // noop
+    }
+  }, [player]);
+
+  const seekBackward = useCallback(async () => {
+    try {
+      const currentSec = player.currentTime;
+      player.currentTime = Math.max(currentSec - 10, 0);
+    } catch {
+      // noop
+    }
+  }, [player]);
+
+  const toggleMute = useCallback(async () => {
+    try {
+      player.muted = !isMuted;
+      setIsMuted((prev) => !prev);
+    } catch {
+      // noop
+    }
+  }, [isMuted, player]);
+
+  const cycleSpeed = useCallback(async () => {
+    const speeds = [0.5, 0.75, 1, 1.25, 1.5, 2];
+    const currentIdx = speeds.indexOf(playbackSpeed);
+    const nextSpeed = speeds[(currentIdx + 1) % speeds.length];
+
+    try {
+      player.playbackRate = nextSpeed;
+      setPlaybackSpeed(nextSpeed);
+    } catch {
+      // noop
+    }
+  }, [playbackSpeed, player]);
 
   const selectVideo = useCallback(
     async (index: number) => {
@@ -599,16 +668,10 @@ export default function VideoScreen() {
         return;
       }
 
-      const player = playerRef.current;
-
       try {
         await flushProgress();
-
-        if (player) {
-          await player.pauseAsync();
-          await player.setPositionAsync(0);
-        }
-
+        player.pause();
+        player.currentTime = 0;
         await endTrackingSession();
       } catch {
         // noop
@@ -620,12 +683,13 @@ export default function VideoScreen() {
       setPositionMillis(0);
       setDurationMillis(nextDuration);
       setIsBuffering(false);
+      setIsPlaying(false);
 
       visiblePositionSecondRef.current = 0;
       visibleDurationSecondRef.current = toWholeSecond(nextDuration);
       visibleBufferingRef.current = false;
     },
-    [endTrackingSession, flushProgress, videos]
+    [endTrackingSession, flushProgress, player, videos]
   );
 
   const showLoading = isLoading || (isFetching && videos.length === 0);
@@ -633,21 +697,33 @@ export default function VideoScreen() {
 
   const currentTimeText = useMemo(() => formatMillis(positionMillis), [positionMillis]);
   const totalTimeText = useMemo(() => formatMillis(durationMillis), [durationMillis]);
-  const playerTimeLabel = `${currentTimeText} / ${totalTimeText}`;
-  const lessonChipText = `${t(VIDEO_UI.lesson)} ${activeIndex + 1}`;
-  const trialRemainingText = formatMillis(trialRemainingSeconds * 1000);
-  const showTrialBadge = trialEnabled && canWatch && trialRemainingSeconds > 0;
-
   const blockedMessage =
     requiresSubscription || trialExhausted
       ? t(VIDEO_UI.subscriptionRequired)
       : sessionReason || t(VIDEO_UI.videoAccessBlocked);
 
+  const teacherInitial = teacherName.charAt(0) || "?";
+
+  const [activeTab, setActiveTab] = useState<TabKey>("videos");
+  const [bookExpanded, setBookExpanded] = useState(true);
+  const [bookPageIndex, setBookPageIndex] = useState(0);
+
+  const bookPages = book?.pages ?? [];
+  const bookPagesTotal = book?.pagesTotal ?? bookPages.length;
+  const bookPagesDisplayFrom = bookPageIndex * 2 + 1;
+  const bookPagesDisplayTo = Math.min(bookPagesDisplayFrom + 1, bookPagesTotal);
+
+  const openBookFile = useCallback(() => {
+    if (bookId > 0) {
+      navigation.navigate(PATHS.APP.BOOKS_FILE, { bookId });
+    }
+  }, [bookId, navigation]);
+
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.safe}>
       <StatusBar
-        barStyle={isDark ? "light-content" : "dark-content"}
-        backgroundColor={isDark ? "#071325" : "#EDF5FF"}
+        barStyle="light-content"
+        backgroundColor={palette.header}
       />
 
       <View style={styles.contentWrap}>
@@ -680,331 +756,388 @@ export default function VideoScreen() {
             data={videos.length > 1 ? videos : EMPTY_VIDEOS}
             keyExtractor={keyExtractor}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={styles.scrollContent}
             ListHeaderComponent={
               <View>
                 <LinearGradient
-                  colors={heroGradientColors}
-                  start={{ x: 0.08, y: 0 }}
-                  end={{ x: 0.92, y: 1 }}
-                  style={styles.hero}
+                  colors={[palette.header, palette.primaryDark]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={[styles.bookHeaderWrap, { paddingTop: insets.top + 6 }]}
                 >
-                  <View style={styles.topBar}>
+                  <View style={styles.bookHeaderTopRow}>
                     <TouchableOpacity
                       activeOpacity={0.9}
-                      onPress={() => {
-                        void goBack();
-                      }}
+                      onPress={() => { void goBack(); }}
                       style={styles.backBtn}
                     >
                       <Ionicons
                         name={isRTL ? "arrow-forward" : "arrow-back"}
                         size={20}
-                        color={styles.backIcon.color}
+                        color="#FFFFFF"
                       />
                     </TouchableOpacity>
-
-                    <View style={styles.topUtilities}>
-                      <TouchableOpacity
-                        activeOpacity={0.9}
-                        onPress={openFullscreen}
-                        style={styles.topUtilityIcon}
-                      >
-                        <Ionicons
-                          name="expand-outline"
-                          size={16}
-                          color={styles.topUtilityIconColor.color}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  <View
-                    style={[
-                      styles.heroBadgesRow,
-                      isRTL ? styles.heroBadgesRowRtl : null,
-                    ]}
-                  >
-                    {showTrialBadge ? (
-                      <View style={styles.trialBadge}>
-                        <Ionicons
-                          name="time-outline"
-                          size={13}
-                          color={styles.trialBadgeIcon.color}
-                          style={styles.subjectIconSpacing}
-                        />
-                        <Text style={styles.trialBadgeText} numberOfLines={1}>
-                          {trialRemainingText}
-                        </Text>
-                      </View>
-                    ) : (
-                      <View style={styles.badgePlaceholder} />
-                    )}
-
-                    <View style={styles.subjectBadge}>
-                      <Text style={styles.subjectBadgeText} numberOfLines={1}>
-                        {subjectTitle}
+                    <View style={styles.bookHeaderCenter}>
+                      <Text style={styles.bookHeaderTitle} numberOfLines={1}>
+                        {book?.title || subjectTitle}
                       </Text>
-
-                      <Ionicons
-                        name="book-outline"
-                        size={12}
-                        color={styles.subjectIcon.color}
-                        style={styles.subjectIconSpacing}
-                      />
-
-                      <View style={styles.subjectDot} />
+                      <Text style={styles.bookHeaderSubtitle} numberOfLines={1}>
+                        {title}
+                      </Text>
                     </View>
-                  </View>
-
-                  <View style={styles.videoCard}>
-                    <View style={styles.playerWrap}>
-                      <Video
-                        key={String(activeMediaId || videoUri)}
-                        ref={(ref) => {
-                          playerRef.current = ref;
-                        }}
-                        source={{ uri: videoUri }}
-                        style={styles.player}
-                        useNativeControls
-                        resizeMode={ResizeMode.CONTAIN}
-                        shouldPlay={false}
-                        isLooping={false}
-                        isMuted={false}
-                        volume={1.0}
-                        progressUpdateIntervalMillis={500}
-                        onLoad={onVideoLoad}
-                        onPlaybackStatusUpdate={onPlaybackStatusUpdate}
-                      />
-
-                      {isSessionLoading ? (
-                        <View style={styles.sessionOverlay}>
-                          <ActivityIndicator size="small" color={accentColor} />
-                        </View>
-                      ) : null}
-
-                      {isAccessBlocked ? (
-                        <View style={styles.blockedOverlay}>
-                          <Ionicons
-                            name="lock-closed-outline"
-                            size={28}
-                            color="#FFFFFF"
-                          />
-                          <Text style={styles.blockedOverlayText}>
-                            {blockedMessage}
-                          </Text>
-                        </View>
-                      ) : null}
-                    </View>
+                    <TouchableOpacity
+                      activeOpacity={0.9}
+                      onPress={openParentProfile}
+                      style={styles.bookHeaderAvatar}
+                    >
+                      <ActiveChildHeaderAvatar />
+                    </TouchableOpacity>
                   </View>
                 </LinearGradient>
 
-                <View style={styles.body}>
-                  <Text style={styles.title} numberOfLines={2}>
-                    {title}
-                  </Text>
-
-                  <View style={styles.chipsRow}>
-                    <View style={styles.infoChip}>
-                      <Ionicons
-                        name="play-circle-outline"
-                        size={14}
-                        color={accentColor}
-                        style={styles.chipIcon}
-                      />
-                      <Text style={styles.infoChipText}>{lessonChipText}</Text>
-                    </View>
-
-                    <View style={styles.infoChip}>
-                      <Ionicons
-                        name="time-outline"
-                        size={14}
-                        color={accentColor}
-                        style={styles.chipIcon}
-                      />
-                      <Text style={styles.infoChipText}>{totalTimeText}</Text>
-                    </View>
-
-                    <View style={styles.infoChip}>
-                      <Ionicons
-                        name="eye-outline"
-                        size={14}
-                        color={accentColor}
-                        style={styles.chipIcon}
-                      />
-                      <Text style={styles.infoChipText}>
-                        {formatCompactNumber(viewsCount)}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {isBuffering ? (
-                    <View style={styles.bufferingLoaderWrap}>
-                      <ActivityIndicator size="small" color={accentColor} />
-                    </View>
-                  ) : null}
-
-                  <View style={styles.playerTimeWrap}>
-                    <Text style={styles.playerTimeText}>{playerTimeLabel}</Text>
-                  </View>
-
-                  <View style={styles.teacherSection}>
-                    <View style={styles.teacherHeroRow}>
+                <View style={styles.tabBarWrap}>
+                  {(["videos", "audio", "links", "docs"] as TabKey[]).map((tab) => {
+                    const isActive = activeTab === tab;
+                    const tabIcons: Record<TabKey, string> = {
+                      videos: "play-circle",
+                      audio: "headset",
+                      links: "link",
+                      docs: "document-text",
+                    };
+                    const tabLabels: Record<TabKey, string> = {
+                      videos: t(VIDEO_UI.tabVideos),
+                      audio: t(VIDEO_UI.tabAudio),
+                      links: t(VIDEO_UI.tabLinks),
+                      docs: t(VIDEO_UI.tabDocs),
+                    };
+                    return (
                       <TouchableOpacity
-                        activeOpacity={0.9}
-                        onPress={onToggleFollow}
-                        disabled={!canUseTeacher || isFollowing}
-                        style={[
-                          styles.followTouchable,
-                          !canUseTeacher || isFollowing
-                            ? styles.followDisabled
-                            : null,
-                        ]}
+                        key={tab}
+                        activeOpacity={0.85}
+                        onPress={() => setActiveTab(tab)}
+                        style={[styles.tabItem, isActive && styles.tabItemActive]}
                       >
-                        {displayedSubscribed ? (
-                          <View style={styles.followFilledNeutral}>
-                            <Text style={styles.followFilledNeutralText}>
-                              {isFollowing
-                                ? t(VIDEO_UI.loading)
-                                : t(VIDEO_UI.subscribed)}
+                        <Ionicons
+                          name={tabIcons[tab] as any}
+                          size={14}
+                          color={isActive ? styles.tabIconActive.color : styles.tabIcon.color}
+                        />
+                        <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
+                          {tabLabels[tab]}
+                        </Text>
+                        {tab === "videos" && videos.length > 0 && (
+                          <View style={[styles.tabBadge, isActive && styles.tabBadgeActive]}>
+                            <Text style={[styles.tabBadgeText, isActive && styles.tabBadgeTextActive]}>
+                              {videos.length}
                             </Text>
                           </View>
-                        ) : (
-                          <LinearGradient
-                            colors={followGradientColors}
-                            start={{ x: 0, y: 0.5 }}
-                            end={{ x: 1, y: 0.5 }}
-                            style={styles.followGradient}
-                          >
-                            <Text style={styles.followText}>
-                              {isFollowing
-                                ? t(VIDEO_UI.loading)
-                                : t(VIDEO_UI.subscribe)}
-                            </Text>
-                          </LinearGradient>
                         )}
                       </TouchableOpacity>
+                    );
+                  })}
+                </View>
 
-                      <TouchableOpacity
-                        activeOpacity={0.9}
-                        onPress={onOpenTeacherProfile}
-                        disabled={!canUseTeacher}
-                        style={styles.teacherInfoBlock}
-                      >
+                <View style={styles.playerCard}>
+                  <View style={styles.playerWrap}>
+                    <VideoView
+                      key={String(activeMediaId || videoUri)}
+                      ref={videoViewRef}
+                      player={player}
+                      style={styles.player}
+                      contentFit="contain"
+                      nativeControls={false}
+                    />
+
+                    {isSessionLoading ? (
+                      <View style={styles.sessionOverlay}>
+                        <ActivityIndicator size="small" color={accentColor} />
+                      </View>
+                    ) : null}
+
+                    {isAccessBlocked ? (
+                      <View style={styles.blockedOverlay}>
+                        <Ionicons name="lock-closed-outline" size={28} color="#FFFFFF" />
+                        <Text style={styles.blockedOverlayText}>{blockedMessage}</Text>
+                      </View>
+                    ) : null}
+
+                    <View style={styles.playerOverlay} pointerEvents="box-none">
+                      <View style={styles.playerTopRow}>
+                        <View style={styles.playerQualityBadge}>
+                          <Text style={styles.playerQualityText}>HD</Text>
+                        </View>
+                        <View style={{ flexDirection: "row", gap: 6 }}>
+                          <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={cycleSpeed}
+                            style={styles.playerSpeedBadge}
+                          >
+                            <Text style={styles.playerSpeedText}>{playbackSpeed}x</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => { /* TODO: settings */ }}
+                            style={styles.playerSettingsBtn}
+                          >
+                            <Ionicons name="settings-outline" size={16} color="rgba(255,255,255,0.8)" />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+
+                      <View style={styles.playerCenter}>
+                        {!isPlaying && (
+                          <TouchableOpacity
+                            activeOpacity={0.85}
+                            onPress={() => { void togglePlayPause(); }}
+                            style={styles.playPauseBtn}
+                          >
+                            <Ionicons name="play" size={28} color="#FFFFFF" />
+                          </TouchableOpacity>
+                        )}
+                      </View>
+
+                      <View style={styles.playerBottomRow}>
+                        <View style={styles.playerControlsRow}>
+                          <View style={styles.playerSideControls}>
+                            <TouchableOpacity
+                              activeOpacity={0.8}
+                              onPress={() => { void togglePlayPause(); }}
+                              style={styles.playerControlBtn}
+                            >
+                              <Ionicons
+                                name={isPlaying ? "pause" : "play"}
+                                size={18}
+                                color="rgba(255,255,255,0.85)"
+                              />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                              activeOpacity={0.8}
+                              onPress={() => { void seekBackward(); }}
+                              style={styles.playerControlBtn}
+                            >
+                              <Ionicons name="play-back" size={18} color="rgba(255,255,255,0.85)" />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                              activeOpacity={0.8}
+                              onPress={() => { void seekForward(); }}
+                              style={styles.playerControlBtn}
+                            >
+                              <Ionicons name="play-forward" size={18} color="rgba(255,255,255,0.85)" />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                              activeOpacity={0.8}
+                              onPress={() => { void toggleMute(); }}
+                              style={styles.playerControlBtn}
+                            >
+                              <Ionicons
+                                name={isMuted ? "volume-mute" : "volume-high"}
+                                size={18}
+                                color="rgba(255,255,255,0.85)"
+                              />
+                            </TouchableOpacity>
+                          </View>
+
+                          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                            <Text style={styles.playerTimeText}>
+                              {currentTimeText} / {totalTimeText}
+                            </Text>
+                            <TouchableOpacity
+                              activeOpacity={0.8}
+                              onPress={() => { void openFullscreen(); }}
+                              style={styles.playerControlBtn}
+                            >
+                              <Ionicons name="expand" size={16} color="rgba(255,255,255,0.85)" />
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+
+                <View style={styles.teacherCard}>
+                  <View style={styles.teacherCardRow}>
+                    <TouchableOpacity
+                      activeOpacity={0.9}
+                      onPress={onOpenTeacherProfile}
+                      disabled={!canUseTeacher}
+                    >
+                      <View style={styles.teacherAvatar}>
+                        {isTeacherLoading ? (
+                          <ActivityIndicator size="small" color={accentColor} />
+                        ) : teacherAvatarUri ? (
+                          <Image source={{ uri: teacherAvatarUri }} style={styles.teacherAvatarImg} />
+                        ) : (
+                          <Text style={styles.teacherAvatarLetter}>{teacherInitial}</Text>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+
+                    <View style={styles.teacherInfo}>
+                      <View style={styles.teacherNameRow}>
                         <Text style={styles.teacherName} numberOfLines={1}>
                           {teacherName}
                         </Text>
-
-                        <View style={styles.teacherMetaRow}>
-                          {teacherRating > 0 ? (
-                            <>
-                              <Text style={styles.teacherMetaStrong}>
-                                {teacherRating}
-                              </Text>
-                              <Ionicons
-                                name="star"
-                                size={13}
-                                color="#FACC15"
-                                style={styles.teacherStarIcon}
-                              />
-                            </>
-                          ) : null}
-
-                          <Text style={styles.teacherMetaText} numberOfLines={1}>
-                            {displayedFollowersCount > 0
-                              ? `${formatCompactNumber(displayedFollowersCount)} ${t(VIDEO_UI.followers)}`
-                              : t(VIDEO_UI.teacherLabel)}
-                          </Text>
+                        <View style={styles.teacherRoleBadge}>
+                          <Text style={styles.teacherRoleText}>{t(VIDEO_UI.teacherLabel)}</Text>
                         </View>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        activeOpacity={0.9}
-                        onPress={onOpenTeacherProfile}
-                        disabled={!canUseTeacher}
-                        style={styles.teacherAvatarCard}
-                      >
-                        <View style={styles.teacherAvatarWrap}>
-                          {isTeacherLoading ? (
-                            <ActivityIndicator size="small" color={accentColor} />
-                          ) : teacherAvatarUri ? (
-                            <Image
-                              source={{ uri: teacherAvatarUri }}
-                              style={styles.teacherAvatarImg}
-                            />
-                          ) : (
-                            <Ionicons
-                              name="person"
-                              size={22}
-                              color={mutedColor}
-                            />
-                          )}
-                        </View>
-                        <View style={styles.teacherOnlineDot} />
-                      </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.teacherActionsRow}>
-                      <TouchableOpacity
-                        activeOpacity={0.9}
-                        onPress={onToggleSaved}
-                        style={styles.actionSmallCard}
-                      >
-                        <Ionicons
-                          name={isSaved ? "bookmark" : "bookmark-outline"}
-                          size={22}
-                          color={isSaved ? accentColor : styles.actionIcon.color}
-                        />
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        activeOpacity={0.9}
-                        onPress={onShareVideo}
-                        style={styles.actionWideCard}
-                      >
-                        <Ionicons
-                          name="share-social-outline"
-                          size={18}
-                          color={styles.actionIcon.color}
-                        />
-                        <Text style={styles.actionWideText}>
-                          {t(VIDEO_UI.share)}
-                        </Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        activeOpacity={0.9}
-                        onPress={onToggleLike}
-                        disabled={iconId <= 0 || activeMediaId <= 0 || isLiking}
-                        style={[
-                          styles.actionLikesCard,
-                          isLiked ? styles.actionLikesCardActive : null,
-                        ]}
-                      >
-                        <Text style={styles.actionLikesText}>
-                          {formatCompactNumber(likesCount)}
-                        </Text>
-                        <Ionicons
-                          name={isLiked ? "heart" : "heart-outline"}
-                          size={18}
-                          color={isLiked ? dangerColor : mutedColor}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  {videos.length > 1 ? (
-                    <View style={styles.sectionHeader}>
-                      <Text style={styles.sectionTitle}>{t(VIDEO_UI.more)}</Text>
-
-                      <View style={styles.sectionBadge}>
-                        <Text style={styles.sectionBadgeText}>
-                          {videos.length} {t(VIDEO_UI.clips)}
+                      </View>
+                      <View style={styles.teacherFollowersRow}>
+                        <Ionicons name="people-outline" size={12} color={mutedColor} />
+                        <Text style={styles.teacherFollowersText}>
+                          {displayedFollowersCount > 0
+                            ? `${formatCompactNumber(displayedFollowersCount)} ${t(VIDEO_UI.followers)}`
+                            : ""}
                         </Text>
                       </View>
                     </View>
-                  ) : null}
+                  </View>
+
+                  <View style={styles.teacherActions}>
+                    <TouchableOpacity
+                      activeOpacity={0.9}
+                      onPress={onToggleLike}
+                      disabled={iconId <= 0 || activeMediaId <= 0 || isLiking}
+                      style={styles.teacherLikeBtn}
+                    >
+                      <Ionicons
+                        name={isLiked ? "heart" : "heart-outline"}
+                        size={16}
+                        color={isLiked ? dangerColor : mutedColor}
+                      />
+                      <Text style={styles.teacherLikeText}>
+                        {formatCompactNumber(likesCount)}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      activeOpacity={0.9}
+                      onPress={onToggleFollow}
+                      disabled={!canUseTeacher || isFollowing}
+                      style={[
+                        styles.teacherSubscribeBtn,
+                        (!canUseTeacher || isFollowing) && { opacity: 0.6 },
+                      ]}
+                    >
+                      {displayedSubscribed ? (
+                        <>
+                          <Ionicons name="checkmark-circle" size={14} color="#FFFFFF" />
+                          <Text style={styles.teacherSubscribeText}>
+                            {isFollowing ? t(VIDEO_UI.loading) : t(VIDEO_UI.subscribed)}
+                          </Text>
+                        </>
+                      ) : (
+                        <>
+                          <Ionicons name="person-add" size={14} color="#FFFFFF" />
+                          <Text style={styles.teacherSubscribeText}>
+                            {isFollowing ? t(VIDEO_UI.loading) : t(VIDEO_UI.subscribe)}
+                          </Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  </View>
                 </View>
+
+                {bookId > 0 && (
+                  <View style={styles.bookPreviewCard}>
+                    <TouchableOpacity
+                      activeOpacity={0.9}
+                      onPress={() => setBookExpanded((p) => !p)}
+                      style={styles.bookPreviewHeader}
+                    >
+                      <View style={styles.bookPreviewIconWrap}>
+                        <Ionicons name="book" size={18} color={accentColor} />
+                      </View>
+                      <Text style={styles.bookPreviewLabel}>
+                        {t(VIDEO_UI.bookFallback)}
+                      </Text>
+                      <Ionicons
+                        name={bookExpanded ? "chevron-up" : "chevron-down"}
+                        size={18}
+                        color={mutedColor}
+                      />
+                    </TouchableOpacity>
+
+                    {bookExpanded && (
+                      <>
+                        {bookPages.length > 0 ? (
+                          <FlatList
+                            data={bookPages}
+                            keyExtractor={(p) => String(p.id)}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={styles.bookPreviewThumbsScroll}
+                            renderItem={({ item: page }) => (
+                              <Image
+                                source={{ uri: page.pathMd || page.pathThumb || undefined }}
+                                style={styles.bookPreviewThumb}
+                                resizeMode="cover"
+                              />
+                            )}
+                          />
+                        ) : null}
+
+                        <View style={styles.bookPreviewFooter}>
+                          <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => setBookPageIndex((p) => Math.max(0, p - 1))}
+                            style={styles.bookPreviewNavBtn}
+                          >
+                            <Ionicons
+                              name={isRTL ? "chevron-forward" : "chevron-back"}
+                              size={16}
+                              color={mutedColor}
+                            />
+                          </TouchableOpacity>
+
+                          <Text style={styles.bookPreviewPageText}>
+                            {bookPagesTotal > 0
+                              ? `${bookPagesDisplayFrom}-${bookPagesDisplayTo} / ${bookPagesTotal}`
+                              : "—"}
+                          </Text>
+
+                          <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => setBookPageIndex((p) =>
+                              Math.min(p + 1, Math.max(0, Math.floor(bookPagesTotal / 2) - 1))
+                            )}
+                            style={styles.bookPreviewNavBtn}
+                          >
+                            <Ionicons
+                              name={isRTL ? "chevron-back" : "chevron-forward"}
+                              size={16}
+                              color={mutedColor}
+                            />
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            activeOpacity={0.85}
+                            onPress={openBookFile}
+                            style={styles.bookPreviewOpenBtn}
+                          >
+                            <Text style={styles.bookPreviewOpenText}>
+                              {t(VIDEO_UI.bookOpen)}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </>
+                    )}
+                  </View>
+                )}
+
+                {videos.length > 1 ? (
+                  <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>{t(VIDEO_UI.more)}</Text>
+                    <View style={styles.sectionBadge}>
+                      <Text style={styles.sectionBadgeText}>
+                        {videos.length} {t(VIDEO_UI.clips)}
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
               </View>
             }
             renderItem={({ item, index }) => {
@@ -1016,9 +1149,7 @@ export default function VideoScreen() {
               return (
                 <TouchableOpacity
                   activeOpacity={0.94}
-                  onPress={() => {
-                    void selectVideo(index);
-                  }}
+                  onPress={() => { void selectVideo(index); }}
                   style={[
                     styles.videoCardItem,
                     isActive ? styles.videoCardItemActive : null,
@@ -1061,9 +1192,7 @@ export default function VideoScreen() {
                       <Text style={styles.videoCardMetaTeacher} numberOfLines={1}>
                         {teacherName}
                       </Text>
-
                       <View style={styles.videoCardMetaDivider} />
-
                       <View style={styles.videoCardMetaViewsWrap}>
                         <Ionicons
                           name="eye-outline"
@@ -1083,6 +1212,6 @@ export default function VideoScreen() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

@@ -13,6 +13,10 @@ export function requiresBook(planType: PlanType): boolean {
 }
 
 export function isSubscribeEnabled(state: PlanSelectionState): boolean {
+  if (state.planType === "books") {
+    return state.selectedPlanMaterialIds.length > 0;
+  }
+
   if (state.selectedMatiere == null) {
     return false;
   }

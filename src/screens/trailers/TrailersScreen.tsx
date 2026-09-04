@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -12,13 +12,15 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { Video, ResizeMode } from "expo-av";
+import { VideoView, useVideoPlayer } from "expo-video";
 
 import { useAppTheme } from "@theme/ThemeProvider";
 import { getMaterialEmoji } from "@utils/helpers/materialIcon.helper";
 import { PATHS } from "@config/constants/paths";
+import type { RootStackParamList } from "@config/types/navigation.types";
 
 import {
   TRAILERS_UI,
@@ -56,7 +58,11 @@ export default function TrailersScreen() {
 
   const [playerUrl,     setPlayerUrl]     = useState<string | null>(null);
   const [playerVisible, setPlayerVisible] = useState(false);
-  const videoRef = useRef<Video>(null);
+
+  const player = useVideoPlayer(playerUrl, (p) => {
+    p.loop = false;
+    p.volume = 1.0;
+  });
 
   const openPlayer = useCallback((url: string) => {
     if (!url) return;
@@ -65,17 +71,17 @@ export default function TrailersScreen() {
   }, []);
 
   const closePlayer = useCallback(async () => {
-    if (videoRef.current) {
-      await videoRef.current.stopAsync().catch(() => {});
-    }
+    try {
+      player.pause();
+    } catch {}
     setPlayerVisible(false);
     setPlayerUrl(null);
-  }, []);
+  }, [player]);
 
   const openProfile = useCallback(
     (teacherId: number) => {
       if (!teacherId) return;
-      navigation.navigate(PATHS.APP.TEACHER_PROFILE as never, { teacherId } as never);
+      navigation.navigate(PATHS.APP.TEACHER_PROFILE, { teacherId });
     },
     [navigation]
   );
@@ -312,15 +318,10 @@ export default function TrailersScreen() {
             </View>
 
             {playerUrl ? (
-              <Video
-                ref={videoRef}
-                source={{ uri: playerUrl }}
+              <VideoView
+                player={player}
                 style={styles.playerVideo}
-                useNativeControls
-                resizeMode={ResizeMode.CONTAIN}
-                shouldPlay
-                isLooping={false}
-                volume={1.0}
+                contentFit="contain"
               />
             ) : (
               <View style={styles.playerNoVideo}>

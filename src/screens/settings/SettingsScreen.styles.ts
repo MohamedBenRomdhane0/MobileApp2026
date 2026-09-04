@@ -156,7 +156,9 @@ export const createSettingsStyles = (colors: AppColors, isDark: boolean) => {
       paddingVertical: 14,
       paddingHorizontal: 10,
       borderWidth: 1.5,
-      borderColor: isDark ? "rgba(168,85,247,0.25)" : "rgba(79,140,255,0.20)",
+      borderColor: isDark
+        ? "rgba(201, 85, 247, 0.25)"
+        : "rgba(79,140,255,0.20)",
       shadowColor: colors.primary,
       shadowOpacity: 0.08,
       shadowRadius: 14,
@@ -213,13 +215,20 @@ export const createSettingsStyles = (colors: AppColors, isDark: boolean) => {
     planCardContent: {
       flex: 1,
       justifyContent: "center",
-      alignItems: "center",
+      alignItems: "flex-end",
+      paddingHorizontal: 10,
     },
 
     planCardBgIcon: {
       position: "absolute",
-      right: -6,
-      bottom: -10,
+      left: -6,
+      bottom: 0,
+    },
+
+    planCardImage: {
+      width: 82,
+      height: 82,
+      resizeMode: "contain",
     },
 
     planCardTop: {
@@ -231,13 +240,13 @@ export const createSettingsStyles = (colors: AppColors, isDark: boolean) => {
       fontSize: 13,
       fontWeight: "800",
       lineHeight: 17,
-      textAlign: "center",
+      textAlign: "right",
     },
 
     planCardBottom: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "center",
+      justifyContent: "flex-end",
       gap: 4,
       marginTop: 6,
     },

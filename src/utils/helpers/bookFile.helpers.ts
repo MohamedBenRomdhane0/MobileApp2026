@@ -43,14 +43,14 @@ export function normalizePages(book: BookDetailsUI | null | undefined): Normaliz
   return normalizedPages;
 }
 
-export function groupVideoIconsByPage(
+export function groupIconsByPage(
   icons: BookIconUI[] | null | undefined
 ): Map<number, BookIconUI[]> {
   const map = new Map<number, BookIconUI[]>();
 
   for (const icon of icons ?? []) {
     const iconType = String(icon.iconType ?? "").trim().toLowerCase();
-    if (iconType !== "video") {
+    if (iconType === "link") {
       continue;
     }
 

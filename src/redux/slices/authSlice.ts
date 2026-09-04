@@ -239,6 +239,26 @@ const authSlice = createSlice({
       state.actingAs = "child";
       state.activeChildId = child.id || state.activeChildId;
 
+      // Update parent's children array with full child data (including profile/level)
+      if (state.parentUser && (data.user || data.child)) {
+        const childId = child.id || state.activeChildId;
+        const children = state.parentUser.children || [];
+        const childIndex = children.findIndex((c: any) =>
+          String(c?.id ?? c?.user?.id) === String(childId)
+        );
+
+        if (childIndex >= 0) {
+          // Merge the full child data from API response into the children array
+          state.parentUser.children[childIndex] = {
+            ...children[childIndex],
+            ...(data.user ?? data.child),
+          };
+        } else if (data.user || data.child) {
+          // If child not found in array, add it
+          state.parentUser.children.push(data.user ?? data.child);
+        }
+      }
+
       state.user = state.parentUser;
       state.media = state.parentUser?.avatarPath ?? null;
 

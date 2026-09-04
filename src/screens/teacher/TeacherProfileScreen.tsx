@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { ResizeMode, Video } from "expo-av";
+import { VideoView, useVideoPlayer } from "expo-video";
 import {
   useNavigation,
   useRoute,
@@ -158,6 +158,12 @@ export default function TeacherProfileScreen() {
   const trailerUrl = teacherDetails?.trailerUrl ?? null;
   const trailerThumbnail = teacherDetails?.trailerThumbnail ?? null;
   const hasTrailer = !!(typeof trailerUrl === "string" && trailerUrl.trim());
+
+  const trailerPlayer = useVideoPlayer(hasTrailer ? trailerUrl : null, (p) => {
+    p.loop = false;
+    p.muted = false;
+    p.volume = 1.0;
+  });
 
   const [saveTeacherReview, { isLoading: isSavingReview }] =
     useSaveTeacherReviewMutation();
@@ -1064,20 +1070,11 @@ export default function TeacherProfileScreen() {
             {hasTrailer ? (
               <View style={styles.trailerVideoShell}>
                 <View style={styles.trailerVideoContainer}>
-                  <Video
-                    source={{ uri: trailerUrl! }}
+                  <VideoView
+                    player={trailerPlayer}
                     style={styles.trailerVideoFull}
-                    useNativeControls
-                    resizeMode={ResizeMode.COVER}
-                    shouldPlay={false}
-                    isLooping={false}
-                    isMuted={false}
-                    volume={1.0}
-                    progressUpdateIntervalMillis={500}
-                    posterSource={
-                      trailerThumbnail ? { uri: trailerThumbnail } : undefined
-                    }
-                    usePoster={!!trailerThumbnail}
+                    contentFit="cover"
+                    nativeControls
                   />
                 </View>
               </View>

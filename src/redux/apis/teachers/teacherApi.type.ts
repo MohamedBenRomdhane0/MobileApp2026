@@ -290,3 +290,9 @@ export type GetTeacherFollowersArgs = {
   page?: number;
   perPage?: number;
 };
+
+export type GetTeachersArgs = {
+  page?: number;
+  perPage?: number;
+  materialId?: number;
+};

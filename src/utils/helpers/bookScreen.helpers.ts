@@ -124,11 +124,23 @@ export function resolveMaterialKey(materialName?: string | null): string {
   return "default";
 }
 
-export function getGradient(key: string): readonly [string, string] {
-  return MATERIAL_GRADIENT[key] ?? MATERIAL_GRADIENT.default;
+export function getGradient(
+  key: string,
+  apiColor?: string | null
+): readonly [string, string] {
+  const base = MATERIAL_GRADIENT[key] ?? MATERIAL_GRADIENT.default;
+  const hex = String(apiColor ?? "").trim();
+  if (hex) {
+    return [base[0], hex];
+  }
+  return base;
 }
 
-export function getAccent(key: string): string {
+export function getAccent(key: string, apiColor?: string | null): string {
+  const hex = String(apiColor ?? "").trim();
+  if (hex) {
+    return hex;
+  }
   return MATERIAL_COLOR[key] ?? MATERIAL_COLOR.default;
 }
 

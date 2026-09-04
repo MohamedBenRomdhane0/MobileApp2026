@@ -13,7 +13,7 @@ type ThemeColors = {
   gold?: string;
 } | undefined;
 
-const GOLD = "#F5A623";
+const GOLD = "#8B5CF6";
 const CYAN = "#22BEC8";
 
 const sh = {
@@ -34,8 +34,8 @@ export function getPlansPalette(colors: ThemeColors, isDark: boolean) {
     card: colors?.card ?? (isDark ? "#0D1726" : "#FFFFFF"),
     danger: colors?.danger ?? "#EF4444",
     white: "#FFFFFF",
-    gold: "#F5A623",
-    goldStrong: "#E8960F",
+    gold: GOLD,
+    goldStrong: "#6D28D9",
     success: "#16A34A",
     surface: isDark ? "#0B1422" : "#F8FBFF",
     surfaceAlt: isDark ? "#0F1B2D" : "#EEF6FF",
@@ -70,7 +70,7 @@ export const plansStyles = StyleSheet.create({
     right: -40,
     backgroundColor: "rgba(255,255,255,0.05)",
   },
-  headerTopRow: {
+headerTopRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -377,6 +377,95 @@ export const plansStyles = StyleSheet.create({
     writingDirection: "rtl",
     textAlign: "right",
   },
+
+  materialsRow: {
+    flexDirection: "row-reverse",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  materialChip: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+  },
+  materialChipText: {
+    fontSize: 12,
+    fontWeight: "700",
+    writingDirection: "rtl",
+  },
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  teacherRow: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    borderRadius: 16,
+    borderWidth: 1.5,
+    padding: 12,
+    gap: 10,
+  },
+  teacherRowLeft: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  teacherRadio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  teacherRowRight: {
+    flex: 1,
+  },
+  teacherRowInfo: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 10,
+  },
+  teacherAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(34,190,200,0.12)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  teacherRowText: {
+    flex: 1,
+  },
+  teacherRowName: {
+    fontSize: 14,
+    fontWeight: "800",
+    writingDirection: "rtl",
+    textAlign: "right",
+  },
+  teacherRowMeta: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 2,
+  },
+  teacherRowSubject: {
+    fontSize: 11,
+    fontWeight: "600",
+    writingDirection: "rtl",
+  },
+  teacherRowRating: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
 });
 
 export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: boolean) {
@@ -453,12 +542,18 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
       marginStart: 3,
       marginBottom: 3,
     },
+    headerTitleRow: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
     headerTitle: {
       fontSize: 25,
       fontWeight: "900",
       color: "#FFFFFF",
       textAlign: "center",
       writingDirection: dir,
+      flex: 1,
     },
     headerSubtitle: {
       marginTop: 7,
@@ -583,44 +678,6 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
       gap: 12,
       ...sh,
     },
-    builderToggleWrap: {
-      flexDirection: row,
-      backgroundColor: palette.surface,
-      borderColor: palette.border,
-      borderWidth: 1,
-      borderRadius: 999,
-      padding: 4,
-      gap: 2,
-    },
-    builderToggleBtn: {
-      flex: 1,
-      borderRadius: 999,
-      paddingVertical: 10,
-      paddingHorizontal: 6,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    builderToggleActiveBg: {
-      position: "absolute",
-      top: 0,
-      bottom: 0,
-      left: 0,
-      right: 0,
-      borderRadius: 999,
-    },
-    builderToggleLabel: {
-      fontSize: 12.5,
-      fontWeight: "900",
-      textAlign: "center",
-      writingDirection: dir,
-    },
-    builderToggleLabelActive: {
-      color: "#FFFFFF",
-    },
-    builderDivider: {
-      height: 1,
-      backgroundColor: palette.border,
-    },
     matiereTitle: {
       fontSize: 12.5,
       fontWeight: "900",
@@ -638,13 +695,20 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
       gap: 6,
       borderRadius: 999,
       paddingHorizontal: 14,
-      paddingVertical: 9,
+      paddingVertical: 13,
       borderWidth: 1.5,
     },
+    matiereChipActive: {
+      borderWidth: 2,
+    },
     matiereChipText: {
-      fontSize: 12.5,
+      fontSize: 13,
       fontWeight: "800",
       writingDirection: dir,
+    },
+    matiereChipEmoji: {
+      fontSize: 15,
+      lineHeight: 20,
     },
     matiereChipImage: {
       width: 20,
@@ -1008,11 +1072,66 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
       borderRadius: 26,
       borderWidth: 1.5,
       padding: 18,
+      width: "100%",
       ...sh,
     },
+    planCardGrid: {
+      flexBasis: "48%",
+      flexGrow: 1,
+      padding: 12,
+      borderRadius: 20,
+    },
+    planCardGridFull: {
+      flexBasis: "100%",
+      flexGrow: 1,
+    },
+    cardSubscribeWrap: {
+      marginTop: 14,
+      borderRadius: 16,
+      overflow: "hidden",
+    },
+    cardSubscribeBtn: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      height: 48,
+      paddingHorizontal: 14,
+    },
+    cardSubscribeText: {
+      color: "#FFFFFF",
+      fontSize: 15,
+      fontWeight: "800",
+    },
+    plansGrid: {
+      flexDirection: row,
+      flexWrap: "wrap",
+      gap: 12,
+    },
+    plansList: {
+      flexDirection: "column",
+      gap: 12,
+    },
+    viewLayoutToggle: {
+      flexDirection: row,
+      borderRadius: 999,
+      borderWidth: 1,
+      padding: 3,
+      gap: 2,
+    },
+    viewLayoutToggleHeader: {
+      borderColor: "rgba(255,255,255,0.24)",
+      backgroundColor: "rgba(255,255,255,0.10)",
+    },
+    viewLayoutOption: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 11,
+      paddingVertical: 7,
+      borderRadius: 999,
+    },
     planCardPopular: {
-      shadowColor: GOLD,
-      shadowOpacity: 0.35,
       shadowRadius: 20,
       shadowOffset: { width: 0, height: 10 },
       elevation: 10,
@@ -1054,11 +1173,21 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
       fontWeight: "800",
       writingDirection: dir,
     },
+    planIconBadge: {
+      width: 34,
+      height: 34,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+    },
     planTitle: {
       fontSize: 20,
       fontWeight: "900",
       textAlign: textEnd,
       writingDirection: dir,
+    },
+    planTitleCompact: {
+      fontSize: 15,
     },
     planDescription: {
       marginTop: 6,
@@ -1068,6 +1197,11 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
       writingDirection: dir,
       lineHeight: 22,
     },
+    planDescriptionCompact: {
+      marginTop: 3,
+      fontSize: 11,
+      lineHeight: 16,
+    },
 
     priceHero: {
       marginTop: 16,
@@ -1075,6 +1209,12 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
       padding: 14,
       borderWidth: 1,
       gap: 6,
+    },
+    priceHeroCompact: {
+      marginTop: 8,
+      borderRadius: 14,
+      padding: 8,
+      gap: 3,
     },
     priceHeroTop: {
       flexDirection: row,
@@ -1092,6 +1232,9 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
       fontWeight: "800",
       writingDirection: dir,
     },
+    priceHintLabelCompact: {
+      fontSize: 10,
+    },
     discountBadge: {
       borderRadius: 999,
       paddingHorizontal: 8,
@@ -1101,7 +1244,7 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
     discountBadgeText: {
       fontSize: 10,
       fontWeight: "900",
-      color: GOLD,
+      color: "#FFFFFF",
     },
     oldPrice: {
       fontSize: 12,
@@ -1117,9 +1260,15 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
       fontSize: 30,
       fontWeight: "900",
     },
+    priceValueCompact: {
+      fontSize: 22,
+    },
     pricePerMonth: {
       fontSize: 12,
       fontWeight: "800",
+    },
+    pricePerMonthCompact: {
+      fontSize: 10,
     },
     priceDivider: {
       height: 1,
@@ -1148,6 +1297,112 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
       fontSize: 13.5,
       fontWeight: "900",
     },
+    cardMaterialBlock: {
+      marginTop: 14,
+    },
+    cardMaterialBlockCompact: {
+      marginTop: 6,
+    },
+    cardMaterialBlockHeader: {
+      flexDirection: row,
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 8,
+    },
+    cardMaterialBlockHeaderCompact: {
+      marginBottom: 6,
+    },
+    layoutToggleBtn: {
+      flexDirection: row,
+      alignItems: "center",
+      gap: 5,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      marginBottom: 10,
+    },
+    layoutToggleBtnCompact: {
+      paddingHorizontal: 7,
+      paddingVertical: 4,
+      marginBottom: 4,
+    },
+    layoutToggleLabel: {
+      fontSize: 11.5,
+      fontWeight: "800",
+      writingDirection: dir,
+    },
+    cardMaterialGrid: {
+      flexDirection: row,
+      flexWrap: "wrap",
+      gap: 8,
+    },
+    cardMaterialGridItem: {
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 4,
+      borderRadius: 16,
+      borderWidth: 1.5,
+      paddingHorizontal: 8,
+      paddingVertical: 12,
+      minHeight: 96,
+      flexBasis: "47%",
+    },
+    cardMaterialGridItemCompact: {
+      minHeight: 52,
+      borderRadius: 12,
+      gap: 2,
+      paddingHorizontal: 3,
+      paddingVertical: 6,
+    },
+    cardMaterialGridItemFull: {
+      flexBasis: "100%",
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "flex-start",
+      gap: 10,
+      minHeight: 58,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+    cardMaterialGridItemActive: {
+      borderWidth: 2,
+    },
+    cardTileCheck: {
+      position: "absolute",
+      top: 8,
+      right: 8,
+      width: 20,
+      height: 20,
+      borderRadius: 6,
+      borderWidth: 1.5,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    cardMaterialTileEmoji: {
+      fontSize: 24,
+      lineHeight: 28,
+    },
+    cardMaterialTileEmojiCompact: {
+      fontSize: 17,
+      lineHeight: 20,
+    },
+    cardMaterialLabel: {
+      fontSize: 12.5,
+      fontWeight: "800",
+      textAlign: "center",
+      writingDirection: dir,
+    },
+    cardMaterialLabelCompact: {
+      fontSize: 10.5,
+    },
+    cardMaterialPrice: {
+      fontSize: 12.5,
+      fontWeight: "900",
+    },
+    cardMaterialPriceCompact: {
+      fontSize: 10,
+    },
 
     sectionLabel: {
       fontSize: 12.5,
@@ -1161,11 +1416,18 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
     featuresBlock: {
       marginTop: 18,
     },
+    featuresBlockCompact: {
+      marginTop: 8,
+    },
     featureRow: {
       flexDirection: row,
       alignItems: "flex-start",
       gap: 10,
       marginBottom: 10,
+    },
+    featureRowCompact: {
+      gap: 8,
+      marginBottom: 6,
     },
     featureIconWrap: {
       width: 26,
@@ -1185,6 +1447,9 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
       textAlign: textEnd,
       writingDirection: dir,
     },
+    featureTitleCompact: {
+      fontSize: 10.5,
+    },
     featureDescription: {
       marginTop: 2,
       fontSize: 11.5,
@@ -1192,6 +1457,10 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
       textAlign: textEnd,
       writingDirection: dir,
       lineHeight: 18,
+    },
+    featureDescriptionCompact: {
+      fontSize: 9,
+      lineHeight: 12,
     },
 
     accessibleWrap: {

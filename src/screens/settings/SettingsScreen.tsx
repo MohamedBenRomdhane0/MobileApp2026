@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Switch,
   Image,
+  type ImageSourcePropType,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -33,6 +34,7 @@ import {
   SETTINGS_OPTIONS_ORDER,
   SETTINGS_UI,
   STORAGE_BASE_URL,
+  PLAN_CARD_IMAGES,
 } from "./SettingsScreen.constants";
 import type {
   Nav,
@@ -90,7 +92,7 @@ function buildTokens(): ThemeTokens {
 function AnimatedPlanCard({
   colors,
   titleKey,
-  icon,
+  image,
   unlockKey,
   onPress,
   t,
@@ -98,36 +100,35 @@ function AnimatedPlanCard({
 }: {
   colors: [string, string, string];
   titleKey: string;
-  icon: React.ComponentProps<typeof Ionicons>["name"];
+  image: ImageSourcePropType;
   unlockKey: string;
   onPress: () => void;
   t: (key: string) => string;
   styles: ReturnType<typeof createSettingsStyles>;
 }) {
-  const breathe = useSharedValue(1);
+  const float = useSharedValue(0);
 
   useEffect(() => {
-    breathe.value = withRepeat(
+    float.value = withRepeat(
       withSequence(
-        withTiming(0, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
+        withTiming(-1, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
         withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
       ),
       -1,
       false,
     );
-  }, [breathe]);
+  }, [float]);
 
   const cardStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 + breathe.value * 0.02 }],
-    shadowOpacity: 0.18 + breathe.value * 0.08,
+    transform: [{ scale: 1 + float.value * 0.004 }],
+    shadowOpacity: 0.18 + float.value * 0.01,
   }));
 
-  const iconStyle = useAnimatedStyle(() => ({
+  const imageStyle = useAnimatedStyle(() => ({
     transform: [
-      { rotate: `${15 - breathe.value * 5}deg` },
-      { scale: 1 + breathe.value * 0.08 },
+      { translateY: float.value * 0.5 },
+      { scale: 1.04 + float.value * 0.03 },
     ],
-    opacity: 0.18 + breathe.value * 0.06,
   }));
 
   return (
@@ -139,9 +140,9 @@ function AnimatedPlanCard({
           end={{ x: 1, y: 1 }}
           style={styles.planCard}
         >
-          {/* Background icon — absolute, no layout impact */}
-          <Animated.View style={[styles.planCardBgIcon, iconStyle]}>
-            <Ionicons name={icon} size={80} color="#FFFFFF" />
+          {/* 3D artwork — absolute, no layout impact */}
+          <Animated.View style={[styles.planCardBgIcon, imageStyle]}>
+            <Image source={image} style={styles.planCardImage} />
           </Animated.View>
 
           {/* Text — centered in card */}
@@ -151,11 +152,6 @@ function AnimatedPlanCard({
             </View>
             <View style={styles.planCardBottom}>
               <Text style={styles.planCardUnlock}>{t(unlockKey)}</Text>
-              <Ionicons
-                name="arrow-back"
-                size={12}
-                color="rgba(255,255,255,0.85)"
-              />
             </View>
           </View>
         </LinearGradient>
@@ -273,7 +269,7 @@ export default function SettingsScreen() {
 
             <ChildSwitcher
               storageBaseUrl={STORAGE_BASE_URL}
-              onSwitchedNavigateTo={PATHS.APP.BOOKS}
+              onSwitchedNavigateTo={PATHS.TABS.HOME}
             />
           </View>
 
@@ -283,18 +279,18 @@ export default function SettingsScreen() {
               <AnimatedPlanCard
                 colors={["#FF416C", "#FF4B2B", "#FF8C42"]}
                 titleKey="settings.wealth_level"
-                icon="gift"
+                image={PLAN_CARD_IMAGES.cartaba}
                 unlockKey="settings.unlock_now"
-                onPress={() => navigation.navigate(PATHS.APP.PLANS as never)}
+                onPress={() => navigation.navigate(PATHS.APP.PLAN_PRO_PRICING as never)}
                 t={t}
                 styles={styles}
               />
               <AnimatedPlanCard
                 colors={["#667EEA", "#764BA2", "#F093FB"]}
                 titleKey="settings.vip_club"
-                icon="pricetag"
+                image={PLAN_CARD_IMAGES.vip}
                 unlockKey="settings.unlock_now"
-                onPress={() => navigation.navigate(PATHS.APP.PLANS as never)}
+                onPress={() => navigation.navigate(PATHS.APP.PLAN_UI as never)}
                 t={t}
                 styles={styles}
               />

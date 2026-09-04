@@ -1,4 +1,4 @@
-import { Dimensions, StyleSheet } from "react-native";
+import { Dimensions, I18nManager, StyleSheet } from "react-native";
 
 type ThemeColors =
   | {
@@ -15,6 +15,7 @@ type ThemeColors =
   | undefined;
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const isRTL = I18nManager.isRTL;
 
 export function getBookFilePalette(colors: ThemeColors, isDark: boolean) {
   return {
@@ -148,10 +149,27 @@ export const bookFileStyles = StyleSheet.create({
   },
 
   footerBar: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    borderTopWidth: 1,
-    paddingVertical: 10,
+    justifyContent: "space-between",
+    borderTopWidth: 0.5,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    marginTop: 6,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+
+  toolBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 4,
   },
 
   pageText: {
@@ -160,7 +178,221 @@ export const bookFileStyles = StyleSheet.create({
     textAlign: "center",
   },
 
-  rtlFlip: {
-    transform: [{ scaleX: -1 }],
+  navArrow: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
+
+  navArrowDisabled: {
+    opacity: 0.30,
+  },
+
+  navTextBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    height: 40,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  navTextBtnLabel: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+
+  pageInfoWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 10,
+  },
+
+  pageCurrentNum: {
+    fontSize: 20,
+    fontWeight: "900",
+    minWidth: 30,
+    textAlign: "center",
+  },
+
+  pageSeparator: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  pageTotalNum: {
+    fontSize: 16,
+    fontWeight: "700",
+    minWidth: 30,
+    textAlign: "center",
+  },
+
+  progressBarWrap: {
+    width: "100%",
+    height: 4,
+    borderRadius: 999,
+    overflow: "hidden",
+    marginTop: 4,
+    marginHorizontal: 16,
+  },
+
+  progressBarFill: {
+    height: "100%",
+    borderRadius: 999,
+  },
+
+  sideArrowWrap: {
+    position: "absolute",
+    top: "50%",
+    zIndex: 60,
+    transform: [{ translateY: -28 }],
+  },
+
+  sideArrowBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+
+  chapterModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+
+  chapterModalContent: {
+    maxHeight: "70%",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 16,
+    paddingBottom: 32,
+  },
+
+  chapterModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+  },
+
+  chapterModalTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+  },
+
+  chapterModalClose: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  chapterList: {
+    paddingHorizontal: 16,
+  },
+
+  chapterItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    gap: 12,
+  },
+
+  chapterThumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    overflow: "hidden",
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  chapterIndex: {
+    fontSize: 16,
+    fontWeight: "800",
+  },
+
+  chapterInfo: {
+    flex: 1,
+  },
+
+  chapterPageNum: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
+  chapterIconsCount: {
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+
+  chapterProgressWrap: {
+    alignItems: "flex-end",
+    gap: 3,
+  },
+
+  chapterProgressBar: {
+    width: 56,
+    height: 4,
+    borderRadius: 2,
+    overflow: "hidden",
+  },
+
+  chapterProgressFill: {
+    height: "100%",
+    borderRadius: 2,
+  },
+
+  chapterProgressText: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  chapterActiveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+
+  chapterEmpty: {
+    paddingVertical: 32,
+    alignItems: "center",
+  },
+
+  chapterEmptyText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
 });

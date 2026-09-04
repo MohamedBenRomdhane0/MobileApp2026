@@ -60,5 +60,22 @@ export const meetings = {
     years_experience_many: "{{count}} year",
     years_experience_other: "{{count}} year",
     private_label: "Private",
-    detail_years_experience: "{{count}} years experience"
+    detail_years_experience: "{{count}} years experience",
+
+  record_meeting_silver_welcome_back: "Welcome back",
+  record_meeting_silver_my_projects: "My Projects",
+  record_meeting_silver_section_title: "My Projects",
+  record_meeting_silver_search_placeholder: "Search recordings...",
+  record_meeting_silver_empty_title: "No recordings yet",
+  record_meeting_silver_empty_subtitle: "Your recorded sessions will appear here.",
+  record_meeting_silver_home: "Home",
+  record_meeting_silver_projects: "Projects",
+  record_meeting_silver_add: "Add",
+  record_meeting_silver_notifications: "Notifications",
+  record_meeting_silver_profile: "Profile",
+
+  record_timeline_title: "Marine",
+  record_timeline_subtitle: "exploration",
+  record_timeline_color: "Color",
+  record_timeline_close: "Close",
 } as const;

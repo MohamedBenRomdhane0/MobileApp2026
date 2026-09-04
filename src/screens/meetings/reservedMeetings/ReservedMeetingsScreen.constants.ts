@@ -66,8 +66,14 @@ export const MONTHS = [
   "Décembre",
 ];
 
-export function dayLabelOf(date: number): string {
-  const weekday = new Date(RESERVED_YEAR, RESERVED_MONTH_INDEX, date).getDay();
+export function dayLabelOf(
+  date: number,
+  year?: number,
+  month?: number,
+): string {
+  const y = year ?? new Date().getFullYear();
+  const m = month ?? new Date().getMonth();
+  const weekday = new Date(y, m, date).getDay();
   return DAY_SHORT[(weekday + 6) % 7];
 }
 
@@ -116,6 +122,8 @@ export const RESERVED_SESSIONS: ReservedSession[] = [
     subject: "Anglais",
     accent: "#22BEC8",
     date: 19,
+    month: new Date().getMonth(),
+    year: new Date().getFullYear(),
     dayLabel: dayLabelOf(19),
     start: 8,
     end: 9.5,
@@ -132,6 +140,8 @@ export const RESERVED_SESSIONS: ReservedSession[] = [
     subject: "Mathématiques",
     accent: "#7C4DCC",
     date: 19,
+    month: new Date().getMonth(),
+    year: new Date().getFullYear(),
     dayLabel: dayLabelOf(19),
     start: 11,
     end: 12.5,
@@ -148,6 +158,8 @@ export const RESERVED_SESSIONS: ReservedSession[] = [
     subject: "Français",
     accent: "#F97316",
     date: 19,
+    month: new Date().getMonth(),
+    year: new Date().getFullYear(),
     dayLabel: dayLabelOf(19),
     start: 13.5,
     end: 15,
@@ -164,6 +176,8 @@ export const RESERVED_SESSIONS: ReservedSession[] = [
     subject: "Mathématiques",
     accent: "#7C4DCC",
     date: 20,
+    month: new Date().getMonth(),
+    year: new Date().getFullYear(),
     dayLabel: dayLabelOf(20),
     start: 14,
     end: 15.5,
@@ -180,6 +194,8 @@ export const RESERVED_SESSIONS: ReservedSession[] = [
     subject: "Français",
     accent: "#F97316",
     date: 21,
+    month: new Date().getMonth(),
+    year: new Date().getFullYear(),
     dayLabel: dayLabelOf(21),
     start: 10,
     end: 11.5,
@@ -196,6 +212,8 @@ export const RESERVED_SESSIONS: ReservedSession[] = [
     subject: "Anglais",
     accent: "#22BEC8",
     date: 23,
+    month: new Date().getMonth(),
+    year: new Date().getFullYear(),
     dayLabel: dayLabelOf(23),
     start: 18.5,
     end: 20,
@@ -223,11 +241,24 @@ const ACCENT_BY_DATE: Record<number, string> = RESERVED_SESSIONS.reduce(
 export function buildCalendarWeeks(
   year: number,
   monthIndex: number,
+  sessions?: ReservedSession[],
 ): CalendarWeek[] {
+  const accentMap: Record<number, string> = {};
+  if (sessions) {
+    for (const s of sessions) {
+      if (s.year === year && s.month === monthIndex && !accentMap[s.date]) {
+        accentMap[s.date] = s.accent;
+      }
+    }
+  }
+
   const weeks: CalendarWeek[] = [];
   const offset = leadingOffset(year, monthIndex);
   const totalDays = new Date(year, monthIndex + 1, 0).getDate();
-  const isReservedMonth = monthIndex === RESERVED_MONTH_INDEX;
+  const today = new Date();
+  const isCurrentMonth =
+    today.getFullYear() === year && today.getMonth() === monthIndex;
+  const todayDate = today.getDate();
 
   let week: CalendarWeek = new Array(offset).fill(null);
 
@@ -235,8 +266,8 @@ export function buildCalendarWeeks(
     const day: CalendarDay = {
       date,
       label: DAY_LABELS[(offset + date - 1) % 7],
-      accent: isReservedMonth ? ACCENT_BY_DATE[date] : undefined,
-      isToday: isReservedMonth && date === RESERVED_TODAY,
+      accent: sessions ? accentMap[date] : ACCENT_BY_DATE[date],
+      isToday: isCurrentMonth && date === todayDate,
     };
     week.push(day);
 

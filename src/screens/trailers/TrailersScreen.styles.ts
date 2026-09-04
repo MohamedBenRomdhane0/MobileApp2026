@@ -249,7 +249,7 @@ export const trailersStyles = StyleSheet.create({
     overflow: "hidden",
   },
 
-  videoGradient: { ...StyleSheet.absoluteFillObject },
+  videoGradient: StyleSheet.absoluteFill,
 
   avatarInVideo: {
     position: "absolute",
@@ -415,9 +415,7 @@ export const trailersStyles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  playerBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-  },
+  playerBackdrop: StyleSheet.absoluteFill,
 
   playerCard: {
     width: W - 32,

@@ -31,11 +31,24 @@ export const BOOKS_UI = {
   lessonsLabel: "book.lessons_label",
   booksLabel: "book.books_label",
   booksCountLabel: "book.books_count_label",
+  filterAll: "book.filter_all",
+  filterMaterials: "book.filter_materials",
+  filterNoResultsTitle: "book.filter_no_results_title",
+  filterNoResultsSub: "book.filter_no_results_sub",
 } as const;
 
 export const BOOKS_PAGINATION = {
   firstPage: 1,
 } as const;
+
+export const MATERIAL_ORDER = [
+  "mat_arabic",
+  "mat_math",
+  "mat_french",
+  "mat_science",
+  "mat_social",
+  "mat_english",
+] as const;
 
 export const MATERIAL_LABELS: Record<string, { ar: string; fr: string }> = {
   mat_arabic: { ar: "عربية", fr: "LANGUE ARABE" },

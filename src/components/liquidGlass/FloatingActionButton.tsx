@@ -212,15 +212,13 @@ const styles = StyleSheet.create({
     borderRadius: SIZE / 2 + 5,
     backgroundColor: "rgba(34,190,200,0.16)",
   },
-  clip: {
-    ...StyleSheet.absoluteFillObject,
+  clip: [StyleSheet.absoluteFill, {
     borderRadius: SIZE / 2,
     overflow: "hidden",
-  },
-  glassTint: {
-    ...StyleSheet.absoluteFillObject,
+  }] as unknown as import("react-native").ViewStyle,
+  glassTint: [StyleSheet.absoluteFill, {
     backgroundColor: "rgba(255,255,255,0.68)",
-  },
+  }] as unknown as import("react-native").ViewStyle,
   gloss: {
     position: "absolute",
     top: 4,
@@ -229,17 +227,15 @@ const styles = StyleSheet.create({
     height: SIZE * 0.4,
     borderRadius: SIZE / 2,
   },
-  ripple: {
-    ...StyleSheet.absoluteFillObject,
+  ripple: [StyleSheet.absoluteFill, {
     borderRadius: SIZE / 2,
     backgroundColor: "rgba(255,255,255,0.55)",
-  },
-  ring: {
-    ...StyleSheet.absoluteFillObject,
+  }] as unknown as import("react-native").ViewStyle,
+  ring: [StyleSheet.absoluteFill, {
     borderRadius: SIZE / 2,
     borderWidth: 1.5,
     borderColor: "rgba(255,255,255,0.55)",
-  },
+  }] as unknown as import("react-native").ViewStyle,
   icon: {
     position: "absolute",
     alignItems: "center",

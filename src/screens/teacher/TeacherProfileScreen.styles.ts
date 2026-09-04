@@ -1193,9 +1193,7 @@ export function createTeacherProfileStyles(
       paddingVertical: 24,
     },
 
-    modalBackdrop: {
-      ...StyleSheet.absoluteFillObject,
-    },
+    modalBackdrop: StyleSheet.absoluteFill,
 
     followersModalCard: {
       width: "100%",

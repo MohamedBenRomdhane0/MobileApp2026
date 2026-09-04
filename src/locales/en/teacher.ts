@@ -113,4 +113,8 @@ export const teacher = {
   cancel_note: "You can cancel your subscription at any time without any commitment.",
   free_trial_action: "Try a free trial session",
   subscribe_cta: "Subscribe Now",
+
+  all_teachers_title: "All Teachers",
+  all_teachers_empty_title: "No teachers found",
+  all_teachers_empty_subtitle: "Teachers for your level will appear here soon.",
 } as const;

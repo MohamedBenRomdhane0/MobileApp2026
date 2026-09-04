@@ -11,6 +11,9 @@ import { topbar } from './topbar'
 import { uploads } from './uploads'
 import { user } from './user'
 import plan from './plan'
+import plan_ui from './plan_ui'
+import pro_pricing from './pro_pricing'
+import unlock from './unlock'
 import { course } from './course'
 import child from "./child";
 import settings from "./settings";
@@ -39,6 +42,9 @@ const ar = {
   role,
   uploads,
   plan,
+  plan_ui,
+  pro_pricing,
+  unlock,
   course,
   child,
   settings,

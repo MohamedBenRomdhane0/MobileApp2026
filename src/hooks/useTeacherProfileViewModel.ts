@@ -33,7 +33,7 @@ export function useTeacherProfileViewModel(
     isError: isFollowersError,
     refetch: refetchFollowers,
   } = useGetTeacherFollowersQuery(
-    { teacherId, page: 1, per_page: 20 },
+    { teacherId, page: 1, perPage: 20 },
     { skip: !teacherId || !isFollowersVisible }
   );
 

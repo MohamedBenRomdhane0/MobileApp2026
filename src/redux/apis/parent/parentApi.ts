@@ -7,6 +7,10 @@ import type {
   UpdateParentProfileRequest,
   UpdateParentProfileResponse,
   UpdateParentProfileResponseApi,
+  GetWalletResponseApi,
+  WalletApi,
+  RechargeWalletRequest,
+  RechargeWalletResponseApi,
 } from "./parentApi.type";
 
 import {
@@ -17,7 +21,7 @@ import {
 export const parentApi = createApi({
   reducerPath: "parentApi",
   baseQuery: baseQueryConfigWithRefresh,
-  tagTypes: ["ParentMe"],
+  tagTypes: ["ParentMe", "Wallet"],
   endpoints: (builder) => ({
     getParentMe: builder.query<any, void>({
       query: () => ({
@@ -40,6 +44,25 @@ export const parentApi = createApi({
         decodeUpdateParentProfileResponse(response),
       invalidatesTags: ["ParentMe"],
     }),
+
+    getWallet: builder.query<WalletApi, void>({
+      query: () => ({
+        url: ENDPOINTS.PARENT_WALLET,
+        method: MethodsEnum.GET,
+      }),
+      transformResponse: (response: GetWalletResponseApi) => response.data,
+      providesTags: ["Wallet"],
+    }),
+
+    rechargeWallet: builder.mutation<WalletApi, RechargeWalletRequest>({
+      query: (body) => ({
+        url: ENDPOINTS.PARENT_WALLET_RECHARGE,
+        method: MethodsEnum.POST,
+        body,
+      }),
+      transformResponse: (response: RechargeWalletResponseApi) => response.data,
+      invalidatesTags: ["Wallet"],
+    }),
   }),
 });
 
@@ -47,4 +70,7 @@ export const {
   useGetParentMeQuery,
   useLazyGetParentMeQuery,
   useUpdateParentProfileMutation,
+  useGetWalletQuery,
+  useLazyGetWalletQuery,
+  useRechargeWalletMutation,
 } = parentApi;

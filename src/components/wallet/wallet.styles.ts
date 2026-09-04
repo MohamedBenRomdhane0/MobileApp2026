@@ -58,6 +58,26 @@ export const walletStyles = StyleSheet.create({
     paddingBottom: 32,
   },
 
+  /* ── Balance Display ─────────────────────────────────────────────────── */
+
+  balanceSection: {
+    alignItems: "center",
+    marginTop: 8,
+    marginBottom: 20,
+    paddingVertical: 16,
+    borderRadius: 16,
+    backgroundColor: "rgba(34,190,200,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(34,190,200,0.15)",
+  },
+
+  balanceCurrency: {
+    color: WALLET_TEXT,
+    fontSize: 22,
+    fontWeight: "800",
+    opacity: 0.7,
+  },
+
   /* ── Set Amount header ───────────────────────────────────────────────── */
 
   setAmountHeader: {

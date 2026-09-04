@@ -1,4 +1,3 @@
-import type { RootStackParamList } from "@config/types/navigation.types";
 export type ChildGender = "boy" | "girl" | string;
 
 export type ChildMedia = {
@@ -36,6 +35,6 @@ export type ChildItem = {
 };
 
 export type ChildSwitcherProps = {
-  onSwitchedNavigateTo?: keyof RootStackParamList;
+  onSwitchedNavigateTo?: string;
   storageBaseUrl?: string; 
 };

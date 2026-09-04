@@ -5,10 +5,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import {
-  Audio,
-  InterruptionModeAndroid,
-  InterruptionModeIOS,
-} from "expo-av";
+  setAudioModeAsync,
+  type InterruptionMode,
+} from "expo-audio";
 
 import { store } from "@redux/store";
 import { ThemeProvider } from "@theme/ThemeProvider";
@@ -23,14 +22,12 @@ function AppBootstrap() {
   useEffect(() => {
     const configureAudio = async () => {
       try {
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: false,
-          staysActiveInBackground: false,
-          playsInSilentModeIOS: true,
-          interruptionModeIOS: InterruptionModeIOS.DoNotMix,
-          interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
-          shouldDuckAndroid: false,
-          playThroughEarpieceAndroid: false,
+        await setAudioModeAsync({
+          allowsRecording: false,
+          shouldPlayInBackground: false,
+          playsInSilentMode: true,
+          interruptionMode: "doNotMix" as InterruptionMode,
+          shouldRouteThroughEarpiece: false,
         });
 
       } catch (error) {

@@ -8,6 +8,7 @@ import type {
   FollowTeacherPayloadApi,
   FollowTeacherPayloadUI,
   GetTeacherFollowersArgs,
+  GetTeachersArgs,
   SaveTeacherReviewArgs,
   SaveTeacherReviewPayloadApi,
   SaveTeacherReviewPayloadUI,
@@ -43,6 +44,30 @@ export const teacherApi = createApi({
       providesTags: (_result, _error, teacherId) => [
         { type: "Teacher", id: teacherId },
       ],
+    }),
+
+    getTeachers: build.query<ApiPaginated<TeacherUI[]>, GetTeachersArgs | void>({
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args?.page) params.set("page", String(args.page));
+        if (args?.perPage) params.set("per_page", String(args.perPage));
+        if (args?.materialId) params.set("material_id", String(args.materialId));
+
+        const qs = params.toString();
+        return {
+          url: `child/teachers${qs ? `?${qs}` : ""}`,
+          method: MethodsEnum.GET,
+        };
+      },
+      transformResponse: (
+        response: ApiPaginated<TeacherApi[]>
+      ): ApiPaginated<TeacherUI[]> => ({
+        message: String(response?.message ?? ""),
+        meta: response?.meta,
+        data: Array.isArray(response?.data)
+          ? response.data.map(toTeacherUI)
+          : [],
+      }),
     }),
 
     followTeacher: build.mutation<ApiSuccess<FollowTeacherPayloadUI>, number>({
@@ -159,6 +184,7 @@ export const teacherApi = createApi({
 
 export const {
   useGetTeacherByIdQuery,
+  useGetTeachersQuery,
   useFollowTeacherMutation,
   useSaveTeacherReviewMutation,
   useGetTeacherFollowersQuery,

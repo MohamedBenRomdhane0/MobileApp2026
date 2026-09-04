@@ -1,17 +1,35 @@
 import type {
   ApiMaterialPricing,
   ApiPlan,
+  ApiPlanDiscount,
   ApiPlanFeature,
   ApiPlanPricing,
   ApiTranslation,
   PlanAccessibleEntityUI,
+  PlanDiscountUI,
   PlanFeatureUI,
   PlanMaterialPriceUI,
   PlanPricingUI,
   PlanUI,
 } from "./plansApi.type";
 
+import { GLOBAL_VARIABLES } from "@config/constants/globalVariables";
+
 const FALLBACK_LOCALES = ["ar", "fr", "en"];
+
+const MATERIAL_COLOR_FALLBACK = "#8B5CF6";
+
+const resolveMaterialColor = (
+  name: string,
+  apiColor: string | null | undefined,
+): string => {
+  const trimmedApiColor = (apiColor ?? "").trim();
+  return (
+    trimmedApiColor ||
+    GLOBAL_VARIABLES.MATERIAL_COLORS[name] ||
+    MATERIAL_COLOR_FALLBACK
+  );
+};
 
 const toNumber = (value: unknown): number => {
   const parsed = Number(value ?? 0);
@@ -92,6 +110,10 @@ const transformMaterialPricing = (
     materialId: item.material_id,
     materialKey: item.material?.name ?? "",
     materialName: item.material?.name ?? "",
+    materialColor: resolveMaterialColor(
+      item.material?.name ?? "",
+      item.material?.color,
+    ),
     price,
     discount,
     finalPrice,
@@ -136,15 +158,37 @@ const transformPricing = (pricing: ApiPlanPricing): PlanPricingUI => {
 };
 
 const transformAccessibleEntity = (
-  item: ApiPlan["accessible_entities"][number],
+  item: NonNullable<ApiPlan["accessible_entities"]>[number],
 ): PlanAccessibleEntityUI => ({
   id: item.id,
   accessibleType: item.accessible_type,
   accessibleId: item.accessible_id,
   materialId: item.material_id ?? null,
   materialKey: item.material?.name ?? "",
+  materialColor: resolveMaterialColor(
+    item.material?.name ?? "",
+    item.material?.color,
+  ),
   title: item.accessible?.title ?? "",
 });
+
+const transformDiscount = (
+  discount: ApiPlanDiscount,
+  locale: string,
+): PlanDiscountUI => {
+  const value = toNumber(discount.value);
+  const label =
+    pickTranslation(discount.translations ?? [], locale, "title") ||
+    pickTranslation(discount.translations ?? [], locale, "label") ||
+    `${value}%`;
+
+  return {
+    id: discount.id,
+    durationMonths: discount.duration_months,
+    value,
+    label,
+  };
+};
 
 export const transformPlan = (plan: ApiPlan, locale: string): PlanUI => {
   const title = pickTranslation(plan.translations ?? [], locale, "title");
@@ -170,17 +214,31 @@ export const transformPlan = (plan: ApiPlan, locale: string): PlanUI => {
     ? plan.accessible_entities.map(transformAccessibleEntity)
     : [];
 
+  const discounts = Array.isArray(plan.discounts)
+    ? plan.discounts.map((discount) => transformDiscount(discount, locale))
+    : [];
+
+  const planType =
+    plan.plan_type ??
+    (pricings.some((p) => p.pricingType === "per_material") ? "books" : "live");
+
   return {
     id: plan.id,
     title,
     description,
     levelId: plan.level_id,
-    planType: plan.plan_type,
+    planType,
     isPopular: Boolean(plan.is_popular),
     hasMeeting: Boolean(plan.has_meeting),
+    icon: typeof plan.icon === "string" ? plan.icon : "",
+    color: typeof plan.color === "string" ? plan.color : "",
+    displayTier: typeof plan.display_tier === "string" ? plan.display_tier : "",
+    status: typeof plan.status === "string" ? plan.status : "",
+    grandfatherPricing: Boolean(plan.grandfather_pricing),
     features,
     pricings,
     accessibleEntities,
+    discounts,
   };
 };
 

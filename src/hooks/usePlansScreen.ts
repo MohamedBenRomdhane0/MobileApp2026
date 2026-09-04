@@ -8,7 +8,7 @@ import { pickLevelIdFromChild } from "@utils/helpers/level.helper";
 import { getMaterialEmoji } from "@utils/helpers/materialIcon.helper";
 import { getMaterialDisplayName } from "@utils/helpers/material.display.helper";
 import { useGetPlansForChildQuery } from "@redux/apis/plans/plansApi";
-import type { MaterialPricingUI, PlanPricingUI, PlanUI } from "@redux/apis/plans/plansApi.type";
+import type { PlanMaterialPriceUI, PlanPricingUI, PlanUI } from "@redux/apis/plans/plansApi.type";
 
 import { PERIOD_MONTHS_MAP, PLANS_UI } from "@screens/plans/PlansScreen.constants";
 import { formatPrice } from "@utils/helpers/plans.helpers";
@@ -45,7 +45,7 @@ function toValidId(v: unknown): number {
 }
 
 function sumSelectedMaterials(
-  materialPricings: MaterialPricingUI[],
+  materialPricings: PlanMaterialPriceUI[],
   selected: SelectedMaterials
 ): { original: number; final: number } {
   const active = materialPricings.filter((m) => selected[m.materialId]);
@@ -114,7 +114,7 @@ export function usePlansScreen() {
   const livePricing   = useMemo(() => getPricingForPeriod(livePlan,     selectedPeriod), [livePlan,     selectedPeriod]);
   const contentPricing = useMemo(() => getPricingForPeriod(contentPlan, selectedPeriod), [contentPlan, selectedPeriod]);
 
-  const allMaterials = useMemo<MaterialPricingUI[]>(
+  const allMaterials = useMemo<PlanMaterialPriceUI[]>(
     () => (livePricing ?? contentPricing)?.materialPricings ?? [],
     [livePricing, contentPricing]
   );

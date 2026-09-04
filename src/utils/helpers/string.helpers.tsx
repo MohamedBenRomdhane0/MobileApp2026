@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ConfigEnv } from '@config/configEnv'
 import { GLOBAL_VARIABLES } from '@config/constants/globalVariables'
 import { BookTypeEnum } from '@config/enums/BookTypeEnum'

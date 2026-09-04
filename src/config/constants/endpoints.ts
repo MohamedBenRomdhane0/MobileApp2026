@@ -31,4 +31,6 @@ export const ENDPOINTS = {
   PARENT_SWITCH_TO_CHILD: "parent/switch-to-child",
 CHILD_SWITCH_TO_PARENT: "child/switch-to-parent",
 PARENT_ME: "user",
+  PARENT_WALLET: "parent/wallet",
+  PARENT_WALLET_RECHARGE: "parent/wallet/recharge",
 }

@@ -2,34 +2,41 @@ import React, { useMemo, useState, useCallback, useEffect, useRef } from "react"
 import {
   View, Text, TouchableOpacity,
   ScrollView, StatusBar, Image, StyleSheet, Modal, Animated, Easing,
-  Dimensions, ActivityIndicator,
+  Dimensions, ActivityIndicator, Pressable, FlatList,
 } from "react-native";
-import { Video, ResizeMode } from "expo-av";
+import { VideoView, useVideoPlayer } from "expo-video";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
+import Reanimated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  withDelay,
+  FadeIn,
+  FadeInDown,
+  FadeInUp,
+  SlideInDown,
+  ZoomIn,
+} from "react-native-reanimated";
 
 import { PATHS } from "@config/constants/paths";
 import { LEVEL_LABEL_BY_ID } from "@config/enums/Level.enum";
+
 import ReservedMeetingsScreen from "@screens/meetings/reservedMeetings/ReservedMeetingsScreen";
 import ActiveChildHeaderAvatar from "@components/header/ActiveChildHeaderAvatar";
 import LanguageSwitcher from "@components/header/LanguageSwitcher";
 import { useActiveChildHeaderData } from "@hooks/useActiveChildHeaderData";
 import { useAppTheme } from "@theme/ThemeProvider";
 import { pickLevelIdFromChild } from "@utils/helpers/level.helper";
-
-// Teacher photo shown at the top-right of the "Map the Path" card.
-const TEACHER_PHOTO = require("../../../assets/teachers/ismail.png");
-
-// Clear cover image for the group-session card (Pexels — a study/classroom
-// scene). Replaces the blurry teacher headshot as the card banner.
-const SESSION_COVER = require("../../../assets/teachers/testtt.jpeg");
-const SESSION_Eng = require("../../../assets/teachers/ar1.jpeg");
-const COVER_MATHS = require("../../../assets/teachers/ma1.jpeg");
-const COVER_FR = require("../../../assets/teachers/fr1.jpeg");
-const COVER_SCIENCES = require("../../../assets/teachers/ar1.jpeg");
+import { useEnsureChildSession } from "@hooks/useEnsureChildSession";
+import { useGetMeetingsQuery, useGetReservedMeetingsQuery, useSubscribeToGroupMutation } from "@redux/apis/meetings/meetingApi";
+import type { MeetingListItemUI, MeetingGroupUI } from "@redux/apis/meetings/meetingApi.type";
+import TeacherFilterCard from "./components/TeacherFilterCard";
+import TeacherPhoto from "./components/TeacherPhoto";
 
 // Children already reserved in this session (shown as overlapping avatars).
 const RESERVED_CHILDREN = [
@@ -39,91 +46,419 @@ const RESERVED_CHILDREN = [
   require("../../../assets/kids/girls/girl2.png"),
 ];
 
-// Overlapping student avatars in the "Explanation" row (with a "+13" counter).
-const EXPLAIN_AVATARS = [
-  require("../../../assets/teachers/ismail.png"),
-  require("../../../assets/teachers/tounes.png"),
-  require("../../../assets/teachers/tarek.png"),
-];
-
-
-
 type SubjectSession = {
   id: number;
   name: string;
   accent: string;
   time: string;
+  meetingsCount: number;
   sessionsCount: number;
   rating: number;
   ratingCount: number;
   placesLeft: number;
   placesTotal: number;
+  enrolled: number;
   reservedExtra: number;
   groupsCount: number;
   daysPerWeek: number;
   days: { label: string; active: boolean }[];
   price: number;
   cover: any;
+  teacherId: number | null;
+  teacherName: string;
+  meeting: MeetingListItemUI;
+  groups: MeetingGroupUI[];
+  isReserved: boolean;
+  isFull: boolean;
 };
 
-const SUBJECT_SESSIONS: SubjectSession[] = [
-  {
-    id: 1, name: "Anglais", accent: "#22BEC8",
-    time: "18:30 – 20:00", sessionsCount: 8,
-    rating: 4.8, ratingCount: 126,
-    placesLeft: 5, placesTotal: 20, reservedExtra: 12,
-    groupsCount: 4, daysPerWeek: 2,
-    cover: SESSION_COVER,
-    days: [
-      { label: "L", active: true }, { label: "M", active: false },
-      { label: "M", active: true }, { label: "J", active: false },
-      { label: "V", active: false }, { label: "D", active: true },
-    ],
-    price: 80,
+/** Cover images mapped by material name keywords for fallback display. */
+const COVER_BY_MATERIAL: Record<string, any> = {
+  default: require("../../../assets/teachers/testtt.jpeg"),
+  arabic: require("../../../assets/teachers/ar1.jpeg"),
+  math: require("../../../assets/teachers/ma1.jpeg"),
+  french: require("../../../assets/teachers/fr1.jpeg"),
+  science: require("../../../assets/teachers/ar1.jpeg"),
+};
+
+const MATERIAL_KEYWORDS_FOR_COVER: Record<string, string[]> = {
+  arabic: ["arabic", "arabe", "arab"],
+  math: ["math", "maths", "mathématiques"],
+  french: ["french", "français", "francais"],
+  science: ["science", "sciences"],
+};
+
+function getCoverForMaterial(materialName: string): any {
+  const lower = materialName.toLowerCase();
+  for (const [key, keywords] of Object.entries(MATERIAL_KEYWORDS_FOR_COVER)) {
+    if (keywords.some((kw) => lower.includes(kw))) {
+      return COVER_BY_MATERIAL[key];
+    }
+  }
+  return COVER_BY_MATERIAL.default;
+}
+
+/** Day-of-week labels for the schedule display (Monday-first). */
+const DAY_LABELS = ["L", "Ma", "Me", "J", "V", "S", "D"];
+
+function buildDaysFromSchedule(
+  scheduleDays: number[],
+  sessionsPerWeek: number
+): { label: string; active: boolean }[] {
+  if (scheduleDays.length > 0) {
+    return DAY_LABELS.map((label, i) => ({
+      label,
+      active: scheduleDays.includes(i + 1),
+    }));
+  }
+  const active = new Set<number>();
+  for (let i = 0; i < sessionsPerWeek && i < DAY_LABELS.length; i++) {
+    active.add(i);
+  }
+  return DAY_LABELS.map((label, i) => ({
+    label,
+    active: active.has(i),
+  }));
+}
+
+function formatTimeRange(startTime: string, endTime: string): string {
+  const fmt = (t: string) => t?.slice(0, 5) || t;
+  return `${fmt(startTime)} – ${fmt(endTime)}`;
+}
+
+function meetingsToSubjectSessions(
+  meetings: MeetingListItemUI[],
+  reservedGroupIds?: Set<number>
+): SubjectSession[] {
+  const grouped = new Map<number, MeetingListItemUI[]>();
+  for (const m of meetings) {
+    const key = m.materialId ?? m.id;
+    const arr = grouped.get(key);
+    if (arr) arr.push(m);
+    else grouped.set(key, [m]);
+  }
+
+  return Array.from(grouped.entries()).map(([materialId, items]) => {
+    const m = items[0];
+    const allGroups = items.flatMap((x) => x.meetingGroups ?? []);
+    const firstGroup = allGroups[0];
+    const scheduleDays = firstGroup?.scheduleDays ?? [];
+    const startTime = firstGroup?.startTime ?? "";
+    const endTime = firstGroup?.endTime ?? "";
+    const sessionsPerWeek = firstGroup?.sessionsPerWeek ?? m.groupsCount;
+
+    const placesTotal = allGroups.reduce(
+      (sum, g) => sum + (g.maxStudents ?? 0),
+      0
+    );
+    const enrolled = allGroups.reduce(
+      (sum, g) => sum + (g.enrolledCount ?? 0),
+      0
+    );
+    const placesLeft = allGroups.reduce(
+      (sum, g) => sum + (g.spotsLeft ?? 0),
+      0
+    );
+
+    const totalSessionsCount = items.reduce(
+      (sum, x) => sum + (x.upcomingSessionsCount || 0),
+      0
+    );
+
+    return {
+      id: materialId,
+      name: m.materialName || m.name,
+      accent: m.materialColor || "#22BEC8",
+      time: formatTimeRange(startTime, endTime),
+      meetingsCount: items.length,
+      sessionsCount: totalSessionsCount,
+      rating: 0,
+      ratingCount: 0,
+      placesLeft,
+      placesTotal,
+      enrolled,
+      reservedExtra: 0,
+      groupsCount: allGroups.length,
+      daysPerWeek: sessionsPerWeek,
+      days: buildDaysFromSchedule(scheduleDays, sessionsPerWeek),
+      price: m.finalPrice || m.price,
+      cover: getCoverForMaterial(m.materialName),
+      teacherId: m.teacherId,
+      teacherName: m.teacherName,
+      meeting: m,
+      groups: allGroups,
+      isReserved: allGroups.some((g) => reservedGroupIds?.has(g.id) ?? false),
+      isFull: placesTotal > 0 && placesLeft <= 0,
+    };
+  });
+}
+
+type FeaturedSessionCardProps = {
+  session: SubjectSession;
+  index: number;
+  onReserve: (s: SubjectSession) => void;
+  onViewDetails: (s: SubjectSession) => void;
+};
+
+/**
+ * Memoized full-width featured card per subject. Because the parent's
+ * `filteredSessions` array and the `onReserve`/`onViewDetails` callbacks are
+ * stable between renders, React.memo lets each subject card skip re-rendering
+ * unless its own session actually changes (e.g. a filter change).
+ */
+const FeaturedSessionCard = React.memo(
+  function FeaturedSessionCardInner({
+    session: s,
+    index,
+    onReserve,
+    onViewDetails,
+  }: FeaturedSessionCardProps) {
+    const { t } = useTranslation();
+    return (
+      <Reanimated.View entering={FadeInDown.delay(index * 80).duration(350)}>
+        <View style={[styles.sessionCard, s.isReserved && styles.sessionCardReserved, s.isFull && styles.sessionCardFull]}>
+          {/* Cover image */}
+          <View style={styles.sessionPhotoWrap}>
+            <Image source={s.cover} style={styles.sessionPhoto} />
+            <View style={styles.coverScrim} />
+            {s.isFull && !s.isReserved && (
+              <View style={styles.fullBadgeInline}>
+                <Ionicons name="close-circle" size={13} color="#FFFFFF" />
+                <Text style={styles.fullBadgeInlineText}>{t("learning.full_badge", { defaultValue: "Complet" })}</Text>
+              </View>
+            )}
+            {s.isReserved && (
+              <View style={styles.reservedOverlay}>
+                <View style={styles.reservedOverlayChip}>
+                  <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                  <Text style={styles.reservedOverlayText}>{t("learning.reserved_badge", { defaultValue: "Réservé" })}</Text>
+                </View>
+              </View>
+            )}
+            <View style={styles.ratingBadge}>
+              <Ionicons name="star" size={12} color="#FBBF24" />
+              <Text style={styles.ratingBadgeText}>{s.rating.toFixed(1)}</Text>
+              <Text style={styles.ratingBadgeCount}>({s.ratingCount})</Text>
+            </View>
+            <View style={[styles.timeBadge, { backgroundColor: s.accent }]}>
+              <Ionicons name="time-outline" size={12} color="#FFFFFF" />
+              <Text style={styles.timeBadgeText}>{s.time}</Text>
+            </View>
+          </View>
+
+          <View style={styles.sessionBody}>
+            {/* Subject name below image */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <View style={[styles.featuredTitleBar, { backgroundColor: s.accent }]} />
+              <Text style={styles.featuredTitleText}>{s.name}</Text>
+            </View>
+
+            {/* Day pills + frequency */}
+            <View style={styles.sessionTopRow}>
+              <View style={styles.dayPillsRow}>
+                {s.days.map((day, i) => (
+                  <View key={i} style={[styles.dayPill, day.active ? styles.dayPillActive : styles.dayPillOff]}>
+                    <Text style={[styles.dayPillText, day.active ? styles.dayPillTextActive : styles.dayPillTextOff]}>
+                      {day.label}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            {/* Groups count + days/week + teacher */}
+            <View style={styles.sessionMetaRow}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <View style={[styles.groupPill, { backgroundColor: `${s.accent}14` }]}>
+                  <Ionicons name="people" size={13} color={s.accent} />
+                  <Text style={[styles.groupPillText, { color: s.accent }]}>
+                    {t("learning.groups_count", { count: s.groupsCount })} 
+                  </Text>
+                </View>
+                <View style={[styles.groupPill, { backgroundColor: `${s.accent}14` }]}>
+                  <Ionicons name="repeat-outline" size={13} color={s.accent} />
+                  <Text style={[styles.groupPillText, { color: s.accent }]}>
+                    {s.daysPerWeek} {t("learning.days_per_week_short", { defaultValue: "jours / sem" })}
+                  </Text>
+                </View>
+              </View>
+              {s.teacherName && s.teacherId ? (
+                <View style={styles.avatarStack}>
+                  <TeacherPhoto teacherId={s.teacherId} name={s.teacherName} accent={s.accent} size={22} />
+                  <Text style={styles.reserveText} numberOfLines={1}>{s.teacherName}</Text>
+                </View>
+              ) : null}
+            </View>
+
+            {/* Children avatars row */}
+            <View style={styles.childrenAvatarsRow}>
+              <View style={styles.childrenAvatarsStack}>
+                {RESERVED_CHILDREN.slice(0, 3).map((img, i) => (
+                  <Image key={i} source={img} style={[styles.childrenAvatar, { marginLeft: i > 0 ? -8 : 0 }]} />
+                ))}
+                <View style={[styles.childrenAvatarMore, { marginLeft: -8 }]}>
+                  <Text style={styles.childrenAvatarCount}>{s.enrolled}</Text>
+                </View>
+              </View>
+              <Text style={styles.childrenAvatarLabel}>{t("learning.reserved_children", { defaultValue: "enfants réservés" })}</Text>
+            </View>
+
+            {/* Progress bar */}
+            <View style={styles.placesBar}>
+              <View style={[styles.placesFill, { width: s.placesTotal > 0 ? `${Math.min((s.enrolled / s.placesTotal) * 100, 100)}%` : "0%", backgroundColor: s.accent }]} />
+            </View>
+            <Text style={styles.placesCaption}>
+              {s.placesTotal > 0
+                ? `${s.enrolled}/${s.placesTotal} places reservees`
+                : "Places non disponibles"}
+            </Text>
+
+            {/* Footer: price + CTA */}
+            <View style={styles.sessionBottomRow}>
+              <View style={styles.priceBlock}>
+                <Text style={styles.priceFromLabel}>{t("learning.starting_from", { defaultValue: "à partir de" })}</Text>
+                <View style={styles.priceValueRow}>
+                  <Text style={styles.priceValue}>{s.price}</Text>
+                  <Text style={styles.priceUnit}>{t("learning.price_per_month")}</Text>
+                </View>
+                {s.placesLeft > 0 && s.placesLeft <= 5 && (
+                  <Text style={[styles.urgencyText, { color: s.accent }]}>• Plus que {s.placesLeft} places</Text>
+                )}
+              </View>
+              <TouchableOpacity
+                style={[styles.detailsBtn, { shadowColor: "#111827" }]}
+                activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityLabel="Réserver"
+                onPress={() => onReserve(s)}
+              >
+                <Text style={styles.detailsBtnText}>{t("learning.reserve", { defaultValue: "Réserver" })}</Text>
+                <Ionicons name="arrow-forward" size={15} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Reanimated.View>
+    );
   },
-  {
-    id: 2, name: "Mathématiques", accent: "#7C4DCC",
-    time: "14:00 – 15:30", sessionsCount: 4,
-    rating: 4.9, ratingCount: 89,
-    placesLeft: 3, placesTotal: 20, reservedExtra: 8,
-    groupsCount: 3, daysPerWeek: 4,
-    cover: COVER_MATHS,
-    days: [
-      { label: "L", active: true }, { label: "M", active: false },
-      { label: "M", active: true }, { label: "J", active: true },
-      { label: "V", active: true }, { label: "D", active: false },
-    ],
-    price: 55,
+  (prev, next) =>
+    prev.session === next.session &&
+    prev.index === next.index &&
+    prev.onReserve === next.onReserve &&
+    prev.onViewDetails === next.onViewDetails,
+);
+
+type RailSessionCardProps = {
+  session: SubjectSession;
+  onPress: (s: SubjectSession) => void;
+};
+
+/** Memoized compact card in the "Les plus demandées" rail (old style). */
+const RailSessionCard = React.memo(
+  function RailSessionCardInner({
+    session: s,
+    onPress,
+  }: RailSessionCardProps) {
+    const { t } = useTranslation();
+    return (
+      <TouchableOpacity
+        style={styles.railCard}
+        activeOpacity={0.9}
+        accessibilityRole="button"
+        accessibilityLabel={`${s.name}, ${s.price} DT par mois`}
+        onPress={() => onPress(s)}
+      >
+        <View style={styles.railCoverWrap}>
+          <Image source={s.cover} style={styles.railCover} />
+          <LinearGradient
+            colors={["rgba(9,29,54,0.02)", "rgba(9,29,54,0.78)"]}
+            start={{ x: 0, y: 0.25 }}
+            end={{ x: 0, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <View
+            style={[styles.railSubjectPill, { backgroundColor: s.accent }]}
+          >
+            <Text style={styles.railSubjectText}>{s.name}</Text>
+          </View>
+          <View style={styles.railRating}>
+            <Ionicons name="star" size={11} color="#FBBF24" />
+            <Text style={styles.railRatingText}>
+              {s.rating.toFixed(1)}
+            </Text>
+          </View>
+          <View style={styles.railCoverFooter}>
+            <Ionicons name="time-outline" size={11} color="#FFFFFF" />
+            <Text style={styles.railCoverFooterText}>{s.time}</Text>
+          </View>
+        </View>
+
+        <View style={styles.railBody}>
+          <View style={styles.railMetaRow}>
+            <View style={styles.railMetaChip}>
+              <Ionicons name="people" size={11} color="#0E7C86" />
+              <Text style={styles.railMetaText}>
+                {t("learning.groups_count", {
+                  count: s.groupsCount,
+                })}
+              </Text>
+            </View>
+            <View style={styles.railMetaChip}>
+              <Ionicons
+                name="repeat-outline"
+                size={11}
+                color="#0E7C86"
+              />
+              <Text style={styles.railMetaText}>
+                {t("learning.days_per_week", {
+                  days: s.daysPerWeek,
+                })}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.placesBar}>
+            <View
+              style={[
+                styles.placesFill,
+                {
+                  width: `${
+                    ((s.placesTotal - s.placesLeft) / s.placesTotal) *
+                    100
+                  }%`,
+                  backgroundColor: s.accent,
+                },
+              ]}
+            />
+          </View>
+          <Text style={styles.railPlaces}>
+            {t("learning.places_left", { count: s.placesLeft })}
+          </Text>
+
+          <View style={styles.railBottomRow}>
+            <View style={styles.railPriceRow}>
+              <Text style={styles.railPrice}>{s.price}</Text>
+              <Text style={styles.railPriceUnit}>
+                {t("learning.price_per_month")}
+              </Text>
+            </View>
+            <View
+              style={[styles.railGoBtn, { backgroundColor: s.accent }]}
+            >
+              <Ionicons
+                name="arrow-forward"
+                size={15}
+                color="#FFFFFF"
+              />
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
   },
-  {
-    id: 3, name: "Français", accent: "#F97316",
-    time: "10:00 – 11:30", sessionsCount: 4,
-    rating: 4.7, ratingCount: 94,
-    placesLeft: 7, placesTotal: 20, reservedExtra: 10,
-    groupsCount: 2, daysPerWeek: 4,
-    cover: COVER_FR,
-    days: [
-      { label: "L", active: true }, { label: "M", active: true },
-      { label: "M", active: false }, { label: "J", active: true },
-      { label: "V", active: true }, { label: "D", active: false },
-    ],
-    price: 40,
-  },
-  {
-    id: 4, name: "Sciences", accent: "#10B981",
-    time: "16:00 – 17:30", sessionsCount: 6,
-    rating: 4.6, ratingCount: 73,
-    placesLeft: 2, placesTotal: 20, reservedExtra: 15,
-    groupsCount: 2, daysPerWeek: 6,
-    cover: COVER_SCIENCES,
-    days: [
-      { label: "L", active: true }, { label: "M", active: true },
-      { label: "M", active: true }, { label: "J", active: true },
-      { label: "V", active: true }, { label: "D", active: false },
-    ],
-    price: 50,
-  },
-];
+  (prev, next) =>
+    prev.session === next.session && prev.onPress === next.onPress,
+);
 
 type RecordedSession = {
   id: number;
@@ -134,20 +469,12 @@ type RecordedSession = {
   date: string;
   time: string;
   duration: string;
-  /** Watch progress 0–100; 0 = never opened. */
   progress: number;
   photo: any;
-  /** Video thumbnail cover. */
   cover: any;
-  /** Recording stream URL played on tap. */
   videoUrl: string;
 };
 
-/** Demo recording stream used by every recorded session until real URLs arrive. */
-const RECORDING_DEMO_URL =
-  "https://videos-abajim-1.s3.de.io.cloud.ovh.net/recordings/53d03906-bb84-4540-b8de-027c79e7afd2/room-zqwjt6imoa-1759836495_2026-06-17-19-15-14.mp4";
-
-/** Teachers who have recordings — one paged carousel per teacher. */
 type RecordedTeacher = {
   id: number;
   name: string;
@@ -156,214 +483,24 @@ type RecordedTeacher = {
   photo: any;
 };
 
-const RECORDED_TEACHERS: RecordedTeacher[] = [
-  {
-    id: 1,
-    name: "Mrs. Ismail",
-    subject: "Anglais",
-    accent: "#22BEC8",
-    photo: require("../../../assets/teachers/ismail.png"),
-  },
-  {
-    id: 2,
-    name: "Mr. Tounes",
-    subject: "Mathématiques",
-    accent: "#7C4DCC",
-    photo: require("../../../assets/teachers/tounes.png"),
-  },
-  {
-    id: 3,
-    name: "Mr. Tarek",
-    subject: "Français",
-    accent: "#F97316",
-    photo: require("../../../assets/teachers/tarek.png"),
-  },
-];
+function meetingsToRecordedTeachers(
+  meetings: MeetingListItemUI[]
+): RecordedTeacher[] {
+  const seen = new Map<number, RecordedTeacher>();
+  for (const m of meetings) {
+    if (!m.teacherId || seen.has(m.teacherId)) continue;
+    seen.set(m.teacherId, {
+      id: m.teacherId,
+      name: m.teacherName,
+      subject: m.materialName,
+      accent: m.materialColor || "#22BEC8",
+      photo: null,
+    });
+  }
+  return Array.from(seen.values());
+}
 
-const RECORDED_SESSIONS: RecordedSession[] = [
-  {
-    id: 1,
-    teacherId: 1,
-    subject: "Anglais",
-    teacherName: "Mrs. Ismail",
-    accent: "#22BEC8",
-    date: "Ven 19 Juin",
-    time: "18:30 – 20:00",
-    duration: "1h 30",
-    progress: 100,
-    photo: require("../../../assets/teachers/ismail.png"),
-    cover: SESSION_COVER,
-    videoUrl: RECORDING_DEMO_URL,
-  },
-  {
-    id: 2,
-    teacherId: 2,
-    subject: "Mathématiques",
-    teacherName: "Mr. Tounes",
-    accent: "#7C4DCC",
-    date: "Jeu 18 Juin",
-    time: "14:00 – 15:30",
-    duration: "1h 30",
-    progress: 62,
-    photo: require("../../../assets/teachers/tounes.png"),
-    cover: COVER_MATHS,
-    videoUrl: RECORDING_DEMO_URL,
-  },
-  {
-    id: 3,
-    teacherId: 3,
-    subject: "Français",
-    teacherName: "Mr. Tarek",
-    accent: "#F97316",
-    date: "Mar 16 Juin",
-    time: "10:00 – 11:30",
-    duration: "1h 30",
-    progress: 34,
-    photo: require("../../../assets/teachers/tarek.png"),
-    cover: COVER_FR,
-    videoUrl: RECORDING_DEMO_URL,
-  },
-  {
-    id: 4,
-    teacherId: 1,
-    subject: "Anglais",
-    teacherName: "Mrs. Ismail",
-    accent: "#22BEC8",
-    date: "Mer 17 Juin",
-    time: "18:30 – 20:00",
-    duration: "1h 30",
-    progress: 85,
-    photo: require("../../../assets/teachers/ismail.png"),
-    cover: SESSION_Eng,
-    videoUrl: RECORDING_DEMO_URL,
-  },
-  {
-    id: 5,
-    teacherId: 1,
-    subject: "Anglais",
-    teacherName: "Mrs. Ismail",
-    accent: "#22BEC8",
-    date: "Lun 15 Juin",
-    time: "18:30 – 20:00",
-    duration: "1h 30",
-    progress: 0,
-    photo: require("../../../assets/teachers/ismail.png"),
-    cover: SESSION_Eng,
-    videoUrl: RECORDING_DEMO_URL,
-  },
-  {
-    id: 6,
-    teacherId: 1,
-    subject: "Anglais",
-    teacherName: "Mrs. Ismail",
-    accent: "#22BEC8",
-    date: "Sam 13 Juin",
-    time: "18:30 – 20:00",
-    duration: "1h 30",
-    progress: 45,
-    photo: require("../../../assets/teachers/ismail.png"),
-    cover: SESSION_Eng,
-    videoUrl: RECORDING_DEMO_URL,
-  },
-  {
-    id: 7,
-    teacherId: 2,
-    subject: "Mathématiques",
-    teacherName: "Mr. Tounes",
-    accent: "#7C4DCC",
-    date: "Mar 16 Juin",
-    time: "14:00 – 15:30",
-    duration: "1h 30",
-    progress: 50,
-    photo: require("../../../assets/teachers/tounes.png"),
-    cover: COVER_MATHS,
-    videoUrl: RECORDING_DEMO_URL,
-  },
-  {
-    id: 8,
-    teacherId: 2,
-    subject: "Mathématiques",
-    teacherName: "Mr. Tounes",
-    accent: "#7C4DCC",
-    date: "Dim 14 Juin",
-    time: "14:00 – 15:30",
-    duration: "1h 30",
-    progress: 0,
-    photo: require("../../../assets/teachers/tounes.png"),
-    cover: COVER_MATHS,
-    videoUrl: RECORDING_DEMO_URL,
-  },
-  {
-    id: 9,
-    teacherId: 2,
-    subject: "Mathématiques",
-    teacherName: "Mr. Tounes",
-    accent: "#7C4DCC",
-    date: "Ven 12 Juin",
-    time: "14:00 – 15:30",
-    duration: "1h 30",
-    progress: 28,
-    photo: require("../../../assets/teachers/tounes.png"),
-    cover: COVER_MATHS,
-    videoUrl: RECORDING_DEMO_URL,
-  },
-  {
-    id: 10,
-    teacherId: 3,
-    subject: "Français",
-    teacherName: "Mr. Tarek",
-    accent: "#F97316",
-    date: "Dim 14 Juin",
-    time: "10:00 – 11:30",
-    duration: "1h 30",
-    progress: 0,
-    photo: require("../../../assets/teachers/tarek.png"),
-    cover: COVER_FR,
-    videoUrl: RECORDING_DEMO_URL,
-  },
-  {
-    id: 11,
-    teacherId: 3,
-    subject: "Français",
-    teacherName: "Mr. Tarek",
-    accent: "#F97316",
-    date: "Jeu 11 Juin",
-    time: "10:00 – 11:30",
-    duration: "1h 30",
-    progress: 72,
-    photo: require("../../../assets/teachers/tarek.png"),
-    cover: COVER_FR,
-    videoUrl: RECORDING_DEMO_URL,
-  },
-  {
-    id: 12,
-    teacherId: 3,
-    subject: "Français",
-    teacherName: "Mr. Tarek",
-    accent: "#F97316",
-    date: "Mar 9 Juin",
-    time: "10:00 – 11:30",
-    duration: "1h 30",
-    progress: 0,
-    photo: require("../../../assets/teachers/tarek.png"),
-    cover: COVER_FR,
-    videoUrl: RECORDING_DEMO_URL,
-  },
-];
-
-const RECORDED_FEATURED = {
-  subject: "Anglais",
-  accent: "#22BEC8",
-  title: "Lecture 4 · Reading comprehension",
-  teacherName: "Mrs. Ismail",
-  teacherPhoto: require("../../../assets/teachers/ismail.png"),
-  date: "Ven 19 Juin",
-  time: "18:30 – 20:00",
-  duration: "1h 30",
-  progress: 73,
-  cover: SESSION_COVER,
-  videoUrl: RECORDING_DEMO_URL,
-};
+const RECORDED_SESSIONS: RecordedSession[] = [];
 
 /** Width of one recorded video card in the paged carousel. */
 const RECORDED_CARD_W = 264;
@@ -456,6 +593,7 @@ const DAY_STRIDE = 52;
 
 /** Compact card width in the "populaires" rail. */
 const RAIL_CARD_W = 232;
+const SWIPER_CARD_W = 280;
 
 export default function LearnCalendarScreen() {
   const insets = useSafeAreaInsets();
@@ -470,6 +608,188 @@ export default function LearnCalendarScreen() {
   const levelLabel = useMemo(() => (levelId ? LEVEL_LABEL_BY_ID[levelId] : ""), [levelId]);
 
   const row = isRTL ? "row-reverse" : "row";
+
+  // ── API data ───────────────────────────────────────────────────
+  const { activeChildId, isChildReady } = useEnsureChildSession();
+  const {
+    data: meetingsResponse,
+    isLoading: meetingsLoading,
+    isFetching: meetingsFetching,
+    isError: meetingsError,
+    refetch: refetchMeetings,
+  } = useGetMeetingsQuery(
+    {
+      childId: activeChildId,
+      page: 1,
+      perPage: 50,
+      pagination: true,
+      orderBy: "created_at",
+      direction: "desc",
+    },
+    { skip: !isChildReady, refetchOnMountOrArgChange: true }
+  );
+
+  const { data: reservedResponse } = useGetReservedMeetingsQuery(activeChildId ?? undefined, {
+    skip: !isChildReady,
+    refetchOnMountOrArgChange: true,
+  });
+
+  const reservedGroupIds = useMemo(() => {
+    const meetings = reservedResponse?.data?.items ?? [];
+    const ids = new Set<number>();
+    for (const m of meetings) {
+      for (const g of m.meetingGroups ?? []) {
+        ids.add(g.id);
+      }
+    }
+    return ids;
+  }, [reservedResponse]);
+
+  const [subscribeToGroup, { isLoading: subscribing }] = useSubscribeToGroupMutation();
+
+  // ── Reservation confirmation modal ────────────────────────────────
+  const [reserveModalVisible, setReserveModalVisible] = useState(false);
+  const [reserveModalSession, setReserveModalSession] = useState<{
+    groupId: number;
+    materialName: string;
+    teacherName: string;
+    price: number;
+    sessionsPerWeek: number;
+    time: string;
+    accent: string;
+  } | null>(null);
+
+  const openReserveModal = useCallback(
+    (groupId: number, materialName: string, teacherName: string, price: number, sessionsPerWeek: number, time: string, accent: string) => {
+      setReserveModalSession({ groupId, materialName, teacherName, price, sessionsPerWeek, time, accent });
+      setReserveModalVisible(true);
+    },
+    [],
+  );
+
+  // Stable per-card callbacks so <FeaturedSessionCard> (React.memo) can skip
+  // re-rendering unchanged subjects when filters/other state change.
+  const onFeaturedReserve = useCallback(
+    (s: SubjectSession) => {
+      const firstGroup = s.groups[0];
+      if (firstGroup?.id) {
+        openReserveModal(
+          firstGroup.id,
+          s.name,
+          s.teacherName,
+          s.price,
+          s.daysPerWeek,
+          s.time,
+          s.accent,
+        );
+      }
+    },
+    [openReserveModal],
+  );
+
+  const onFeaturedViewDetails = useCallback(
+    (s: SubjectSession) => {
+      navigation.navigate(PATHS.APP.DETAIL_PLAN_MEETING);
+      void s;
+    },
+    [navigation],
+  );
+
+  const onRailPress = useCallback(
+    (s: SubjectSession) => {
+      navigation.navigate(PATHS.APP.DETAIL_PLAN_MEETING);
+      void s;
+    },
+    [navigation],
+  );
+
+  const closeReserveModal = useCallback(() => {
+    setReserveModalVisible(false);
+    setReserveModalSession(null);
+  }, []);
+
+  const confirmReserve = useCallback(async () => {
+    if (!reserveModalSession) return;
+    try {
+      await subscribeToGroup({ groupId: reserveModalSession.groupId, billingCycle: "monthly" }).unwrap();
+      closeReserveModal();
+      alert(t("learning.reserve_success", { name: reserveModalSession.materialName }));
+    } catch (err: any) {
+      const msg = err?.data?.message || t("learning.reserve_error");
+      alert(msg);
+    }
+  }, [reserveModalSession, subscribeToGroup, closeReserveModal, t]);
+
+  const allMeetings = useMemo(
+    () => meetingsResponse?.data?.items ?? [],
+    [meetingsResponse]
+  );
+
+  const subjectSessions = useMemo(
+    () => meetingsToSubjectSessions(allMeetings, reservedGroupIds),
+    [allMeetings, reservedGroupIds]
+  );
+
+  const allMeetingCards = useMemo(() => {
+    const materialCount = new Map<number, number>();
+    for (const m of allMeetings) {
+      const mid = m.materialId ?? m.id;
+      materialCount.set(mid, (materialCount.get(mid) ?? 0) + 1);
+    }
+    return allMeetings.map((m) => {
+      const mid = m.materialId ?? m.id;
+      const allGroups = m.meetingGroups ?? [];
+      const firstGroup = allGroups[0];
+      const scheduleDays = firstGroup?.scheduleDays ?? [];
+      const startTime = firstGroup?.startTime ?? "";
+      const endTime = firstGroup?.endTime ?? "";
+      const sessionsPerWeek = firstGroup?.sessionsPerWeek ?? m.groupsCount;
+
+      const placesTotal = allGroups.reduce(
+        (sum, g) => sum + (g.maxStudents ?? 0), 0
+      );
+      const enrolled = allGroups.reduce(
+        (sum, g) => sum + (g.enrolledCount ?? 0), 0
+      );
+      const placesLeft = allGroups.reduce(
+        (sum, g) => sum + (g.spotsLeft ?? 0), 0
+      );
+
+      const isReserved = allGroups.some((g) => reservedGroupIds.has(g.id));
+
+      return {
+        id: m.id,
+        materialId: mid,
+        name: m.materialName || m.name,
+        accent: m.materialColor || "#22BEC8",
+        time: formatTimeRange(startTime, endTime),
+        meetingsCount: materialCount.get(mid) ?? 1,
+        sessionsCount: sessionsPerWeek * 4,
+        rating: 0,
+        ratingCount: 0,
+        placesLeft,
+        placesTotal,
+        enrolled,
+        reservedExtra: 0,
+        groupsCount: allGroups.length,
+        daysPerWeek: sessionsPerWeek,
+        days: buildDaysFromSchedule(scheduleDays, sessionsPerWeek),
+        price: m.finalPrice || m.price,
+        cover: getCoverForMaterial(m.materialName),
+        teacherId: m.teacherId,
+        teacherName: m.teacherName,
+        meeting: m,
+        groups: allGroups,
+        isReserved,
+        isFull: placesTotal > 0 && placesLeft <= 0,
+      };
+    });
+  }, [allMeetings, reservedGroupIds]);
+
+  const recordedTeachers = useMemo(
+    () => meetingsToRecordedTeachers(allMeetings),
+    [allMeetings]
+  );
 
   // ── Calendar state ──────────────────────────────────────────────
   const today = useMemo(() => {
@@ -528,7 +848,14 @@ export default function LearnCalendarScreen() {
   // ── Filter state ──────────────────────────────────────────────────
   const [filterVisible, setFilterVisible] = useState(false);
   const [filterSubjects, setFilterSubjects] = useState<number[]>([]);
+  const [filterTeachers, setFilterTeachers] = useState<number[]>([]);
   const [filterMaxPrice, setFilterMaxPrice] = useState(100);
+
+  useEffect(() => {
+    setFilterSubjects([]);
+    setFilterTeachers([]);
+    setFilterMaxPrice(100);
+  }, [activeChildId]);
 
   const toggleSubject = (id: number) => {
     setFilterSubjects((prev) =>
@@ -536,23 +863,63 @@ export default function LearnCalendarScreen() {
     );
   };
 
+  const toggleTeacher = (id: number) => {
+    setFilterTeachers((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const uniqueTeachers = useMemo(() => {
+    const pool = filterSubjects.length > 0
+      ? allMeetingCards.filter((s) => filterSubjects.includes(s.materialId))
+      : allMeetingCards;
+    const seen = new Map<number, { id: number; name: string; subject: string; accent: string }>();
+    for (const s of pool) {
+      if (s.teacherId && !seen.has(s.teacherId)) {
+        seen.set(s.teacherId, {
+          id: s.teacherId,
+          name: s.teacherName,
+          subject: s.name,
+          accent: s.accent,
+        });
+      }
+    }
+    return Array.from(seen.values());
+  }, [allMeetingCards, filterSubjects]);
+
   const filteredSessions = useMemo(() => {
-    let list = SUBJECT_SESSIONS;
+    let list = allMeetingCards;
     if (filterSubjects.length > 0) {
-      list = list.filter((s) => filterSubjects.includes(s.id));
+      list = list.filter((s) => filterSubjects.includes(s.materialId));
+    }
+    if (filterTeachers.length > 0) {
+      list = list.filter((s) => s.teacherId != null && filterTeachers.includes(s.teacherId));
     }
     list = list.filter((s) => s.price <= filterMaxPrice);
-    return list;
-  }, [filterSubjects, filterMaxPrice]);
+    // Sort: available first → reserved → complet (full)
+    return [...list].sort((a, b) => {
+      const aScore = (a.isFull ? 2 : 0) + (a.isReserved ? 1 : 0);
+      const bScore = (b.isFull ? 2 : 0) + (b.isReserved ? 1 : 0);
+      return aScore - bScore;
+    });
+  }, [allMeetingCards, filterSubjects, filterTeachers, filterMaxPrice]);
+
+  const { singleGroupSessions, multiGroupSessions } = useMemo(() => {
+    return {
+      singleGroupSessions: filteredSessions.filter((s) => s.meetingsCount <= 1),
+      multiGroupSessions: filteredSessions.filter((s) => s.meetingsCount > 1),
+    };
+  }, [filteredSessions]);
 
   const resetFilters = () => {
     setFilterSubjects([]);
+    setFilterTeachers([]);
     setFilterMaxPrice(100);
   };
 
-  /** Badge on the filter button: subject picks + a non-default price cap. */
+  /** Badge on the filter button: subject picks + teacher picks + a non-default price cap. */
   const activeFilterCount =
-    filterSubjects.length + (filterMaxPrice < 100 ? 1 : 0);
+    filterSubjects.length + filterTeachers.length + (filterMaxPrice < 100 ? 1 : 0);
 
   // ── View toggle (Réservation ↔ Calendrier ↔ Séances enregistrées) ─
   const [view, setView] = useState<ViewKey>("reservation");
@@ -585,6 +952,33 @@ export default function LearnCalendarScreen() {
     setCurrentYear(today.getFullYear());
     setSelectedDay(today.getDate());
   }, [today]);
+
+  // ── Auto-advance month on day-strip scroll ──────────────────────
+  const monthTransitioning = useRef(false);
+
+  useEffect(() => {
+    monthTransitioning.current = false;
+  }, [currentMonth, currentYear]);
+
+  const onDayStripScrollEnd = useCallback(
+    (e: { nativeEvent: { contentOffset: { x: number }; contentSize: { width: number }; layoutMeasurement: { width: number } } }) => {
+      if (monthTransitioning.current) return;
+      const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+      const reachedEnd = contentOffset.x + layoutMeasurement.width >= contentSize.width - 10;
+      const reachedStart = contentOffset.x <= 10;
+      if (reachedEnd) {
+        monthTransitioning.current = true;
+        goNextMonth();
+        setSelectedDay(1);
+      } else if (reachedStart) {
+        monthTransitioning.current = true;
+        goPrevMonth();
+        const totalPrev = new Date(currentYear, currentMonth, 0).getDate();
+        setSelectedDay(totalPrev);
+      }
+    },
+    [goNextMonth, goPrevMonth, currentMonth, currentYear],
+  );
 
   // ── Recorded carousel pagination (one page index per teacher) ──
   const [recordedPages, setRecordedPages] = useState<Record<number, number>>({});
@@ -628,7 +1022,11 @@ export default function LearnCalendarScreen() {
   const [playerLoading, setPlayerLoading] = useState(false);
   const [playerError, setPlayerError] = useState(false);
   const [playerKey, setPlayerKey] = useState(0);
-  const playerRef = useRef<Video>(null);
+
+  const recordedPlayer = useVideoPlayer(playerUrl, (p) => {
+    p.loop = false;
+    p.volume = 1.0;
+  });
 
   const openPlayer = useCallback((url: string) => {
     if (!url) return;
@@ -639,14 +1037,14 @@ export default function LearnCalendarScreen() {
   }, []);
 
   const closePlayer = useCallback(async () => {
-    if (playerRef.current) {
-      await playerRef.current.stopAsync().catch(() => {});
-    }
+    try {
+      recordedPlayer.pause();
+    } catch {}
     setPlayerVisible(false);
     setPlayerUrl(null);
     setPlayerLoading(false);
     setPlayerError(false);
-  }, []);
+  }, [recordedPlayer]);
 
   const retryPlayer = useCallback(() => {
     setPlayerError(false);
@@ -723,6 +1121,30 @@ export default function LearnCalendarScreen() {
         {view === "reservation" ? (
           <>
 
+        {/* Loading / Error states */}
+        {meetingsLoading && (
+          <View style={{ padding: 30, alignItems: "center" }}>
+            <ActivityIndicator size="large" color="#12A9B4" />
+            <Text style={{ marginTop: 10, color: "#6B7280" }}>Chargement des matières...</Text>
+          </View>
+        )}
+        {meetingsError && (
+          <View style={{ padding: 20, marginHorizontal: GUTTER, backgroundColor: "#FEF2F2", borderRadius: 12, marginBottom: 12 }}>
+            <Text style={{ color: "#DC2626", fontWeight: "600" }}>Erreur de chargement</Text>
+            <Text style={{ color: "#991B1B", marginTop: 4, fontSize: 12 }}>
+              {"isChildReady: " + String(isChildReady) + " | meetings: " + allMeetings.length}
+            </Text>
+          </View>
+        )}
+        {!isChildReady && !meetingsLoading && (
+          <View style={{ padding: 20, marginHorizontal: GUTTER, backgroundColor: "#FFF7ED", borderRadius: 12, marginBottom: 12 }}>
+            <Text style={{ color: "#92400E", fontWeight: "600" }}>Session enfant non prête</Text>
+            <Text style={{ color: "#92400E", marginTop: 4, fontSize: 12 }}>
+              En attente de la session enfant...
+            </Text>
+          </View>
+        )}
+
         {/* Planner card — month navigation + scrollable day strip */}
         <View style={styles.plannerCard}>
           <View style={styles.monthRow}>
@@ -777,6 +1199,7 @@ export default function LearnCalendarScreen() {
             contentContainerStyle={styles.calendarStrip}
             snapToInterval={DAY_STRIDE}
             decelerationRate="fast"
+            onMomentumScrollEnd={onDayStripScrollEnd}
           >
             {daysInMonth.map((day) => {
               const isSelected = day.day === selectedDay;
@@ -959,7 +1382,7 @@ export default function LearnCalendarScreen() {
             </Text>
           </TouchableOpacity>
 
-          {SUBJECT_SESSIONS.map((s) => {
+          {subjectSessions.map((s) => {
             const on = filterSubjects.includes(s.id);
             return (
               <TouchableOpacity
@@ -1001,105 +1424,11 @@ export default function LearnCalendarScreen() {
               decelerationRate="fast"
             >
               {filteredSessions.map((s) => (
-                <TouchableOpacity
+                <RailSessionCard
                   key={s.id}
-                  style={styles.railCard}
-                  activeOpacity={0.9}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${s.name}, ${s.price} DT par mois`}
-                  onPress={() =>
-                    navigation.navigate(PATHS.APP.DETAIL_PLAN_MEETING)
-                  }
-                >
-                  <View style={styles.railCoverWrap}>
-                    <Image source={s.cover} style={styles.railCover} />
-                    <LinearGradient
-                      colors={["rgba(9,29,54,0.02)", "rgba(9,29,54,0.78)"]}
-                      start={{ x: 0, y: 0.25 }}
-                      end={{ x: 0, y: 1 }}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    <View
-                      style={[
-                        styles.railSubjectPill,
-                        { backgroundColor: s.accent },
-                      ]}
-                    >
-                      <Text style={styles.railSubjectText}>{s.name}</Text>
-                    </View>
-                    <View style={styles.railRating}>
-                      <Ionicons name="star" size={11} color="#FBBF24" />
-                      <Text style={styles.railRatingText}>
-                        {s.rating.toFixed(1)}
-                      </Text>
-                    </View>
-                    <View style={styles.railCoverFooter}>
-                      <Ionicons name="time-outline" size={11} color="#FFFFFF" />
-                      <Text style={styles.railCoverFooterText}>{s.time}</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.railBody}>
-                    <View style={styles.railMetaRow}>
-                      <View style={styles.railMetaChip}>
-                        <Ionicons name="people" size={11} color="#0E7C86" />
-                        <Text style={styles.railMetaText}>
-                          {t("learning.groups_count", {
-                            count: s.groupsCount,
-                          })}
-                        </Text>
-                      </View>
-                      <View style={styles.railMetaChip}>
-                        <Ionicons
-                          name="repeat-outline"
-                          size={11}
-                          color="#0E7C86"
-                        />
-                        <Text style={styles.railMetaText}>
-                          {t("learning.days_per_week", {
-                            days: s.daysPerWeek,
-                          })}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.placesBar}>
-                      <View
-                        style={[
-                          styles.placesFill,
-                          {
-                            width: `${
-                              ((s.placesTotal - s.placesLeft) / s.placesTotal) *
-                              100
-                            }%`,
-                            backgroundColor: s.accent,
-                          },
-                        ]}
-                      />
-                    </View>
-                    <Text style={styles.railPlaces}>
-                      {t("learning.places_left", { count: s.placesLeft })}
-                    </Text>
-
-                    <View style={styles.railBottomRow}>
-                      <View style={styles.railPriceRow}>
-                        <Text style={styles.railPrice}>{s.price}</Text>
-                        <Text style={styles.railPriceUnit}>
-                          {t("learning.price_per_month")}
-                        </Text>
-                      </View>
-                      <View
-                        style={[styles.railGoBtn, { backgroundColor: s.accent }]}
-                      >
-                        <Ionicons
-                          name="arrow-forward"
-                          size={15}
-                          color="#FFFFFF"
-                        />
-                      </View>
-                    </View>
-                  </View>
-                </TouchableOpacity>
+                  session={s}
+                  onPress={onRailPress}
+                />
               ))}
             </ScrollView>
           </>
@@ -1124,131 +1453,69 @@ export default function LearnCalendarScreen() {
           </View>
         )}
 
-        {/* Featured session cards — full-width, one per subject */}
-        {filteredSessions.map((s) => (
-          <React.Fragment key={s.id}>
-            <View style={styles.featuredTitleRow}>
-              <View
-                style={[styles.featuredTitleBar, { backgroundColor: s.accent }]}
-              />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.featuredTitleText}>{s.name}</Text>
-                <Text style={styles.featuredTitleSub} numberOfLines={1}>
-                  {`${t("learning.sessions_count", {
-                    count: s.sessionsCount,
-                  })} · ${s.time}`}
+        
+
+        {/* Single-group subjects — full-width featured cards (Image 2 style) */}
+        {singleGroupSessions.length > 0 && (
+          <View style={{ marginBottom: 12 }}>
+            <View style={styles.sectionRow}>
+              <View style={styles.sectionTitleWrap}>
+                <Text style={styles.sectionTitle}>{t("learning.single_meetings_title", { defaultValue: "Séances disponibles" })}</Text>
+                <Text style={styles.sectionCaption}>
+                  {t("learning.single_meetings_subtitle", { defaultValue: "Réservez votre créneau" })}
                 </Text>
-              </View>
-              <View
-                style={[
-                  styles.featuredPricePill,
-                  { backgroundColor: `${s.accent}14` },
-                ]}
-              >
-                <Text
-                  style={[styles.featuredPriceText, { color: s.accent }]}
-                >{`${s.price} DT`}</Text>
-              </View>
-            </View>
-            <View style={styles.sessionCard}>
-            {/* Subject + session count pills */}
-            <View style={styles.cardSubjectPillRow}>
-              <View style={[styles.cardSubjectPill, { backgroundColor: `${s.accent}18`, borderColor: `${s.accent}35` }]}>
-                <Ionicons name="book-outline" size={12} color={s.accent} />
-                <Text style={[styles.cardSubjectPillText, { color: s.accent }]}>{s.name}</Text>
-              </View>
-              <View style={[styles.cardSubjectPill, { backgroundColor: `${s.accent}12`, borderColor: `${s.accent}30` }]}>
-                <Ionicons name="calendar-outline" size={12} color={s.accent} />
-                <Text style={[styles.cardSubjectPillText, { color: s.accent }]}>{t("learning.sessions_count", { count: s.sessionsCount })}</Text>
-              </View>
-              <View style={[styles.cardSubjectPill, { backgroundColor: `${s.accent}12`, borderColor: `${s.accent}30` }]}>
-                <Ionicons name="time-outline" size={12} color={s.accent} />
-                <Text style={[styles.cardSubjectPillText, { color: s.accent }]}>{s.time}</Text>
-              </View>
-            </View>
-
-            {/* Cover image with rating + time overlays */}
-            <View style={styles.sessionPhotoWrap}>
-              <Image source={s.cover} style={styles.sessionPhoto} />
-              <View style={styles.coverScrim} />
-              <View style={styles.ratingBadge}>
-                <Ionicons name="star" size={12} color="#FBBF24" />
-                <Text style={styles.ratingBadgeText}>{s.rating.toFixed(1)}</Text>
-                <Text style={styles.ratingBadgeCount}>({s.ratingCount})</Text>
-              </View>
-              <View style={styles.timeBadge}>
-                <Ionicons name="time-outline" size={12} color="#FFFFFF" />
-                <Text style={styles.timeBadgeText}>{s.time}</Text>
-              </View>
-            </View>
-
-            <View style={styles.sessionBody}>
-              <View style={styles.sessionTopRow}>
-                <View style={styles.groupPill}>
-                  <Ionicons name="people" size={14} color={s.accent} />
-                  <Text style={styles.groupPillText}>{t("learning.groups_count", { count: s.groupsCount })}</Text>
-                </View>
-                <Text style={styles.sessionFreq}>{t("learning.days_per_week", { days: s.daysPerWeek })}</Text>
-              </View>
-
-              <View style={styles.dayPillsRow}>
-                {s.days.map((day, i) => (
-                  <View key={i} style={[styles.dayPill, day.active ? styles.dayPillActive : styles.dayPillOff]}>
-                    <Text style={[styles.dayPillText, day.active ? styles.dayPillTextActive : styles.dayPillTextOff]}>
-                      {day.label}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-
-              <View style={styles.reserveRow}>
-                <View style={styles.avatarStack}>
-                  {RESERVED_CHILDREN.map((src, i) => (
-                    <Image key={i} source={src} style={[styles.reserveAvatar, { marginLeft: i === 0 ? 0 : -10, zIndex: RESERVED_CHILDREN.length - i }]} />
-                  ))}
-                  <View style={[styles.reserveAvatar, styles.reserveMore, { marginLeft: -10 }]}>
-                    <Text style={styles.reserveMoreText}>+{s.reservedExtra}</Text>
-                  </View>
-                </View>
-                <Text style={styles.reserveText}>{t("learning.reserved_children")}</Text>
-              </View>
-
-              <View style={styles.placesBar}>
-                <View style={[styles.placesFill, { width: `${((s.placesTotal - s.placesLeft) / s.placesTotal) * 100}%` }]} />
-              </View>
-              <Text style={styles.placesCaption}>{t("learning.places_reserved", { filled: s.placesTotal - s.placesLeft, total: s.placesTotal })}</Text>
-
-              <View style={styles.sessionBottomRow}>
-                <View style={styles.priceBlock}>
-                  <Text style={styles.priceFrom}>{t("learning.price_from")}</Text>
-                  <View style={styles.priceValueRow}>
-                    <Text style={styles.priceValue}>{s.price}</Text>
-                    <Text style={styles.priceUnit}>{t("learning.price_per_month")}</Text>
-                  </View>
-                  <View style={styles.placesRow}>
-                    <View style={styles.placesDot} />
-                    <Text style={styles.placesText}>{t("learning.places_left", { count: s.placesLeft })}</Text>
-                  </View>
-                </View>
-
-                <TouchableOpacity
-                  style={[
-                    styles.detailsBtn,
-                    { backgroundColor: s.accent, shadowColor: s.accent },
-                  ]}
-                  activeOpacity={0.85}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${t("learning.view_details")} — ${s.name}`}
-                  onPress={() => navigation.navigate(PATHS.APP.DETAIL_PLAN_MEETING)}
-                >
-                  <Text style={styles.detailsBtnText}>{t("learning.view_details")}</Text>
-                  <Ionicons name="arrow-forward" size={15} color="#FFFFFF" />
-                </TouchableOpacity>
               </View>
             </View>
           </View>
-          </React.Fragment>
+        )}
+        {singleGroupSessions.map((s, cardIdx) => (
+          <FeaturedSessionCard
+            key={s.id}
+            session={s}
+            index={cardIdx}
+            onReserve={onFeaturedReserve}
+            onViewDetails={onFeaturedViewDetails}
+          />
         ))}
+        {/* Multi-group subjects — horizontal swiper rail (Image 1 style) */}
+        {multiGroupSessions.length > 0 && (
+          <View style={{ marginBottom: 24 }}>
+            <View style={styles.sectionRow}>
+              <View style={styles.sectionTitleWrap}>
+                <Text style={styles.sectionTitle}>{t("learning.multiple_meetings_title", { defaultValue: "Plusieurs créneaux disponibles" })}</Text>
+                <Text style={styles.sectionCaption}>
+                  {t("learning.swipe_hint", { defaultValue: "Glissez pour explorer" })}
+                </Text>
+              </View>
+            </View>
+            <FlatList
+              horizontal
+              data={multiGroupSessions}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={({ item: s, index }) => (
+                <View style={{ width: SWIPER_CARD_W, marginRight: 12 }}>
+                  <FeaturedSessionCard
+                    session={s}
+                    index={index}
+                    onReserve={onFeaturedReserve}
+                    onViewDetails={onFeaturedViewDetails}
+                  />
+                </View>
+              )}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16 }}
+              removeClippedSubviews
+              initialNumToRender={3}
+              maxToRenderPerBatch={3}
+              windowSize={3}
+              getItemLayout={(_, index) => ({
+                length: SWIPER_CARD_W + 12,
+                offset: (SWIPER_CARD_W + 12) * index,
+                index,
+              })}
+            />
+          </View>
+        )}
 
         {/* Filter Modal */}
         <Modal
@@ -1291,7 +1558,7 @@ export default function LearnCalendarScreen() {
               {/* Subject filter */}
               <Text style={styles.filterLabel}>{t("learning.subject_label")}</Text>
               <View style={styles.filterChipsGrid}>
-                {SUBJECT_SESSIONS.map((s) => {
+                {subjectSessions.map((s) => {
                   const checked = filterSubjects.includes(s.id);
                   return (
                     <TouchableOpacity
@@ -1333,6 +1600,34 @@ export default function LearnCalendarScreen() {
                   );
                 })}
               </View>
+
+              {/* Teacher filter */}
+              {uniqueTeachers.length > 0 && (
+                <>
+                  <Text style={[styles.filterLabel, { marginTop: 20 }]}>
+                    {t("learning.teacher_label", { defaultValue: "Enseignant" })}
+                  </Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.teacherSwiperContent}
+                    snapToInterval={90}
+                    decelerationRate="fast"
+                  >
+                    {uniqueTeachers.map((teacher) => (
+                      <TeacherFilterCard
+                        key={teacher.id}
+                        teacherId={teacher.id}
+                        name={teacher.name}
+                        subject={teacher.subject}
+                        accent={teacher.accent}
+                        checked={filterTeachers.includes(teacher.id)}
+                        onPress={() => toggleTeacher(teacher.id)}
+                      />
+                    ))}
+                  </ScrollView>
+                </>
+              )}
 
               {/* Price filter */}
               <Text style={[styles.filterLabel, { marginTop: 20 }]}>
@@ -1381,137 +1676,6 @@ export default function LearnCalendarScreen() {
           </>
         ) : (
           <View>
-            {/* Featured recording — video preview card */}
-            <View style={styles.videoCard}>
-              <View style={styles.videoCoverWrap}>
-                <Image
-                  source={RECORDED_FEATURED.cover}
-                  style={styles.videoCover}
-                  resizeMode="cover"
-                />
-                <LinearGradient
-                  colors={["rgba(9,29,54,0.05)", "rgba(9,29,54,0.88)"]}
-                  start={{ x: 0, y: 0.2 }}
-                  end={{ x: 0, y: 1 }}
-                  style={StyleSheet.absoluteFill}
-                />
-
-                <View style={styles.videoTopRow}>
-                  <View
-                    style={[
-                      styles.videoSubjectPill,
-                      { backgroundColor: RECORDED_FEATURED.accent },
-                    ]}
-                  >
-                    <Ionicons name="book-outline" size={11} color="#FFFFFF" />
-                    <Text style={styles.videoSubjectText}>
-                      {RECORDED_FEATURED.subject}
-                    </Text>
-                  </View>
-                  <View style={styles.videoDurationPill}>
-                    <Ionicons name="time-outline" size={11} color="#FFFFFF" />
-                    <Text style={styles.videoDurationText}>
-                      {RECORDED_FEATURED.duration}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.videoPlayCenter}>
-                  <TouchableOpacity
-                    style={styles.videoPlayWrap}
-                    activeOpacity={0.9}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Revoir ${RECORDED_FEATURED.subject} — ${RECORDED_FEATURED.title}`}
-                    onPress={() => openPlayer(RECORDED_FEATURED.videoUrl)}
-                  >
-                    <Animated.View
-                      style={[
-                        styles.videoPlayHalo,
-                        {
-                          opacity: pulseAnim.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0.5, 1],
-                          }),
-                          transform: [
-                            {
-                              scale: pulseAnim.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [1, 1.3],
-                              }),
-                            },
-                          ],
-                        },
-                      ]}
-                    />
-                    <View
-                      style={[
-                        styles.videoPlayBtn,
-                        { backgroundColor: RECORDED_FEATURED.accent },
-                      ]}
-                    >
-                      <Ionicons
-                        name="play"
-                        size={22}
-                        color="#FFFFFF"
-                        style={styles.videoPlayIcon}
-                      />
-                    </View>
-                  </TouchableOpacity>
-                  
-                </View>
-
-                <View style={styles.videoScrim}>
-                  <Text style={styles.videoTitle} numberOfLines={1}>
-                    {RECORDED_FEATURED.title}
-                  </Text>
-                  <View style={styles.videoTeacherRow}>
-                    <View
-                      style={[
-                        styles.videoTeacherAvatarWrap,
-                        { borderColor: RECORDED_FEATURED.accent },
-                      ]}
-                    >
-                      <Image
-                        source={RECORDED_FEATURED.teacherPhoto}
-                        style={styles.videoTeacherAvatar}
-                      />
-                    </View>
-                    <Text style={styles.videoMeta}>
-                      {`${RECORDED_FEATURED.teacherName} · ${RECORDED_FEATURED.date}`}
-                    </Text>
-                  </View>
-                  <View style={styles.videoProgressRow}>
-                    <View style={styles.videoProgressBar}>
-                      <View
-                        style={[
-                          styles.videoProgressFill,
-                          {
-                            width: `${RECORDED_FEATURED.progress}%`,
-                            backgroundColor: RECORDED_FEATURED.accent,
-                          },
-                        ]}
-                      />
-                    </View>
-                    <Text style={styles.videoProgressText}>
-                      {`${RECORDED_FEATURED.progress}%`}
-                    </Text>
-                    <TouchableOpacity
-                      style={[
-                        styles.resumeBtn,
-                        { backgroundColor: RECORDED_FEATURED.accent },
-                      ]}
-                      activeOpacity={0.9}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Reprendre ${RECORDED_FEATURED.title}`}
-                      onPress={() => openPlayer(RECORDED_FEATURED.videoUrl)}
-                    >
-                      <Ionicons name="play" size={12} color="#FFFFFF" />
-                      <Text style={styles.resumeBtnText}>Reprendre</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </View>
 
             <View style={[styles.sectionRow, styles.recordedHeader]}>
               <View style={styles.sectionTitleWrap}>
@@ -1528,7 +1692,7 @@ export default function LearnCalendarScreen() {
               </View>
             </View>
 
-            {RECORDED_TEACHERS.map((teacher) => {
+            {recordedTeachers.map((teacher) => {
               const sessions = RECORDED_SESSIONS.filter(
                 (s) => s.teacherId === teacher.id,
               );
@@ -1744,6 +1908,130 @@ export default function LearnCalendarScreen() {
       </ScrollView>
       )}
 
+      {/* ── Reservation confirmation modal (animated) ── */}
+      <Modal
+        visible={reserveModalVisible}
+        transparent
+        animationType="none"
+        statusBarTranslucent
+        onRequestClose={closeReserveModal}
+      >
+        <Reanimated.View
+          style={styles.reserveModalOverlay}
+          entering={FadeIn.duration(250)}
+        >
+          <Pressable
+            style={{ flex: 1 }}
+            onPress={closeReserveModal}
+          />
+          <Reanimated.View
+            style={styles.reserveModalCard}
+            entering={ZoomIn.springify().damping(18).stiffness(180)}
+          >
+            {/* Glow orbs */}
+            <View style={[styles.reserveGlowA, { backgroundColor: `${reserveModalSession?.accent || "#12A9B4"}22` }]} />
+            <View style={[styles.reserveGlowB, { backgroundColor: `${reserveModalSession?.accent || "#12A9B4"}11` }]} />
+
+            {/* Accent top bar */}
+            <Reanimated.View
+              style={[styles.reserveModalAccent, { backgroundColor: reserveModalSession?.accent || "#12A9B4" }]}
+              entering={FadeIn.delay(100).duration(300)}
+            />
+
+            {/* Icon bounce */}
+            <Reanimated.View
+              style={[styles.reserveModalIcon, { backgroundColor: `${reserveModalSession?.accent || "#12A9B4"}15` }]}
+              entering={ZoomIn.springify().delay(150).damping(14).stiffness(200)}
+            >
+              <Ionicons name="calendar" size={30} color={reserveModalSession?.accent || "#12A9B4"} />
+            </Reanimated.View>
+
+            <Reanimated.Text
+              style={styles.reserveModalTitle}
+              entering={FadeInDown.delay(200).duration(300)}
+            >
+              {t("learning.reserve_confirm_title")}
+            </Reanimated.Text>
+            <Reanimated.Text
+              style={styles.reserveModalSubtitle}
+              entering={FadeInDown.delay(250).duration(300)}
+            >
+              {t("learning.reserve_confirm_subtitle")}
+            </Reanimated.Text>
+
+            {/* Info card — stagger rows */}
+            <Reanimated.View
+              style={styles.reserveModalInfo}
+              entering={FadeInUp.delay(300).duration(350)}
+            >
+              {[
+                { icon: "book-outline" as const, label: t("learning.reserve_subject"), value: reserveModalSession?.materialName },
+                { icon: "person-outline" as const, label: t("learning.reserve_teacher"), value: reserveModalSession?.teacherName },
+                { icon: "time-outline" as const, label: t("learning.reserve_schedule"), value: reserveModalSession?.time },
+                { icon: "repeat-outline" as const, label: t("learning.reserve_frequency"), value: t("learning.reserve_per_week", { count: reserveModalSession?.sessionsPerWeek || 1 }) },
+                { icon: "wallet-outline" as const, label: t("learning.reserve_price"), value: t("learning.reserve_per_month", { price: reserveModalSession?.price || 0 }), bold: true },
+              ].map((row, i, arr) => (
+                <React.Fragment key={row.label}>
+                  <Reanimated.View
+                    style={styles.reserveModalInfoRow}
+                    entering={FadeInDown.delay(350 + i * 60).duration(250)}
+                  >
+                    <View style={[styles.reserveInfoIconWrap, { backgroundColor: `${reserveModalSession?.accent || "#12A9B4"}12` }]}>
+                      <Ionicons name={row.icon} size={14} color={reserveModalSession?.accent || "#12A9B4"} />
+                    </View>
+                    <Text style={styles.reserveModalInfoLabel}>{row.label}</Text>
+                    <Text style={[styles.reserveModalInfoValue, row.bold && { fontWeight: "900", fontSize: 15 }]}>
+                      {row.value}
+                    </Text>
+                  </Reanimated.View>
+                  {i < arr.length - 1 && <View style={styles.reserveModalInfoDivider} />}
+                </React.Fragment>
+              ))}
+            </Reanimated.View>
+
+            <Reanimated.Text
+              style={styles.reserveModalNote}
+              entering={FadeIn.delay(500).duration(300)}
+            >
+              {t("learning.reserve_note")}
+            </Reanimated.Text>
+
+            {/* Buttons — slide up */}
+            <Reanimated.View
+              style={styles.reserveModalActions}
+              entering={FadeInUp.delay(550).duration(300)}
+            >
+              <TouchableOpacity
+                style={styles.reserveModalCancelBtn}
+                activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityLabel={t("learning.reserve_cancel")}
+                onPress={closeReserveModal}
+              >
+                <Text style={styles.reserveModalCancelText}>{t("learning.reserve_cancel")}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.reserveModalConfirmBtn, { backgroundColor: reserveModalSession?.accent || "#12A9B4" }]}
+                activeOpacity={0.85}
+                disabled={subscribing}
+                accessibilityRole="button"
+                accessibilityLabel={t("learning.reserve_confirm")}
+                onPress={confirmReserve}
+              >
+                {subscribing ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" />
+                    <Text style={styles.reserveModalConfirmText}>{t("learning.reserve_confirm")}</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </Reanimated.View>
+          </Reanimated.View>
+        </Reanimated.View>
+      </Modal>
+
       {/* ── Recording player modal ── */}
       <Modal
         visible={playerVisible}
@@ -1767,25 +2055,14 @@ export default function LearnCalendarScreen() {
 
           {playerUrl ? (
             <View style={styles.playerVideoWrap}>
-              <Video
+              <VideoView
                 key={playerKey}
-                ref={playerRef}
-                source={{ uri: playerUrl }}
+                player={recordedPlayer}
                 style={styles.playerVideo}
-                useNativeControls
-                resizeMode={ResizeMode.CONTAIN}
-                shouldPlay
-                isLooping={false}
-                volume={1.0}
-                onLoadStart={() => {
-                  setPlayerLoading(true);
-                  setPlayerError(false);
-                }}
-                onLoad={() => setPlayerLoading(false)}
-                onError={() => {
-                  setPlayerLoading(false);
-                  setPlayerError(true);
-                }}
+                contentFit="contain"
+                nativeControls
+                onFullscreenEnter={() => setPlayerLoading(false)}
+                onFullscreenExit={() => setPlayerLoading(false)}
               />
               {playerLoading && (
                 <View style={styles.playerLoading}>
@@ -2014,29 +2291,6 @@ const styles = StyleSheet.create({
   },
   copyText: { fontSize: 13, fontWeight: "700", color: "#7C4DCC" },
 
-  // ── Subject pill ─────────────────────────────────────────────────
-  cardSubjectPillRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingTop: 10,
-    marginBottom: 6,
-  },
-  cardSubjectPill: {
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderWidth: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  cardSubjectPillText: {
-    fontSize: 12,
-    fontWeight: "800",
-  },
-
   // ── Group session card ───────────────────────────────────────────
   sessionCard: {
     backgroundColor: "#FFFFFF",
@@ -2098,6 +2352,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 8,
   },
+  sessionMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    marginBottom: 12,
+  },
   groupPill: {
     flexDirection: "row",
     alignItems: "center",
@@ -2146,13 +2407,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   priceBlock: { flex: 1 },
-  priceFrom: { fontSize: 11, fontStyle: "italic", color: "#9CA3AF", marginBottom: 1 },
   priceValueRow: { flexDirection: "row", alignItems: "flex-end", gap: 4 },
   priceValue: { fontSize: 20, fontWeight: "900", color: "#1F2937", lineHeight: 26 },
   priceUnit: { fontSize: 12, fontWeight: "700", color: "#1F2937", marginBottom: 2 },
-  placesRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
-  placesDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#F97316" },
-  placesText: { fontSize: 11, fontWeight: "700", color: "#F97316" },
   detailsBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -2163,6 +2420,78 @@ const styles = StyleSheet.create({
     backgroundColor: "#111827",
   },
   detailsBtnText: { fontSize: 12.5, fontWeight: "800", color: "#FFFFFF" },
+  // ── Reserved state ──────────────────────────────────────────────
+  sessionCardReserved: {
+    borderWidth: 0,
+    backgroundColor: "#F0FDF4",
+    shadowColor: "#10B981",
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+  },
+  reservedLeftBar: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    backgroundColor: "#10B981",
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
+  },
+  reservedOverlay: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    zIndex: 5,
+  },
+  reservedOverlayChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: "rgba(16, 185, 129, 0.88)",
+    borderRadius: 20,
+    shadowColor: "#10B981",
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  reservedOverlayText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
+  // ── Full state ──────────────────────────────────────────────────
+  sessionCardFull: {
+    borderWidth: 0,
+    backgroundColor: "#FEF2F2",
+    shadowColor: "#EF4444",
+    shadowOpacity: 0.10,
+    shadowRadius: 16,
+  },
+  fullBadgeInline: {
+    position: "absolute",
+    top: 12,
+    left: 12,
+    zIndex: 5,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: "rgba(220, 38, 38, 0.88)",
+    borderRadius: 20,
+    shadowColor: "#DC2626",
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  fullBadgeInlineText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
 
   // ── Section headers ──────────────────────────────────────────────
   sectionRow: {
@@ -2226,6 +2555,61 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   featuredPriceText: { fontSize: 12, fontWeight: "800" },
+
+  // ── Info pills row (subject / sessions / time) ──────────────────
+  infoPillsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 10,
+    marginTop: 6,
+  },
+  infoPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 10,
+    height: 30,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  infoPillText: { fontSize: 12, fontWeight: "700" },
+
+  // ── Children avatars row ────────────────────────────────────────
+  childrenAvatarsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 10,
+  },
+  childrenAvatarsStack: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  childrenAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+    backgroundColor: "#E5E7EB",
+  },
+  childrenAvatarMore: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+    backgroundColor: "#22BEC8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  childrenAvatarCount: { fontSize: 10, fontWeight: "800", color: "#FFFFFF" },
+  childrenAvatarLabel: { fontSize: 11.5, fontWeight: "700", color: "#6B7280" },
+
+  // ── Price / urgency labels ──────────────────────────────────────
+  priceFromLabel: { fontSize: 11, fontStyle: "italic", color: "#9CA3AF", marginBottom: 1 },
+  urgencyText: { fontSize: 11.5, fontWeight: "700", marginTop: 4 },
 
   filterBtn: {
     flexDirection: "row", alignItems: "center", gap: 5,
@@ -2967,6 +3351,11 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
   },
   filterCheckLabel: { fontSize: 13, fontWeight: "700", color: "#122A4E" },
+  teacherSwiperContent: {
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+    gap: 10,
+  },
   priceChips: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   priceChip: {
     paddingHorizontal: 16, height: 38, borderRadius: 999,
@@ -2995,4 +3384,169 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   applyBtnText: { fontSize: 13.5, fontWeight: "800", color: "#FFFFFF" },
+
+  // ── Reservation confirmation modal ──────────────────────────────
+  reserveModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(9,20,38,0.55)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 28,
+  },
+  reserveModalCard: {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    paddingTop: 0,
+    paddingBottom: 24,
+    marginBottom: 32,
+    alignItems: "center",
+    shadowColor: "#0B1E38",
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 10,
+    overflow: "hidden",
+  },
+  reserveModalHandle: {
+    alignSelf: "center",
+    width: 42,
+    height: 4,
+    borderRadius: 999,
+    backgroundColor: "#DDE4EE",
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  reserveModalAccent: {
+    width: "100%",
+    height: 4,
+  },
+  reserveGlowA: {
+    position: "absolute",
+    top: 24,
+    right: -12,
+    width: 80,
+    height: 80,
+    borderRadius: 999,
+    opacity: 0.7,
+  },
+  reserveGlowB: {
+    position: "absolute",
+    bottom: 32,
+    left: -16,
+    width: 64,
+    height: 64,
+    borderRadius: 999,
+    opacity: 0.5,
+  },
+  reserveModalIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
+    marginBottom: 14,
+  },
+  reserveModalTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#122A4E",
+    textAlign: "center",
+  },
+  reserveModalSubtitle: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#8A94A6",
+    textAlign: "center",
+    marginTop: 4,
+    marginBottom: 16,
+    paddingHorizontal: 20,
+  },
+  reserveModalInfo: {
+    width: "100%",
+    backgroundColor: "#F8FAFC",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    marginBottom: 14,
+  },
+  reserveInfoIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  reserveModalInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    gap: 10,
+  },
+  reserveModalInfoDivider: {
+    height: 1,
+    backgroundColor: "#E7EDF5",
+    marginLeft: 26,
+  },
+  reserveModalInfoLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#8A94A6",
+    width: 80,
+  },
+  reserveModalInfoValue: {
+    flex: 1,
+    fontSize: 13.5,
+    fontWeight: "700",
+    color: "#1F2937",
+    textAlign: "right",
+  },
+  reserveModalNote: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#9CA3AF",
+    textAlign: "center",
+    paddingHorizontal: 24,
+    lineHeight: 16,
+    marginBottom: 20,
+  },
+  reserveModalActions: {
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 20,
+    width: "100%",
+  },
+  reserveModalCancelBtn: {
+    flex: 1,
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: "#F1F5F9",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  reserveModalCancelText: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#475569",
+  },
+  reserveModalConfirmBtn: {
+    flex: 1.4,
+    height: 46,
+    borderRadius: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    shadowColor: "#12A9B4",
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 4,
+  },
+  reserveModalConfirmText: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#FFFFFF",
+  },
 });
