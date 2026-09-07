@@ -14,8 +14,8 @@ export const learning = {
   places_left: "Only {{count}} places left",
   sessions_count: "{{count}} sessions/month",
   groups_count: "{{count}} groups",
-  days_per_week: "{{days}} DAYS / WEEK",
-  days_per_week_short: "{{days}} days / week",
+  days_per_week: " DAYS / WEEK",
+  days_per_week_short: "days / week",
   teacher_label: "Teacher",
   today: "Today",
   starting_from: "from",
@@ -35,9 +35,10 @@ export const learning = {
   reserve_price: "Price",
   reserve_per_week: "{{count}}× / week",
   reserve_per_month: "{{price}} DT/month",
-  reserve_note: "By confirming, you accept the monthly subscription. You can cancel anytime.",
+  reserve_note:
+    "By confirming, you accept the monthly subscription. You can cancel anytime.",
   reserve_cancel: "Cancel",
   reserve_confirm: "Confirm",
   reserve_success: "Subscription successful for {{name}}!",
   reserve_error: "Subscription failed. Please try again.",
-}
+};

@@ -151,6 +151,7 @@ export function createProPricingStyles(colors: ThemeColors, isRTL: boolean) {
     planCardGrid3: {
       flex: 1,
       alignItems: "center",
+      justifyContent: "flex-start",
       backgroundColor: palette.card,
       borderRadius: 14,
       borderWidth: 1.5,
@@ -192,7 +193,7 @@ export function createProPricingStyles(colors: ThemeColors, isRTL: boolean) {
       borderWidth: 1.5,
       alignItems: "center",
       justifyContent: "center",
-      marginTop: 6,
+      marginTop: "auto",
     },
     planCardSelected: {
       borderColor: palette.borderSelected,

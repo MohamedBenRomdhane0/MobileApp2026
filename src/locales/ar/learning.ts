@@ -14,8 +14,8 @@ export const learning = {
   places_left: "{{count}} أماكن متبقية فقط",
   sessions_count: "{{count}} جلسة/شهر",
   groups_count: "{{count}} مجموعات",
-  days_per_week: "{{days}} أيام / أسبوع",
-  days_per_week_short: "{{days}} أيام / أسبوع",
+  days_per_week: "أيام / أسبوع",
+  days_per_week_short: " أيام / أسبوع",
   teacher_label: "المعلم",
   today: "اليوم",
   starting_from: "يبدأ من",
@@ -35,9 +35,10 @@ export const learning = {
   reserve_price: "السعر",
   reserve_per_week: "{{count}}× / أسبوع",
   reserve_per_month: "{{price}} د.ت/شهر",
-  reserve_note: "بالتأكيد، أنت توافق على الاشتراك الشهري. يمكنك الإلغاء في أي وقت.",
+  reserve_note:
+    "بالتأكيد، أنت توافق على الاشتراك الشهري. يمكنك الإلغاء في أي وقت.",
   reserve_cancel: "إلغاء",
   reserve_confirm: "تأكيد",
   reserve_success: "تم الاشتراك بنجاح في {{name}}!",
   reserve_error: "فشل الاشتراك. يرجى المحاولة مرة أخرى.",
-}
+};
