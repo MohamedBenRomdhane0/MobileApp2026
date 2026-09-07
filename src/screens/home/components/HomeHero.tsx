@@ -223,9 +223,10 @@ export default function HomeHero({
         <View style={styles.headerGlowA} pointerEvents="none" />
         <View style={styles.headerGlowB} pointerEvents="none" />
 
-        {/* Greeting + emoji quick actions on one line */}
+        {/* Greeting + emoji quick actions on one line, inside one bubble */}
         <View style={styles.greetingLine}>
-          <View style={styles.greetingWrap}>
+          <View style={styles.greetingBubble}>
+            <View style={styles.greetingWrap}>
             <Text style={styles.greetingSub} numberOfLines={1}>
               {t("home.welcome_back")}
             </Text>
@@ -253,6 +254,7 @@ export default function HomeHero({
                 onPress={() => onEmojiPress(emoji)}
               />
             ))}
+          </View>
           </View>
         </View>
 

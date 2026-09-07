@@ -202,10 +202,24 @@ export function createHomeStyles(
 
     greetingLine: {
       marginTop: 10,
+    },
+
+    greetingBubble: {
       flexDirection: row,
       alignItems: "center",
       justifyContent: "space-between",
       gap: 12,
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      borderRadius: 26,
+      backgroundColor: "rgba(255,255,255,0.10)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.18)",
+      overflow: "hidden",
+      shadowColor: "#0A1A33",
+      shadowOpacity: 0.18,
+      shadowRadius: 14,
+      shadowOffset: { width: 0, height: 6 },
     },
 
     greetingWrap: {
