@@ -29,6 +29,7 @@ import { useGetPlansForChildQuery } from "@redux/apis/plans/plansApi";
 import type { PlanUI } from "@redux/apis/plans/plansApi.type";
 
 import HomeHero from "@screens/home/components/HomeHero";
+import HomeStickyHeader from "@screens/home/components/HomeStickyHeader";
 import QuickActions from "@screens/home/components/QuickActions";
 import ContinueCard from "@screens/home/components/ContinueCard";
 import MaterialsRow from "@screens/home/components/MaterialsRow";
@@ -680,6 +681,16 @@ export default function HomeScreen() {
     <View style={styles.root}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
+      <HomeStickyHeader
+        styles={styles}
+        isDark={isDark}
+        topInset={insets.top}
+        notificationsLabel={t(HOME_COMMON_UI.notifications)}
+        onNotifications={goNotifications}
+        onSearch={() => setSearchVisible(true)}
+        onStreak={() => setWalletVisible(true)}
+      />
+
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -698,11 +709,6 @@ export default function HomeScreen() {
           isDark={isDark}
           childName={headerData?.name ?? ""}
           levelLabel={levelLabel || t("home.level_default")}
-          topInset={insets.top}
-          notificationsLabel={t(HOME_COMMON_UI.notifications)}
-           onNotifications={goNotifications}
-           onSearch={() => setSearchVisible(true)}
-           onStreak={() => setWalletVisible(true)}
         />
 
         {/* Floats over the hero curve — kept outside `body` so its own
@@ -893,19 +899,21 @@ export default function HomeScreen() {
                 message={t(HOME_COMMON_UI.tapToRetry)}
                 onRetry={refetchPlans}
               />
-            ) : plans.length > 0 ? (
-              <MiniPlanCards
-                {...block}
-                plans={plans}
-                currencyLabel={t("plan.currency", { defaultValue: "د.ت" })}
-                perMonthLabel={t("plan.per_month")}
-                annualLabel={t("plan.period_yearly", { defaultValue: "Annuel" })}
-                startingFromLabel={t("plan.starting_from", { defaultValue: "À partir de" })}
-                popularLabel={t("plan.most_popular")}
-                ctaLabel={t("plan.cta_label")}
-                onPress={goSubscribe}
-                onPlanPress={goPlanPricing}
-              />
+) : plans.length > 0 ? (
+              <View style={styles.plansCardFrame}>
+                <MiniPlanCards
+                  {...block}
+                  plans={plans}
+                  currencyLabel={t("plan.currency", { defaultValue: "د.ت" })}
+                  perMonthLabel={t("plan.per_month")}
+                  annualLabel={t("plan.period_yearly", { defaultValue: "Annuel" })}
+                  startingFromLabel={t("plan.starting_from", { defaultValue: "À partir de" })}
+                  popularLabel={t("plan.most_popular")}
+                  ctaLabel={t("plan.cta_label")}
+                  onPress={goSubscribe}
+                  onPlanPress={goPlanPricing}
+                />
+              </View>
             ) : null}
           </View>
 
@@ -926,7 +934,7 @@ export default function HomeScreen() {
         </ScrollView>
 
         <DynamicIslandNotification
-          visible={notifVisible}
+          visible={isLive ? notifVisible : false}
           teacherPhoto={summaryTeacherPhoto}
           liveLabel={t("home.notif_live_now")}
           teacherName={activeMeeting?.teacherName || ""}
@@ -939,7 +947,7 @@ export default function HomeScreen() {
           onPress={() => { setNotifVisible(false); goMeetings(); }}
           onDismiss={() => setNotifVisible(false)}
           topInset={insets.top}
-          autoShowIntervalMs={30_000}
+          autoShowIntervalMs={isLive ? 30_000 : undefined}
         />
 
         <HomeSearchModal

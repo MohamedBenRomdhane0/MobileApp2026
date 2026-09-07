@@ -79,6 +79,12 @@ export function createHomeStyles(
       backgroundColor: colors.header,
     },
 
+    stickyHeaderGradient: {
+      paddingHorizontal: 16,
+      paddingBottom: 10,
+      zIndex: 10,
+    },
+
     headerGlowA: {
       position: "absolute",
       width: 260,
@@ -1046,6 +1052,16 @@ export function createHomeStyles(
       gap: 12,
     },
 
+    /** White-framed surface wrapping the plan cards so the grid reads as one block. */
+    plansCardFrame: {
+      borderRadius: 22,
+      borderWidth: 1.5,
+      borderColor: isDark ? "rgba(255,255,255,0.55)" : "#FFFFFF",
+      backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#FFFFFF",
+      padding: 12,
+      ...neutralShadow(isDark),
+    },
+
     miniPlanCard: {
       flexBasis: "47%",
       flexGrow: 1,
@@ -1058,11 +1074,17 @@ export function createHomeStyles(
     },
 
     miniPlanCardInner: {
+      flex: 1,
       padding: 14,
       gap: 6,
     },
 
-    miniPlanCardPress: { width: "100%", borderRadius: 18, overflow: "hidden" },
+    miniPlanCardPress: {
+      flex: 1,
+      width: "100%",
+      borderRadius: 18,
+      overflow: "hidden",
+    },
 
     miniPlanTop: {
       flexDirection: row,
@@ -1148,7 +1170,7 @@ export function createHomeStyles(
       gap: 5,
       height: 30,
       borderRadius: 10,
-      marginTop: 4,
+      marginTop: "auto",
     },
 
     miniPlanCtaText: {

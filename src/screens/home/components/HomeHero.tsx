@@ -1,12 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, Animated, Easing, Pressable } from "react-native";
+import { View, Text, Animated, Easing, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { useTranslation } from "react-i18next";
 
-import ActiveChildHeaderAvatar from "@components/header/ActiveChildHeaderAvatar";
-import LanguageSwitcher from "@components/header/LanguageSwitcher";
 import {
   HOME_TOKENS,
   HERO_EMOJIS,
@@ -67,7 +65,7 @@ function EmojiButton({
 }
 
 /** Metallic gold streak pill with a looping shine sweep and pulsing glow. */
-function GoldStreakPill({
+export function GoldStreakPill({
   label,
   onPress,
   styles,
@@ -185,9 +183,9 @@ function GoldStreakPill({
 }
 
 /**
- * Curved navy hero: top row (avatar, glass search, language, notifications),
- * a daily-streak pill, a right-aligned greeting (welcome-back + child name)
- * and a glass row of circular emoji reactions.
+ * Curved navy hero: greeting (welcome-back + child name),
+ * level chip and a glass row of circular emoji reactions.
+ * Top row (avatar, search, language, notifications) is in HomeStickyHeader.
  */
 export default function HomeHero({
   styles,
@@ -195,11 +193,6 @@ export default function HomeHero({
   isDark,
   childName,
   levelLabel,
-  topInset,
-  notificationsLabel,
-  onNotifications,
-  onSearch,
-  onStreak,
 }: HomeHeroProps) {
   const { t } = useTranslation();
   const [selectedEmoji, setSelectedEmoji] = useState<HeroEmoji | null>(null);
@@ -221,48 +214,10 @@ export default function HomeHero({
         colors={gradientColors}
         start={{ x: 0.08, y: 0.05 }}
         end={{ x: 0.95, y: 1 }}
-        style={[styles.headerGradient, { paddingTop: Math.max(topInset, 14) }]}
+        style={[styles.headerGradient, { paddingTop: 14 }]}
       >
         <View style={styles.headerGlowA} pointerEvents="none" />
         <View style={styles.headerGlowB} pointerEvents="none" />
-
-        {/* Top row */}
-        <View style={styles.heroTopRow}>
-          <ActiveChildHeaderAvatar />
-          {/* Daily streak pill — opens the wallet sheet on tap */}
-          <GoldStreakPill
-            label={t("home.streak_label")}
-            onPress={onStreak}
-            styles={styles}
-          />
-          <View style={styles.heroTopRight}>
-            <TouchableOpacity
-              style={styles.searchBtn}
-              onPress={onSearch}
-              activeOpacity={0.85}
-              accessibilityRole="button"
-              accessibilityLabel={t("common.search")}
-            >
-              <Ionicons name="search" size={18} color="#FFFFFF" />
-            </TouchableOpacity>
-
-            <LanguageSwitcher />
-
-            <TouchableOpacity
-              style={styles.bellBtn}
-              onPress={onNotifications}
-              activeOpacity={0.85}
-              accessibilityRole="button"
-              accessibilityLabel={notificationsLabel}
-            >
-              <Ionicons name="notifications-outline" size={22} color="#FFFFFF" />
-              <View style={styles.bellDot} pointerEvents="none" />
-            </TouchableOpacity>
-          </View>
-          
-        </View>
-
-       
 
         {/* Greeting + emoji quick actions on one line */}
         <View style={styles.greetingLine}>
