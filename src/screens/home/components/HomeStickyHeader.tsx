@@ -42,6 +42,8 @@ export default function HomeStickyHeader({
       end={{ x: 0.95, y: 1 }}
       style={[styles.stickyHeaderGradient, { paddingTop: Math.max(topInset, 14) }]}
     >
+      <View style={styles.headerGlowA} pointerEvents="none" />
+      <View style={styles.headerGlowB} pointerEvents="none" />
       <View style={styles.heroTopRow}>
         <ActiveChildHeaderAvatar />
         <GoldStreakPill

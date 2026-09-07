@@ -83,6 +83,10 @@ export function createHomeStyles(
       paddingHorizontal: 16,
       paddingBottom: 10,
       zIndex: 10,
+      borderBottomLeftRadius: 30,
+      borderBottomRightRadius: 30,
+      overflow: "hidden",
+      backgroundColor: colors.header,
     },
 
     headerGlowA: {
