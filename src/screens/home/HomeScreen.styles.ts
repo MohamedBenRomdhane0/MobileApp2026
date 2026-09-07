@@ -201,7 +201,7 @@ export function createHomeStyles(
     /* ── Greeting + emoji quick actions (one shared line) ─────────────── */
 
     greetingLine: {
-      marginTop: 12,
+      marginTop: 10,
       flexDirection: row,
       alignItems: "center",
       justifyContent: "space-between",
@@ -253,29 +253,10 @@ export function createHomeStyles(
       color: "rgba(255,255,255,0.92)",
     },
 
-    emojiBoule: {
-      width: 118,
-      height: 118,
-      borderRadius: 999,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "rgba(255,255,255,0.10)",
-      borderWidth: 1.5,
-      borderColor: "rgba(255,255,255,0.22)",
-      overflow: "hidden",
-      shadowColor: "#0A1A33",
-      shadowOpacity: 0.2,
-      shadowRadius: 16,
-      shadowOffset: { width: 0, height: 6 },
-    },
-
     emojiRow: {
       flexDirection: "row",
-      flexWrap: "wrap",
       alignItems: "center",
-      justifyContent: "center",
       gap: 6,
-      maxWidth: 96,
     },
 
     emojiBtn: {
@@ -287,18 +268,6 @@ export function createHomeStyles(
       backgroundColor: "rgba(255,255,255,0.12)",
       borderWidth: 1,
       borderColor: "rgba(255,255,255,0.2)",
-      overflow: "hidden",
-    },
-
-    emojiBtnBoule: {
-      width: 36,
-      height: 36,
-      borderRadius: 999,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "rgba(255,255,255,0.14)",
-      borderWidth: 1,
-      borderColor: "rgba(255,255,255,0.26)",
       overflow: "hidden",
     },
 

@@ -24,15 +24,12 @@ function EmojiButton({
   styles,
   selected,
   onPress,
-  boule = false,
 }: {
   emoji: HeroEmoji;
   index: number;
   styles: HomeHeroProps["styles"];
   selected: boolean;
   onPress: () => void;
-  /** Compact size used inside the circular emoji boule. */
-  boule?: boolean;
 }) {
   const entrance = useHomeCardEntrance(index);
   const press = useHomeCardPress();
@@ -58,7 +55,7 @@ function EmojiButton({
         <BlurView
           intensity={16}
           tint="light"
-          style={[boule ? styles.emojiBtnBoule : styles.emojiBtn, selected && styles.emojiBtnActive]}
+          style={[styles.emojiBtn, selected && styles.emojiBtnActive]}
         >
           <Text style={styles.emojiText}>{emoji}</Text>
         </BlurView>
@@ -226,7 +223,7 @@ export default function HomeHero({
         <View style={styles.headerGlowA} pointerEvents="none" />
         <View style={styles.headerGlowB} pointerEvents="none" />
 
-        {/* Greeting + emoji quick actions on one line, emojis in a circular boule */}
+        {/* Greeting + emoji quick actions on one line */}
         <View style={styles.greetingLine}>
           <View style={styles.greetingWrap}>
             <Text style={styles.greetingSub} numberOfLines={1}>
@@ -245,20 +242,17 @@ export default function HomeHero({
             </View>
           </View>
 
-          <View style={styles.emojiBoule}>
-            <View style={styles.emojiRow}>
-              {HERO_EMOJIS.map((emoji, index) => (
-                <EmojiButton
-                  key={emoji}
-                  emoji={emoji}
-                  index={index}
-                  styles={styles}
-                  selected={selectedEmoji === emoji}
-                  onPress={() => onEmojiPress(emoji)}
-                  boule
-                />
-              ))}
-            </View>
+          <View style={styles.emojiRow}>
+            {HERO_EMOJIS.map((emoji, index) => (
+              <EmojiButton
+                key={emoji}
+                emoji={emoji}
+                index={index}
+                styles={styles}
+                selected={selectedEmoji === emoji}
+                onPress={() => onEmojiPress(emoji)}
+              />
+            ))}
           </View>
         </View>
 
