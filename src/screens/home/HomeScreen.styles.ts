@@ -83,6 +83,16 @@ export function createHomeStyles(
       paddingHorizontal: 16,
       paddingBottom: 10,
       zIndex: 10,
+      overflow: "hidden",
+      backgroundColor: colors.header,
+    },
+
+    // No bottom curve before scroll so the pinned bar merges seamlessly
+    // into the hero's navy (avoids the rounded-corner seam/empty space).
+    stickyHeaderGradientCurved: {
+      paddingHorizontal: 16,
+      paddingBottom: 10,
+      zIndex: 10,
       borderBottomLeftRadius: 30,
       borderBottomRightRadius: 30,
       overflow: "hidden",

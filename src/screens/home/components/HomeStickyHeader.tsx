@@ -37,13 +37,46 @@ export default function HomeStickyHeader({
     ? HOME_TOKENS.heroGradientDark
     : HOME_TOKENS.heroGradientLight;
 
+  const headerContent = (
+    <View style={styles.heroTopRow}>
+      <ActiveChildHeaderAvatar />
+      <GoldStreakPill
+        label={t("home.streak_label")}
+        onPress={onStreak}
+        styles={styles}
+      />
+      <View style={styles.heroTopRight}>
+        <TouchableOpacity
+          style={styles.searchBtn}
+          onPress={onSearch}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel={t("common.search")}
+        >
+          <Ionicons name="search" size={18} color="#FFFFFF" />
+        </TouchableOpacity>
+        <LanguageSwitcher />
+        <TouchableOpacity
+          style={styles.bellBtn}
+          onPress={onNotifications}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel={notificationsLabel}
+        >
+          <Ionicons name="notifications-outline" size={22} color="#FFFFFF" />
+          <View style={styles.bellDot} pointerEvents="none" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   return (
     <LinearGradient
-      colors={[gradientColors[0], gradientColors[1]]}
+      colors={scrolled ? gradientColors : [gradientColors[0], gradientColors[0]]}
       start={{ x: 0.08, y: 0 }}
       end={{ x: 0.95, y: 1 }}
       style={[
-        styles.stickyHeaderGradient,
+        scrolled ? styles.stickyHeaderGradientCurved : styles.stickyHeaderGradient,
         {
           paddingTop: Math.max(topInset, 14),
           paddingBottom: scrolled ? 10 : 0,
@@ -52,36 +85,7 @@ export default function HomeStickyHeader({
     >
       <View style={styles.headerGlowA} pointerEvents="none" />
       <View style={styles.headerGlowB} pointerEvents="none" />
-      <View style={styles.heroTopRow}>
-        <ActiveChildHeaderAvatar />
-        <GoldStreakPill
-          label={t("home.streak_label")}
-          onPress={onStreak}
-          styles={styles}
-        />
-        <View style={styles.heroTopRight}>
-          <TouchableOpacity
-            style={styles.searchBtn}
-            onPress={onSearch}
-            activeOpacity={0.85}
-            accessibilityRole="button"
-            accessibilityLabel={t("common.search")}
-          >
-            <Ionicons name="search" size={18} color="#FFFFFF" />
-          </TouchableOpacity>
-          <LanguageSwitcher />
-          <TouchableOpacity
-            style={styles.bellBtn}
-            onPress={onNotifications}
-            activeOpacity={0.85}
-            accessibilityRole="button"
-            accessibilityLabel={notificationsLabel}
-          >
-            <Ionicons name="notifications-outline" size={22} color="#FFFFFF" />
-            <View style={styles.bellDot} pointerEvents="none" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      {headerContent}
     </LinearGradient>
   );
 }
