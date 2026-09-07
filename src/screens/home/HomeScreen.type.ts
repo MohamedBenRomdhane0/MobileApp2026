@@ -69,6 +69,8 @@ export type HomeHeroProps = HomeBlockBaseProps & {
   childName: string;
   levelLabel: string;
   isDark: boolean;
+  /** True once the user scrolls; restores the hero top inset. */
+  scrolled?: boolean;
 };
 
 export type QuickActionsProps = HomeBlockBaseProps & {

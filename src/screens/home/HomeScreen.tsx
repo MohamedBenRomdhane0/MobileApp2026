@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  View,
+View,
   ScrollView,
   RefreshControl,
   StatusBar,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -585,6 +587,15 @@ export default function HomeScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const isFetchingAny = isMaterialsFetching || isBooksFetching;
 
+  // True once the user scrolls; collapses the gap between the pinned
+  // sticky header's curve and the hero greeting only after scroll.
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const onStickyScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const y = e.nativeEvent.contentOffset.y;
+    setIsScrolled(y > 2);
+  }, []);
+
   useEffect(() => {
     if (isRefreshing && !isFetchingAny) setIsRefreshing(false);
   }, [isRefreshing, isFetchingAny]);
@@ -685,6 +696,7 @@ export default function HomeScreen() {
         styles={styles}
         isDark={isDark}
         topInset={insets.top}
+        scrolled={isScrolled}
         notificationsLabel={t(HOME_COMMON_UI.notifications)}
         onNotifications={goNotifications}
         onSearch={() => setSearchVisible(true)}
@@ -695,6 +707,8 @@ export default function HomeScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        onScroll={onStickyScroll}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -707,6 +721,7 @@ export default function HomeScreen() {
         <HomeHero
           {...block}
           isDark={isDark}
+          scrolled={isScrolled}
           childName={headerData?.name ?? ""}
           levelLabel={levelLabel || t("home.level_default")}
         />

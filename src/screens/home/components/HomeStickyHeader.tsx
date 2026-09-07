@@ -15,6 +15,7 @@ export type HomeStickyHeaderProps = {
   styles: HomeStyles;
   isDark: boolean;
   topInset: number;
+  scrolled: boolean;
   notificationsLabel: string;
   onNotifications?: () => void;
   onSearch?: () => void;
@@ -25,6 +26,7 @@ export default function HomeStickyHeader({
   styles,
   isDark,
   topInset,
+  scrolled,
   notificationsLabel,
   onNotifications,
   onSearch,
@@ -40,7 +42,13 @@ export default function HomeStickyHeader({
       colors={[gradientColors[0], gradientColors[1]]}
       start={{ x: 0.08, y: 0 }}
       end={{ x: 0.95, y: 1 }}
-      style={[styles.stickyHeaderGradient, { paddingTop: Math.max(topInset, 14) }]}
+      style={[
+        styles.stickyHeaderGradient,
+        {
+          paddingTop: Math.max(topInset, 14),
+          paddingBottom: scrolled ? 10 : 0,
+        },
+      ]}
     >
       <View style={styles.headerGlowA} pointerEvents="none" />
       <View style={styles.headerGlowB} pointerEvents="none" />

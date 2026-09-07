@@ -193,6 +193,7 @@ export default function HomeHero({
   isDark,
   childName,
   levelLabel,
+  scrolled = false,
 }: HomeHeroProps) {
   const { t } = useTranslation();
   const [selectedEmoji, setSelectedEmoji] = useState<HeroEmoji | null>(null);
@@ -214,7 +215,10 @@ export default function HomeHero({
         colors={gradientColors}
         start={{ x: 0.08, y: 0.05 }}
         end={{ x: 0.95, y: 1 }}
-        style={[styles.headerGradient, { paddingTop: 14 }]}
+        style={[
+          styles.headerGradient,
+          { paddingTop: scrolled ? 14 : 0 },
+        ]}
       >
         <View style={styles.headerGlowA} pointerEvents="none" />
         <View style={styles.headerGlowB} pointerEvents="none" />
