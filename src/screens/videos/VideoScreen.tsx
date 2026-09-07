@@ -30,6 +30,10 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import ActiveChildHeaderAvatar from "@components/header/ActiveChildHeaderAvatar";
 import { useAppTheme } from "@theme/ThemeProvider";
+import { useActiveChildHeaderData } from "@hooks/useActiveChildHeaderData";
+import { pickLevelIdFromChild } from "@utils/helpers/level.helper";
+import { useGetPlansForChildQuery } from "@redux/apis/plans/plansApi";
+import type { PlanUI } from "@redux/apis/plans/plansApi.type";
 import {
   useGetBookByIdQuery,
   useGetIconVideosQuery,
@@ -74,6 +78,9 @@ import {
 } from "@utils/helpers/video.helpers";
 
 const VIDEO_PLACEHOLDER = require("@assets/images/cover_video.png");
+
+/** After this many seconds of continuous playback, the Cartaba (books) pack paywall opens. */
+const CARTABA_PAYWALL_TRIGGER_SECONDS = 10;
 
 const THUMB_OVERLAY_COLORS = [
   "rgba(0,0,0,0.04)",
@@ -147,6 +154,36 @@ export default function VideoScreen() {
   const bookId = toValidId(params.bookId);
   const activeChildId = useAppSelector(selectActiveChildId);
   const initialVideoId = toValidId((params as Record<string, unknown>).videoId);
+
+  const childHeaderData = useActiveChildHeaderData();
+  const childLevelId = useMemo(
+    () => toValidId(pickLevelIdFromChild(childHeaderData?.child)),
+    [childHeaderData?.child],
+  );
+
+  const {
+    data: plansData,
+  } = useGetPlansForChildQuery(
+    childLevelId > 0 ? { levelId: childLevelId } : undefined,
+    { skip: childLevelId <= 0 },
+  );
+
+  /** The Cartaba pack = the books (cartable) plan, falling back to the first available plan. */
+  const cartabaPlan: PlanUI | null = useMemo(() => {
+    const list = Array.isArray(plansData) ? plansData : [];
+    return list.find((p) => p.planType === "books") ?? list[0] ?? null;
+  }, [plansData]);
+
+  const openCartabaPricing = useCallback(() => {
+    const plansList = Array.isArray(plansData) ? plansData : undefined;
+    const navigatePlans = navigation.navigate as (
+      name: string,
+      params?: object,
+    ) => void;
+    navigatePlans(PATHS.APP.PLAN_PRO_PRICING as string, cartabaPlan
+      ? { plans: plansList, selectedPlanId: cartabaPlan.id }
+      : { plans: plansList });
+  }, [cartabaPlan, navigation, plansData]);
 
   const materialRawName = params.materialName ?? null;
   const materialKey = normalizeMaterialKey(materialRawName);
@@ -580,6 +617,20 @@ export default function VideoScreen() {
 
   onTrackingVideoLoadRef.current = onTrackingVideoLoad;
   onTrackingPlaybackStatusUpdateRef.current = onTrackingPlaybackStatusUpdate;
+
+  // Auto-open the Cartaba pricing paywall once continuous playback reaches the
+  // trigger threshold. Keyed by media id so it fires once per video and re-arms
+  // when the user switches to another clip.
+  const paywallTriggeredForIdRef = useRef(0);
+  useEffect(() => {
+    if (activeMediaId <= 0) return;
+    if (paywallTriggeredForIdRef.current === activeMediaId) return;
+    if (positionMillis < CARTABA_PAYWALL_TRIGGER_SECONDS * 1000) return;
+    if (!isPlaying) return;
+
+    paywallTriggeredForIdRef.current = activeMediaId;
+    openCartabaPricing();
+  }, [activeMediaId, isPlaying, openCartabaPricing, positionMillis]);
 
   const goBack = useCallback(async () => {
     await endTrackingSession();
