@@ -1,5 +1,6 @@
 import { PATHS } from "@config/constants/paths";
 import type { LevelEnum } from "@config/enums/Level.enum";
+import type { PlanUI } from "@redux/apis/plans/plansApi.type";
 
 export type AddKidsRouteParams =
   | { mode: "create" }
@@ -46,8 +47,8 @@ export type RootStackParamList = {
     currency?: string;
   };
   [PATHS.APP.PLAN_UI]: undefined;
-  [PATHS.APP.PLAN_PRO_PRICING]: undefined;
-  [PATHS.APP.PLAN_UNLOCK]: { packId?: "pack1" | "pack2" } | undefined;
+  [PATHS.APP.PLAN_PRO_PRICING]: { plans?: PlanUI[]; selectedPlanId?: number } | undefined;
+  [PATHS.APP.PLAN_UNLOCK]: { packId?: string } | undefined;
   [PATHS.APP.DETAIL_PLAN_MEETING]: undefined;
 
   [PATHS.APP.START_LEARNING]: undefined;

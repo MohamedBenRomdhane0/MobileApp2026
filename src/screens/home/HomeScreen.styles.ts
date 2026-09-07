@@ -1050,13 +1050,19 @@ export function createHomeStyles(
       flexBasis: "47%",
       flexGrow: 1,
       borderRadius: 18,
-      backgroundColor: C.surface,
+      overflow: "hidden",
       borderWidth: 1,
-      paddingHorizontal: 14,
-      paddingVertical: 14,
-      gap: 8,
+      borderColor: C.hairline,
+      backgroundColor: C.surface,
       ...neutralShadow(isDark),
     },
+
+    miniPlanCardInner: {
+      padding: 14,
+      gap: 6,
+    },
+
+    miniPlanCardPress: { width: "100%", borderRadius: 18, overflow: "hidden" },
 
     miniPlanTop: {
       flexDirection: row,
@@ -1088,13 +1094,33 @@ export function createHomeStyles(
       fontWeight: "900",
     },
 
+    miniPlanAnnualBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 3,
+      paddingHorizontal: 6,
+      height: 18,
+      borderRadius: 999,
+    },
+
+    miniPlanAnnualBadgeText: {
+      color: "#FFFFFF",
+      fontSize: 8.5,
+      fontWeight: "900",
+    },
+
     miniPlanTitle: {
-      color: C.ink,
       fontSize: 13,
       fontWeight: "800",
       lineHeight: 17,
       textAlign: textEnd,
       minHeight: 34,
+    },
+
+    miniPlanStartingFrom: {
+      fontSize: 10,
+      fontWeight: "700",
+      fontStyle: "italic",
     },
 
     miniPlanPriceRow: {
@@ -1104,7 +1130,7 @@ export function createHomeStyles(
     },
 
     miniPlanPrice: {
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: "900",
       letterSpacing: -0.3,
     },
@@ -1115,27 +1141,30 @@ export function createHomeStyles(
       fontWeight: "700",
     },
 
-    miniPlanOldPrice: {
-      color: C.muted,
-      fontSize: 11.5,
-      fontWeight: "700",
-      textDecorationLine: "line-through",
-    },
-
     miniPlanCta: {
       flexDirection: row,
       alignItems: "center",
       justifyContent: "center",
       gap: 5,
-      height: 34,
-      borderRadius: 11,
-      marginTop: 2,
+      height: 30,
+      borderRadius: 10,
+      marginTop: 4,
     },
 
     miniPlanCtaText: {
       color: "#FFFFFF",
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: "900",
+    },
+
+    miniPlanBloom: {
+      position: "absolute",
+      width: 56,
+      height: 56,
+      borderRadius: 999,
+      top: -28,
+      right: isRTL ? undefined : -16,
+      left: isRTL ? -16 : undefined,
     },
 
     /* ── Subscribe CTA ───────────────────────────────────────────────── */

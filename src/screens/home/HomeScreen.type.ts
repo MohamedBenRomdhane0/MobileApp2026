@@ -136,9 +136,12 @@ export type MiniPlanCardsProps = HomeBlockBaseProps & {
   plans: PlanUI[];
   currencyLabel: string;
   perMonthLabel: string;
+  annualLabel: string;
+  startingFromLabel: string;
   popularLabel: string;
   ctaLabel: string;
   onPress: () => void;
+  onPlanPress?: (planId: number) => void;
 };
 
 export type TeacherCard = {

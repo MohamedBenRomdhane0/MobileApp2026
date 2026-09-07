@@ -596,8 +596,12 @@ export default function HomeScreen() {
   }, [levelId, isChildReady, refetchMaterials, refetchBooks]);
 
   const goSubscribe = useCallback(
-    () => navigation.navigate(PATHS.TABS.PLANS as never),
-    [navigation]
+    () => navigation.navigate(PATHS.APP.PLAN_PRO_PRICING as never, { plans } as never),
+    [navigation, plans]
+  );
+  const goPlanPricing = useCallback(
+    (planId: number) => navigation.navigate(PATHS.APP.PLAN_PRO_PRICING as never, { plans, selectedPlanId: planId } as never),
+    [navigation, plans]
   );
   const goBooks = useCallback(
     () => navigation.navigate(PATHS.TABS.BOOKS as never),
@@ -895,9 +899,12 @@ export default function HomeScreen() {
                 plans={plans}
                 currencyLabel={t("plan.currency", { defaultValue: "د.ت" })}
                 perMonthLabel={t("plan.per_month")}
+                annualLabel={t("plan.period_yearly", { defaultValue: "Annuel" })}
+                startingFromLabel={t("plan.starting_from", { defaultValue: "À partir de" })}
                 popularLabel={t("plan.most_popular")}
                 ctaLabel={t("plan.cta_label")}
                 onPress={goSubscribe}
+                onPlanPress={goPlanPricing}
               />
             ) : null}
           </View>
