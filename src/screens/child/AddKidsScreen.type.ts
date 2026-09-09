@@ -1,6 +1,5 @@
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from "@react-navigation/native";
-import type { LevelEnum } from "@config/enums/Level.enum";
 import type { RootStackParamList } from "@config/types/navigation.types";
 
 export type AddKidsMode = "create" | "edit";
@@ -21,7 +20,7 @@ export type AddKidsRouteParams = {
 export type AddKidsForm = {
   fullName: string;
   gender: "boy" | "girl" | "";
-  levelId: LevelEnum | null;
+  levelId: number | null;
 };
 
 export type AddKidsPickedAvatar = {

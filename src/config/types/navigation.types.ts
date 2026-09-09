@@ -106,6 +106,7 @@ export type RootStackParamList = {
 
 export type TabsParamList = {
   [PATHS.TABS.BOOKS]: undefined;
+  [PATHS.TABS.CONCOURS]: undefined;
   [PATHS.TABS.COURSES]: undefined;
   [PATHS.TABS.MEETINGS]: undefined;
   [PATHS.TABS.RESERVED_MEETINGS]: undefined;

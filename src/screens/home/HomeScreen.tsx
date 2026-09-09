@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import { useAppTheme } from "@theme/ThemeProvider";
 import { createHomeStyles } from "./HomeScreen.styles";
 import { useActiveChildHeaderData } from "@hooks/useActiveChildHeaderData";
-import { LEVEL_LABEL_BY_ID } from "@config/enums/Level.enum";
+import { LEVEL_LABEL_BY_ID, LevelEnum } from "@config/enums/Level.enum";
 import { PATHS } from "@config/constants/paths";
 import { useAppSelector } from "@redux/hooks";
 import { selectActiveChildId } from "@redux/slices/authSlice";
@@ -106,6 +106,10 @@ export default function HomeScreen() {
     [levelId]
   );
 
+  // Concours books are only relevant for 6ème graders (final primary year).
+  // The backend stores 6ème under level id 12, so treat it as 6 too.
+  const showConcours = levelId === LevelEnum.Six || levelId === 12;
+
   const activeChildId = useAppSelector(selectActiveChildId);
   const childAccessToken = useAppSelector((s) => s.auth.childAccessToken);
   const [keyword] = useState("");
@@ -171,8 +175,19 @@ export default function HomeScreen() {
     isError: isBooksError,
     refetch: refetchBooks,
   } = useGetBooksQuery(
-    { page: 1, perPage: 20, keyword, childId: activeChildId ?? undefined },
+    { page: 1, perPage: 20, keyword, childId: activeChildId ?? undefined, type: 1 },
     { skip: !activeChildId }
+  );
+
+  const {
+    data: concoursData,
+    isLoading: isConcoursLoading,
+    isFetching: isConcoursFetching,
+    isError: isConcoursError,
+    refetch: refetchConcours,
+  } = useGetBooksQuery(
+    { page: 1, perPage: 20, keyword, childId: activeChildId ?? undefined, type: 2 },
+    { skip: !activeChildId || !showConcours }
   );
 
   const books: BookListItemUI[] = useMemo(
@@ -181,6 +196,16 @@ export default function HomeScreen() {
   );
   const homeBooks = useMemo(() => books.slice(0, HOME_BOOKS_LIMIT), [books]);
   const showBooksLoader = isBooksLoading || isBooksFetching;
+
+  const concoursBooks: BookListItemUI[] = useMemo(
+    () => (Array.isArray(concoursData?.data) ? concoursData.data : []),
+    [concoursData]
+  );
+  const homeConcours = useMemo(
+    () => concoursBooks.slice(0, HOME_BOOKS_LIMIT),
+    [concoursBooks]
+  );
+  const showConcoursLoader = isConcoursLoading || isConcoursFetching;
 
   const {
     data: teachersData,
@@ -571,6 +596,10 @@ export default function HomeScreen() {
     () => (isRTL ? [...homeBooks].reverse() : homeBooks),
     [homeBooks, isRTL]
   );
+  const displayConcours = useMemo(
+    () => (isRTL ? [...homeConcours].reverse() : homeConcours),
+    [homeConcours, isRTL]
+  );
 
   const parkBooksAtStart = useCallback(
     (scrollToEnd: () => void) => {
@@ -585,7 +614,7 @@ export default function HomeScreen() {
   // Pull-to-refresh: the spinner is tied to a user gesture, so background
   // refetches (locale switch, cache invalidation) don't flash it.
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const isFetchingAny = isMaterialsFetching || isBooksFetching;
+  const isFetchingAny = isMaterialsFetching || isBooksFetching || isConcoursFetching;
 
   // True once the user scrolls; collapses the gap between the pinned
   // sticky header's curve and the hero greeting only after scroll.
@@ -604,8 +633,11 @@ export default function HomeScreen() {
     setIsRefreshing(true);
     setCalendarMonthOffset(0);
     if (toValidId(levelId)) refetchMaterials();
-    if (isChildReady) refetchBooks();
-  }, [levelId, isChildReady, refetchMaterials, refetchBooks]);
+    if (isChildReady) {
+      refetchBooks();
+      refetchConcours();
+    }
+  }, [levelId, isChildReady, refetchMaterials, refetchBooks, refetchConcours]);
 
   const goSubscribe = useCallback(
     () => navigation.navigate(PATHS.APP.PLAN_PRO_PRICING as never, { plans } as never),
@@ -701,6 +733,11 @@ export default function HomeScreen() {
         onNotifications={goNotifications}
         onSearch={() => setSearchVisible(true)}
         onStreak={() => setWalletVisible(true)}
+        onAvatarPress={
+          showConcours
+            ? () => navigation.navigate(PATHS.TABS.SETTINGS as never)
+            : undefined
+        }
       />
 
       <ScrollView
@@ -811,7 +848,6 @@ export default function HomeScreen() {
             )}
           </View>
 
-         
           {/* Teachers */}
           <View style={styles.section}>
             <SectionHeader
@@ -830,6 +866,41 @@ export default function HomeScreen() {
               onPressTeacher={openTeacher}
             />
           </View>
+          {/* Concours books — 6ème only */}
+          {showConcours && (
+          <View style={styles.section}>
+            <SectionHeader
+              {...block}
+              title={t(HOME_UI.concoursBooks)}
+              count={homeConcours.length}
+              seeAllLabel={seeAllLabel}
+              onSeeAll={goBooks}
+              icon="trophy"
+              accent={HOME_SECTION_ACCENT.concours}
+            />
+
+            {showConcoursLoader ? (
+              <SectionState {...block} status="loading" />
+            ) : isConcoursError ? (
+              <SectionState
+                {...block}
+                status="error"
+                message={t(HOME_COMMON_UI.tapToRetry)}
+                onRetry={refetchConcours}
+              />
+            ) : displayConcours.length === 0 ? (
+              <SectionState {...block} status="empty" message={t(HOME_UI.concoursEmpty)} />
+            ) : (
+              <BooksRow
+                {...block}
+                books={displayConcours}
+                unnamedLabel={t("common.unnamed")}
+                onPressBook={openBook}
+                onLayoutReady={parkBooksAtStart}
+              />
+            )}
+          </View>
+          )}
           {/* Live classes — time-sensitive, so it sits above browse content */}
                     <View style={styles.section}>
                       <SectionHeader

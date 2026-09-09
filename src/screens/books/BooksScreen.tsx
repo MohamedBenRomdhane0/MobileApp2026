@@ -28,7 +28,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import ActiveChildHeaderAvatar from "@components/header/ActiveChildHeaderAvatar";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
@@ -198,6 +198,16 @@ function InfoScanlinesLayer() {
 
 export default function BooksScreen() {
   const navigation = useNavigation<BooksNav>();
+  const route = useRoute();
+
+  // Concours tab passes type 2; the regular Books tab defaults to 1 (manual).
+  const bookType =
+    typeof route.params === "object" &&
+    route.params !== null &&
+    "type" in route.params &&
+    typeof route.params.type === "number"
+      ? route.params.type
+      : 1;
   const insets = useSafeAreaInsets();
   const { t, i18n } = useTranslation();
   const { colors, mode } = useAppTheme();
@@ -235,6 +245,7 @@ export default function BooksScreen() {
       page: BOOKS_PAGINATION.firstPage,
       keyword: "",
       childId: activeChildId ?? undefined,
+      type: bookType,
     },
     { skip: !activeChildId }
   );
@@ -664,13 +675,13 @@ export default function BooksScreen() {
                 <Ionicons name="play" size={10} color={palette.white} />
               </View>
             </View>
-
+             {/* content book */}
             <View style={styles.infoWrap}>
               <InfoGlowLayer accent={accent} />
               <LinearGradient
                 colors={[
-                  "rgba(6,14,24,0.42)",
-                  "rgba(6,14,24,0.10)",
+                  "rgba(233, 235, 237, 0.42)",
+                  "rgba(185, 208, 236, 0.1)",
                   "transparent",
                 ]}
                 start={{ x: 0, y: 0 }}
@@ -986,7 +997,7 @@ export default function BooksScreen() {
         <View style={styles.headerTopRow}>
           <View style={styles.headerTitleBlock}>
             <Text style={[styles.title, { textAlign: headerTextAlign }]}>
-              {t(BOOKS_UI.title)}
+              {bookType === 2 ? t(BOOKS_UI.concoursTitle) : t(BOOKS_UI.title)}
             </Text>
 
             <Text

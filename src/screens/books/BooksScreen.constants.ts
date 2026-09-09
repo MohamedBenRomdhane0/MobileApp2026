@@ -9,6 +9,7 @@ export {
 
 export const BOOKS_UI = {
   title: "book.title",
+  concoursTitle: "book.concours_title",
   subtitle: "book.subtitle",
   emptyTitle: "book.empty_title",
   emptySubtitle: "book.empty_subtitle",

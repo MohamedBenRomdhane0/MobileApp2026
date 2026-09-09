@@ -14,6 +14,8 @@ export const home = {
   subscribe_cta: "اشترك",
   plans_title: "الباقات",
   school_books_title: "الكتب المدرسية",
+  concours_books_title: "المناظرات",
+  concours_books_empty: "لا توجد كتب مناظرات حالياً",
   live_meetings_title: "الحصص المباشرة",
   join: "انضم",
   book_math_grade: "رياضيات - {{level}}",

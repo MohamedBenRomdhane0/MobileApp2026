@@ -15,8 +15,15 @@ import { LIQUID } from "@styles/liquidTheme";
 
 const AnimatedIcon = Animated.createAnimatedComponent(Ionicons);
 
+export type LiquidGlassTabItem = {
+  name: string;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconFocused: keyof typeof Ionicons.glyphMap;
+};
+
 interface LiquidGlassTabProps {
-  item: (typeof LIQUID.tabs)[number];
+  item: LiquidGlassTabItem;
   isActive: boolean;
   onPress: () => void;
 }

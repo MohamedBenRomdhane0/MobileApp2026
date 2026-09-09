@@ -13,6 +13,7 @@ import { coursesApi } from "@redux/apis/courses/coursesApi";
 import {videoSessionApi} from "@redux/apis/videos/videoSessionApi";
 import { meetingApi } from "@redux/apis/meetings/meetingApi";
 import plansApi from "@redux/apis/plans/plansApi";
+import { levelsApi } from "@redux/apis/levels/levelsApi";
 
 export const store = configureStore({
   reducer: {
@@ -27,6 +28,7 @@ export const store = configureStore({
     [videoSessionApi.reducerPath]: videoSessionApi.reducer,
     [meetingApi.reducerPath]: meetingApi.reducer,
     [plansApi.reducerPath]: plansApi.reducer,
+    [levelsApi.reducerPath]: levelsApi.reducer,
     
   },
   middleware: (getDefault) =>
@@ -41,6 +43,7 @@ export const store = configureStore({
       .concat(videoSessionApi.middleware)
       .concat(meetingApi.middleware)
       .concat(plansApi.middleware)
+      .concat(levelsApi.middleware)
       .concat(authListenerMiddleware.middleware),
 });
 

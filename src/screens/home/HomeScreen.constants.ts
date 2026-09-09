@@ -31,6 +31,8 @@ export const HOME_UI = {
   subscribeCta: "home.subscribe_cta",
   plansTitle: "home.plans_title",
   schoolBooks: "home.school_books_title",
+  concoursBooks: "home.concours_books_title",
+  concoursEmpty: "home.concours_books_empty",
   liveMeetings: "home.live_meetings_title",
   join: "home.join",
 
@@ -96,6 +98,7 @@ export const HOME_TOKENS = {
 export const HOME_SECTION_ACCENT = {
   subjects: "#22BEC8",
   books: "#7C5CFC",
+  concours: "#10B981",
   live: "#EF4444",
   teachers: "#F59E0B",
   plans: "#8B5CF6",

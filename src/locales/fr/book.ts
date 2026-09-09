@@ -1,5 +1,6 @@
 export const book = {
   title: "Livres scolaires",
+  concours_title: "Livres Concours",
   title_placeholder: "Entrez le titre du livre",
   title_required: "Le titre du livre est requis",
   level: "Niveau",

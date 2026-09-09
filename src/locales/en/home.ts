@@ -15,6 +15,8 @@ export const home = {
   subscribe_cta: "Subscribe",
   plans_title: "Plans",
   school_books_title: "School Books",
+  concours_books_title: "Concours",
+  concours_books_empty: "No concours books right now",
   live_meetings_title: "Live Classes",
   join: "Join",
   book_math_grade: "Math - {{level}}",

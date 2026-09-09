@@ -15,6 +15,8 @@ export const home = {
   subscribe_cta: "S’abonner",
   plans_title: "Abonnements",
   school_books_title: "Livres Scolaires",
+  concours_books_title: "Concours",
+  concours_books_empty: "Aucun livre de concours pour le moment",
   live_meetings_title: "Cours en Direct",
   join: "Rejoindre",
   book_math_grade: "Maths - {{level}}",

@@ -61,6 +61,7 @@ export const PATHS = {
 
   TABS: {
     BOOKS: "Books",
+    CONCOURS: "Concours",
     COURSES: "Courses",
     MEETINGS: "Meetings",
     RESERVED_MEETINGS: "ReservedMeetings",

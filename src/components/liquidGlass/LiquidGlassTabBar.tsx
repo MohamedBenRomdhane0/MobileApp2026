@@ -21,8 +21,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { LIQUID } from "@styles/liquidTheme";
 import { getLiquidBarBottomOffset } from "@utils/helpers/liquidBar.helpers";
+import { useActiveChildHeaderData } from "@hooks/useActiveChildHeaderData";
+import { pickLevelIdFromChild } from "@utils/helpers/level.helper";
 import AnimatedGlassBackground from "./AnimatedGlassBackground";
-import LiquidGlassTab from "./LiquidGlassTab";
+import LiquidGlassTab, {
+  type LiquidGlassTabItem,
+} from "./LiquidGlassTab";
 import ActiveCapsule from "./ActiveCapsule";
 import FloatingActionButton from "./FloatingActionButton";
 import QuickActionMenu from "./QuickActionMenu";
@@ -34,9 +38,38 @@ interface LiquidGlassTabBarProps {
 
 const TABS = LIQUID.tabs;
 
+/** 6ème graders swap the Profile (Settings) slot for the Concours tab. */
+function useTabsForChild(): readonly LiquidGlassTabItem[] {
+  const headerData = useActiveChildHeaderData();
+  const levelId = useMemo(
+    () => pickLevelIdFromChild(headerData?.child),
+    [headerData?.child]
+  );
+  const isSixieme = levelId === 6 || levelId === 12;
+
+  return useMemo<readonly LiquidGlassTabItem[]>(() => {
+    if (!isSixieme) return TABS;
+    const home = TABS.find((tab) => tab.name === "Home");
+    const books = TABS.find((tab) => tab.name === "Books");
+    const live = TABS.find((tab) => tab.name === "LearnCalendar");
+    return [
+      home ?? TABS[1],
+      {
+        name: "Concours",
+        label: "Concours",
+        icon: "trophy-outline",
+        iconFocused: "trophy",
+      },
+      books ?? TABS[2],
+      live ?? TABS[3],
+    ];
+  }, [isSixieme]);
+}
+
 function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
   const insets = useSafeAreaInsets();
   const { width: screenW } = useWindowDimensions();
+  const TABS = useTabsForChild();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menu = useSharedValue(0);

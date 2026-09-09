@@ -28,16 +28,16 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppTheme } from "@theme/ThemeProvider";
 import { createAddKidsStyles } from "./AddKidsScreen.styles";
 import { PATHS } from "@config/constants/paths";
-import { LevelEnum } from "@config/enums/Level.enum";
 
 import {
   ADD_KIDS_FIELDS,
   ADD_KIDS_UI,
   ADD_KIDS_RUNTIME,
   ADD_KIDS_ERROR_FIELD_PAIRS,
-  LEVELS_ROW1,
-  LEVELS_ROW2,
-  levelIcons,
+  LEVEL_TYPE_ORDER,
+  LEVEL_TYPE_LABEL,
+  LEVELS_PER_ROW,
+  LEVEL_BOULE_ICONS,
 } from "./AddKidsScreen.constants";
 import type {
   AddKidsApiErrorShape,
@@ -51,6 +51,9 @@ import {
   useCreateChildMutation,
   useUpdateChildMutation,
 } from "@redux/apis/child/childApi";
+import { useGetLevelsQuery } from "@redux/apis/levels/levelsApi";
+import type { LevelTypeEnum } from "@redux/apis/levels/levelsApi.type";
+import { LEVEL_TYPE_PRIMAIRE } from "@redux/apis/levels/levelsApi.type";
 import { useAppSelector } from "@redux/hooks";
 import { useAvatarPicker } from "@hooks/useAvatarPicker";
 import { buildMediaUrl } from "@utils/helpers/mediaUrl.helper";
@@ -77,12 +80,8 @@ function isMode(value: unknown): value is Mode {
   return value === "create" || value === "edit";
 }
 
-function isLevelEnum(value: unknown): value is LevelEnum {
-  return (
-    typeof value === "number" &&
-    value >= LevelEnum.One &&
-    value <= LevelEnum.Six
-  );
+function isLevelId(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
 }
 
 function safeParams(value: unknown): AddKidsRouteParams {
@@ -125,16 +124,17 @@ function goAfterSubmit(navigation: NavigationProp<ParamListBase>) {
 }
 
 export default function AddKidsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigation = useNavigation<Nav>();
   const route = useRoute();
   const insets = useSafeAreaInsets();
-  const { colors, mode } = useAppTheme();
+  const { colors, mode, toggleMode } = useAppTheme();
   const isDark = mode === "dark";
+  const isRTL = (i18n.language ?? "ar") === "ar";
 
   const styles = useMemo(
-    () => createAddKidsStyles(colors, isDark),
-    [colors, isDark]
+    () => createAddKidsStyles(colors, isDark, isRTL),
+    [colors, isDark, isRTL]
   );
 
   const params = useMemo(
@@ -179,6 +179,49 @@ export default function AddKidsScreen() {
   const [updateChildApi, { isLoading: isUpdating }] = useUpdateChildMutation();
   const isLoading = isCreating || isUpdating;
 
+  const { data: levels = [], isLoading: isLoadingLevels } = useGetLevelsQuery();
+
+  const [selectedLevelType, setSelectedLevelType] = useState<LevelTypeEnum>(
+    LEVEL_TYPE_PRIMAIRE
+  );
+
+  const levelSections = useMemo(
+    () =>
+      LEVEL_TYPE_ORDER.map((levelTypeId) => {
+        const group = levels.filter(
+          (level) => level.levelTypeId === levelTypeId
+        );
+        const rows = Array.from(
+          { length: Math.ceil(group.length / LEVELS_PER_ROW) },
+          (_, rowIndex) =>
+            group.slice(
+              rowIndex * LEVELS_PER_ROW,
+              rowIndex * LEVELS_PER_ROW + LEVELS_PER_ROW
+            )
+        );
+        return {
+          levelTypeId,
+          rows,
+          count: group.length,
+          disabled: group.some((l) => l.disabled),
+        };
+      }),
+    [levels]
+  );
+
+  const activeSection = useMemo(
+    () =>
+      levelSections.find((s) => s.levelTypeId === selectedLevelType) ??
+      levelSections.find((s) => !s.disabled) ??
+      levelSections[0],
+    [levelSections, selectedLevelType]
+  );
+
+  const levelSectionLabel = useCallback(
+    (levelTypeId: LevelTypeEnum) => t(LEVEL_TYPE_LABEL[levelTypeId]),
+    [t]
+  );
+
   const defaultValues = useMemo<AddKidsForm>(
     () => ({
       fullName:
@@ -188,12 +231,12 @@ export default function AddKidsScreen() {
         (initialGender as AddKidsForm["gender"]) ||
         (String(childFromStore?.gender ?? "") as AddKidsForm["gender"]) ||
         "",
-      levelId: isLevelEnum(initialLevelId)
+      levelId: isLevelId(initialLevelId)
         ? initialLevelId
-        : isLevelEnum(childFromStore?.levelId)
-        ? (childFromStore?.levelId as LevelEnum)
-        : isLevelEnum(childFromStore?.level_id)
-        ? (childFromStore?.level_id as LevelEnum)
+        : isLevelId(childFromStore?.levelId)
+        ? (childFromStore?.levelId as number)
+        : isLevelId(childFromStore?.level_id)
+        ? (childFromStore?.level_id as number)
         : null,
     }),
     [
@@ -363,49 +406,88 @@ export default function AddKidsScreen() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
+        <LinearGradient
+          colors={
+            isDark
+              ? ADD_KIDS_RUNTIME.bgGradientColorsDark
+              : ADD_KIDS_RUNTIME.bgGradientColorsLight
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={styles.bgGradient}
+          pointerEvents="none"
+        />
+        <View style={styles.topGlow} pointerEvents="none" />
         <KeyboardAvoidingView
-          style={styles.keyboardContainer}
+          style={styles.container}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           keyboardVerticalOffset={Platform.OS === "ios" ? 24 : 0}
         >
           <ScrollView
             contentContainerStyle={[
               styles.scrollContainer,
-              { paddingBottom: insets.bottom + 36 },
+              { paddingBottom: insets.bottom + 24 },
             ]}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <LinearGradient
-              colors={
-                isDark
-                  ? ["#0E2342", "#14345E", "#102946"]
-                  : ["#DDEEF5", "#D7EAF3", "#DDEEF5"]
-              }
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.heroArea}
+            <View
+              style={[
+                styles.pageContainer,
+                { paddingTop: insets.top + 6 },
+              ]}
             >
-              <View style={styles.heroDiagonal} />
-              <View style={styles.heroCircleTopRight} />
-              <View style={styles.heroCircleLeft} />
-              <View style={styles.heroCurveBottomRight} />
+              <View style={styles.topNav}>
+                <View style={styles.topNavStart}>
+                  <TouchableOpacity
+                    onPress={onBackPress}
+                    style={styles.backButton}
+                    activeOpacity={0.88}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons
+                      name={ADD_KIDS_RUNTIME.backIconName}
+                      size={ADD_KIDS_RUNTIME.backIconSize}
+                      color={isDark ? "#FFFFFF" : "#1F3B64"}
+                    />
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={onBackPress}
-                style={[styles.backButton, { top: insets.top + 10 }]}
-                activeOpacity={0.88}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Ionicons
-                  name="arrow-back"
-                  size={26}
-                  color={isDark ? "#FFFFFF" : "#1F3B64"}
-                />
-              </TouchableOpacity>
+                  <Text style={styles.logoText}>
+                    <Text style={styles.logoAccent}>A</Text>bajim
+                    <Text style={styles.logoAccent}>.</Text>
+                  </Text>
+                </View>
+
+                <View style={styles.topNavEnd}>
+                  <View style={styles.noSignupPill}>
+                    <View style={styles.noSignupDot} />
+                    <Text style={styles.noSignupText}>
+                      {t(ADD_KIDS_UI.noSignup)}
+                    </Text>
+                  </View>
+
+                  <TouchableOpacity
+                    onPress={() => toggleMode()}
+                    style={styles.themeToggle}
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      isDark
+                        ? t(ADD_KIDS_UI.themeToggleDarkLabel)
+                        : t(ADD_KIDS_UI.themeToggleLightLabel)
+                    }
+                  >
+                    <Ionicons
+                      name={isDark ? "sunny-outline" : "moon-outline"}
+                      size={16}
+                      color={styles.themeToggleIcon.color}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
 
               {isEdit ? (
-                <View style={styles.editHeroContent}>
+                <View style={styles.editBlock}>
                   <TouchableOpacity
                     onPress={onPressPickAvatar}
                     activeOpacity={0.9}
@@ -423,7 +505,7 @@ export default function AddKidsScreen() {
                         <View style={styles.avatarFallback}>
                           <Ionicons
                             name="person"
-                            size={50}
+                            size={46}
                             color={isDark ? colors.muted : "#9AA3B2"}
                           />
                         </View>
@@ -432,9 +514,9 @@ export default function AddKidsScreen() {
 
                     <View style={styles.cameraBadge}>
                       <Ionicons
-                        name="camera-outline"
-                        size={18}
-                        color="#FFFFFF"
+                        name={ADD_KIDS_RUNTIME.cameraIconName}
+                        size={ADD_KIDS_RUNTIME.cameraIconSize}
+                        color={ADD_KIDS_RUNTIME.cameraBadgeColor}
                       />
                     </View>
                   </TouchableOpacity>
@@ -445,34 +527,91 @@ export default function AddKidsScreen() {
                   <Text style={styles.avatarHintText}>
                     {t(ADD_KIDS_UI.avatarHint)}
                   </Text>
-
-                  <Text style={styles.heroTitle}>{t(ADD_KIDS_UI.titleEdit)}</Text>
                 </View>
-              ) : (
-                <View style={styles.createHeroContent}>
-                  <View style={styles.heroIllustrationCard}>
-                    <Image
-                      source={ADD_KIDS_RUNTIME.heroImage}
-                      style={styles.logoHero}
-                      resizeMode="contain"
-                    />
-                  </View>
+              ) : null}
 
-                  <Text style={styles.heroTitle}>
-                    {t(ADD_KIDS_UI.titleCreate)}
+              <View style={styles.headerBlock}>
+                <View style={styles.badgePill}>
+                  <Ionicons
+                    name={ADD_KIDS_RUNTIME.sparklesIcon}
+                    size={ADD_KIDS_RUNTIME.sparklesIconSize}
+                    color={colors.primary}
+                  />
+                  <Text style={styles.badgeText}>
+                    {isEdit
+                      ? t(ADD_KIDS_UI.titleEdit).toUpperCase()
+                      : t(ADD_KIDS_UI.addBadge).toUpperCase()}
                   </Text>
                 </View>
-              )}
-            </LinearGradient>
 
-            <View style={styles.formCard}>
-              {!!submitError && (
-                <View style={styles.errorBanner}>
-                  <Text style={styles.errorBannerText}>{t(submitError)}</Text>
-                </View>
-              )}
+                <Text style={styles.heroTitle}>
+                  {isEdit ? t(ADD_KIDS_UI.titleEdit) : t(ADD_KIDS_UI.titleCreate)}
+                </Text>
 
-              <View style={styles.fieldBlock}>
+                {!isEdit ? (
+                  <Text style={styles.heroSubtitle}>
+                    {t(ADD_KIDS_UI.addSubtitle)}
+                  </Text>
+                ) : null}
+              </View>
+
+              <View style={styles.formCard}>
+                {!!submitError && (
+                  <View style={styles.errorBanner}>
+                    <Text style={styles.errorBannerText}>{t(submitError)}</Text>
+                  </View>
+                )}
+
+                {!isEdit && !isLoadingLevels ? (
+                  <View style={styles.levelTabs}>
+                    {LEVEL_TYPE_ORDER.map((levelTypeId) => {
+                      const isTabActive = selectedLevelType === levelTypeId;
+                      const section = levelSections.find(
+                        (s) => s.levelTypeId === levelTypeId
+                      );
+                      const isTabDisabled = section?.disabled ?? false;
+                      const tabCount = section?.count ?? 0;
+
+                      return (
+                        <TouchableOpacity
+                          key={levelTypeId}
+                          activeOpacity={0.9}
+                          disabled={isTabDisabled}
+                          onPress={() => setSelectedLevelType(levelTypeId)}
+                          style={[
+                            styles.levelTab,
+                            isTabActive && styles.levelTabActive,
+                            isTabDisabled && styles.levelTabDisabled,
+                          ]}
+                        >
+                          <Ionicons
+                            name={ADD_KIDS_RUNTIME.schoolIcon}
+                            size={ADD_KIDS_RUNTIME.schoolIconSize}
+                            color={isTabActive ? colors.primary : isDark ? colors.muted : "#98A2B3"}
+                          />
+                          <Text
+                            style={[
+                              styles.levelTabText,
+                              isTabActive && styles.levelTabTextActive,
+                              isTabDisabled && styles.levelTabTextDisabled,
+                            ]}
+                          >
+                            {levelSectionLabel(levelTypeId)}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.levelTabCount,
+                              isTabActive && styles.levelTabCountActive,
+                            ]}
+                          >
+                            {t(ADD_KIDS_UI.levelsCount, { count: tabCount })}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                ) : null}
+
                 <Text style={styles.label}>
                   {t(ADD_KIDS_FIELDS.fullName.label)}
                 </Text>
@@ -490,7 +629,6 @@ export default function AddKidsScreen() {
                       placeholderTextColor={isDark ? colors.muted : "#98A2B3"}
                       style={styles.input}
                       editable={!isLoading}
-                      textAlign="right"
                     />
                   )}
                 />
@@ -500,163 +638,136 @@ export default function AddKidsScreen() {
                     {t(String(errors.fullName.message))}
                   </Text>
                 )}
-              </View>
 
-              <View style={styles.fieldBlock}>
-                <Text style={styles.label}>{t(ADD_KIDS_UI.genderLabel)}</Text>
+                {!isEdit ? (
+                  <>
+                    <Text style={styles.label}>{t(ADD_KIDS_UI.genderLabel)}</Text>
 
-                <View style={styles.genderRow}>
-                  {[
-                    {
-                      value: "girl" as const,
-                      label: t(ADD_KIDS_UI.girl),
-                      icon: ADD_KIDS_RUNTIME.girlIcon,
-                    },
-                    {
-                      value: "boy" as const,
-                      label: t(ADD_KIDS_UI.boy),
-                      icon: ADD_KIDS_RUNTIME.boyIcon,
-                    },
-                  ].map((option) => {
-                    const selected = selectedGender === option.value;
+                    <View style={styles.genderRow}>
+                      {[
+                        { value: "girl" as const, emoji: "👧", label: t(ADD_KIDS_UI.girl) },
+                        { value: "boy" as const, emoji: "🧒", label: t(ADD_KIDS_UI.boy) },
+                      ].map((option) => {
+                        const selected = selectedGender === option.value;
 
-                    return (
-                      <TouchableOpacity
-                        key={option.value}
-                        activeOpacity={0.9}
-                        disabled={isLoading}
-                        onPress={() => {
-                          setValue("gender", option.value, {
-                            shouldValidate: true,
-                            shouldDirty: true,
-                          });
-                          clearErrors("gender");
-                        }}
-                        style={styles.genderTouch}
-                      >
-                        {selected ? (
-                          <LinearGradient
-                            colors={
-                              isDark
-                                ? ["#2BC5D3", "#179DAB"]
-                                : ["#19B6C5", "#0FA6B6"]
-                            }
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }}
-                            style={styles.genderButtonSelected}
+                        return (
+                          <TouchableOpacity
+                            key={option.value}
+                            activeOpacity={0.9}
+                            disabled={isLoading}
+                            onPress={() => {
+                              setValue("gender", option.value, {
+                                shouldValidate: true,
+                                shouldDirty: true,
+                              });
+                              clearErrors("gender");
+                            }}
+                            style={styles.genderTouch}
                           >
-                            <Image
-                              source={option.icon}
-                              style={styles.genderIcon}
-                            />
-                            <Text style={styles.genderTextSelected}>
-                              {option.label}
-                            </Text>
-                          </LinearGradient>
-                        ) : (
-                          <View style={styles.genderButton}>
-                            <Image
-                              source={option.icon}
-                              style={styles.genderIcon}
-                            />
-                            <Text style={styles.genderText}>
-                              {option.label}
-                            </Text>
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
+                            <View
+                              style={[
+                                styles.genderButton,
+                                selected && styles.genderButtonSelected,
+                              ]}
+                            >
+                              <Text style={styles.genderEmoji}>{option.emoji}</Text>
+                              <Text
+                                style={[
+                                  styles.genderText,
+                                  selected && styles.genderTextSelected,
+                                ]}
+                              >
+                                {option.label}
+                              </Text>
 
-                {!!errors.gender?.message && (
-                  <Text style={styles.fieldError}>
-                    {t(String(errors.gender.message))}
+                              {selected ? (
+                                <View style={styles.genderCheckBadge}>
+                                  <Ionicons
+                                    name={ADD_KIDS_RUNTIME.checkIcon}
+                                    size={ADD_KIDS_RUNTIME.checkIconSize}
+                                    color="#FFFFFF"
+                                  />
+                                </View>
+                              ) : null}
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+
+                    {!!errors.gender?.message && (
+                      <Text style={styles.fieldError}>
+                        {t(String(errors.gender.message))}
+                      </Text>
+                    )}
+                  </>
+                ) : null}
+
+                {!isEdit ? (
+                  <>
+                    <Text style={styles.label}>{t(ADD_KIDS_UI.levelLabel)}</Text>
+
+                    <View style={styles.levelSection}>
+                      {activeSection?.rows.map((row, rowIndex) => (
+                            <View key={rowIndex} style={styles.levelRow}>
+                              {row.map((level, colIndex) => {
+                                const selected = selectedLevel === level.id;
+                                const isDisabled = level.disabled;
+                                const displayNumber =
+                                  rowIndex * LEVELS_PER_ROW + colIndex + 1;
+
+                                return (
+                                  <TouchableOpacity
+                                    key={level.id}
+                                    activeOpacity={0.9}
+                                    disabled={isLoading || isDisabled}
+                                    onPress={() => {
+                                      setValue("levelId", level.id, {
+                                        shouldValidate: true,
+                                        shouldDirty: true,
+                                      });
+                                      clearErrors("levelId");
+                                    }}
+                                    style={[
+                                      styles.levelButton,
+                                      isDisabled && styles.levelButtonDisabled,
+                                      selected && styles.levelButtonSelected,
+                                    ]}
+                                  >
+                                    <Image
+                                      source={LEVEL_BOULE_ICONS[displayNumber]}
+                                      style={[
+                                        styles.levelBouleIcon,
+                                        isDisabled && styles.levelBouleIconDisabled,
+                                        selected && styles.levelBouleIconSelected,
+                                      ]}
+                                      resizeMode="contain"
+                                    />
+                                  </TouchableOpacity>
+                                );
+                              })}
+                            </View>
+                          ))}
+
+                          {!!activeSection?.disabled && (
+                            <Text style={styles.levelDisabledHint}>
+                              {t(ADD_KIDS_UI.levelDisabledHint)}
+                            </Text>
+                          )}
+                        </View>
+
+                    {!!errors.levelId?.message && (
+                      <Text style={styles.fieldError}>
+                        {t(String(errors.levelId.message))}
+                      </Text>
+                    )}
+                  </>
+                ) : (
+                  <Text style={styles.levelLockedHint}>
+                    {t(ADD_KIDS_UI.levelLockedHint)}
                   </Text>
                 )}
               </View>
-
-              {!isEdit ? (
-                <View style={styles.fieldBlock}>
-                  <Text style={styles.label}>{t(ADD_KIDS_UI.levelLabel)}</Text>
-
-                  <View style={styles.levelRow}>
-                    {LEVELS_ROW1.map((level) => {
-                      const selected = selectedLevel === level;
-
-                      return (
-                        <TouchableOpacity
-                          key={level}
-                          activeOpacity={0.9}
-                          disabled={isLoading}
-                          onPress={() => {
-                            setValue("levelId", level, {
-                              shouldValidate: true,
-                              shouldDirty: true,
-                            });
-                            clearErrors("levelId");
-                          }}
-                          style={[
-                            styles.levelButton,
-                            selected && styles.levelButtonSelected,
-                          ]}
-                        >
-                          <Image
-                            source={levelIcons[level]}
-                            style={[
-                              styles.levelIcon,
-                              selected && styles.levelIconSelected,
-                            ]}
-                          />
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-
-                  <View style={styles.levelRow}>
-                    {LEVELS_ROW2.map((level) => {
-                      const selected = selectedLevel === level;
-
-                      return (
-                        <TouchableOpacity
-                          key={level}
-                          activeOpacity={0.9}
-                          disabled={isLoading}
-                          onPress={() => {
-                            setValue("levelId", level, {
-                              shouldValidate: true,
-                              shouldDirty: true,
-                            });
-                            clearErrors("levelId");
-                          }}
-                          style={[
-                            styles.levelButton,
-                            selected && styles.levelButtonSelected,
-                          ]}
-                        >
-                          <Image
-                            source={levelIcons[level]}
-                            style={[
-                              styles.levelIcon,
-                              selected && styles.levelIconSelected,
-                            ]}
-                          />
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-
-                  {!!errors.levelId?.message && (
-                    <Text style={styles.fieldError}>
-                      {t(String(errors.levelId.message))}
-                    </Text>
-                  )}
-                </View>
-              ) : (
-                <Text style={styles.levelLockedHint}>
-                  {t(ADD_KIDS_UI.levelLockedHint)}
-                </Text>
-              )}
 
               <TouchableOpacity
                 style={styles.submitTouch}
@@ -666,26 +777,20 @@ export default function AddKidsScreen() {
               >
                 <LinearGradient
                   colors={
-                    isEdit
-                      ? isDark
-                        ? ["#284B7D", "#17355C"]
-                        : ["#203F6C", "#17355C"]
-                      : isDark
-                      ? ["#2BC5D3", "#179DAB"]
-                      : ["#19B6C5", "#0FA6B6"]
+                    isDark
+                      ? ["#179DAB", "#0FA6B6"]
+                      : ADD_KIDS_RUNTIME.submitGradientColors
                   }
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.submitButton}
                 >
                   {isLoading ? (
-                    <ActivityIndicator color="#FFFFFF" />
+                    <ActivityIndicator color={ADD_KIDS_RUNTIME.submitLoaderColor} />
                   ) : (
                     <Text style={styles.submitButtonText}>
                       {t(
-                        isEdit
-                          ? ADD_KIDS_UI.submitEdit
-                          : ADD_KIDS_UI.submitCreate
+                        isEdit ? ADD_KIDS_UI.submitEdit : ADD_KIDS_UI.submitCreate
                       )}
                     </Text>
                   )}

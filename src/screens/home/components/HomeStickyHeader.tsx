@@ -20,6 +20,7 @@ export type HomeStickyHeaderProps = {
   onNotifications?: () => void;
   onSearch?: () => void;
   onStreak?: () => void;
+  onAvatarPress?: () => void;
 };
 
 export default function HomeStickyHeader({
@@ -31,6 +32,7 @@ export default function HomeStickyHeader({
   onNotifications,
   onSearch,
   onStreak,
+  onAvatarPress,
 }: HomeStickyHeaderProps) {
   const { t } = useTranslation();
   const gradientColors = isDark
@@ -39,7 +41,7 @@ export default function HomeStickyHeader({
 
   const headerContent = (
     <View style={styles.heroTopRow}>
-      <ActiveChildHeaderAvatar />
+      <ActiveChildHeaderAvatar onPress={onAvatarPress} />
       <GoldStreakPill
         label={t("home.streak_label")}
         onPress={onStreak}

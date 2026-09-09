@@ -1,19 +1,36 @@
 import type { ImageSourcePropType } from "react-native";
 import type { InputConfig } from "types/interfaces/InputConfig";
-import { LevelEnum, ALL_LEVELS } from "@config/enums/Level.enum";
+import type { LevelTypeEnum } from "@redux/apis/levels/levelsApi.type";
+import {
+  LEVEL_TYPE_PRIMAIRE,
+  LEVEL_TYPE_COLLEGE,
+  LEVEL_TYPE_LYCEE,
+} from "@redux/apis/levels/levelsApi.type";
 import type { AddKidsForm } from "./AddKidsScreen.type";
 
-export const LEVELS_ROW1: LevelEnum[] = ALL_LEVELS.slice(0, 3);
-export const LEVELS_ROW2: LevelEnum[] = ALL_LEVELS.slice(3, 6);
+export const LEVEL_TYPE_ORDER: readonly LevelTypeEnum[] = [
+  LEVEL_TYPE_PRIMAIRE,
+  LEVEL_TYPE_COLLEGE,
+  LEVEL_TYPE_LYCEE,
+];
 
-export const levelIcons: Record<LevelEnum, ImageSourcePropType> = {
-  [LevelEnum.One]: require("../../../assets/icons/one.png"),
-  [LevelEnum.Two]: require("../../../assets/icons/two.png"),
-  [LevelEnum.Three]: require("../../../assets/icons/three.png"),
-  [LevelEnum.Four]: require("../../../assets/icons/four.png"),
-  [LevelEnum.Five]: require("../../../assets/icons/five.png"),
-  [LevelEnum.Six]: require("../../../assets/icons/six.png"),
+export const LEVEL_TYPE_LABEL: Record<LevelTypeEnum, string> = {
+  [LEVEL_TYPE_PRIMAIRE]: "child.level_primaire",
+  [LEVEL_TYPE_COLLEGE]: "child.level_college",
+  [LEVEL_TYPE_LYCEE]: "child.level_lycee",
 };
+
+export const LEVELS_PER_ROW = 3;
+
+export const LEVEL_BOULE_ICONS: Readonly<Record<number, ImageSourcePropType>> =
+  {
+    1: require("../../../assets/icons/one.png"),
+    2: require("../../../assets/icons/two.png"),
+    3: require("../../../assets/icons/three.png"),
+    4: require("../../../assets/icons/four.png"),
+    5: require("../../../assets/icons/five.png"),
+    6: require("../../../assets/icons/six.png"),
+  };
 
 export const ADD_KIDS_FIELDS = {
   fullName: {
@@ -28,6 +45,12 @@ export const ADD_KIDS_FIELDS = {
 export const ADD_KIDS_UI = {
   titleCreate: "child.add_title",
   titleEdit: "child.edit_title",
+  addBadge: "child.add_badge",
+  addSubtitle: "child.add_subtitle",
+  noSignup: "child.no_signup",
+  levelsCount: "child.levels_count",
+  themeToggleLightLabel: "child.theme_toggle_light_label",
+  themeToggleDarkLabel: "child.theme_toggle_dark_label",
   genderLabel: "child.gender",
   genderRequired: "child.gender_required",
   boy: "child.boy",
@@ -35,6 +58,7 @@ export const ADD_KIDS_UI = {
   levelLabel: "child.level",
   levelRequired: "child.level_required",
   levelLockedHint: "child.level_locked_hint",
+  levelDisabledHint: "child.level_lycee_disabled",
   submitCreate: "child.add_submit",
   submitEdit: "child.edit_submit",
   genericError: "common.something_went_wrong",
@@ -62,25 +86,27 @@ export const ADD_KIDS_RUNTIME = {
   validationErrorType: "validate",
   submitErrorLog: "[AddKidsScreen] submit failed",
 
-  backgroundImage: require("../../../assets/images/ba1.png"),
-  heroImage: require("../../../assets/images/kids.jpg"),
-  boyIcon: require("../../../assets/icons/male.png"),
-  girlIcon: require("../../../assets/icons/female.png"),
-
-  backgroundResizeMode: "cover" as const,
-  heroResizeMode: "contain" as const,
   keyboardPersistTaps: "handled" as const,
 
-  iosPlatform: "ios",
-  iosKeyboardOffset: 80,
-  defaultKeyboardOffset: 0,
-
   backIconName: "arrow-back" as const,
-  backIconSize: 28,
+  backIconSize: 24,
   backIconColor: "#1F3B64",
+
+  sparklesIcon: "sparkles" as const,
+  sparklesIconSize: 13,
+  schoolIcon: "school-outline" as const,
+  schoolIconSize: 20,
+  checkIcon: "checkmark" as const,
+  checkIconSize: 15,
+  checkBadgeAccessibilityLabel: "selected" as const,
+
   submitLoaderColor: "#fff",
+  submitGradientColors: ["#19B6C5", "#0FA6B6"] as const,
+
+  bgGradientColorsLight: ["#DCF3F1", "#b1e4e4", "#FAFCFE"] as const,
+  bgGradientColorsDark: ["#132341", "#061428"] as const,
 
   cameraIconName: "camera-outline" as const,
   cameraIconSize: 18,
-  cameraBadgeColor: "#1F3B64",
+  cameraBadgeColor: "#FFFFFF",
 } as const;
