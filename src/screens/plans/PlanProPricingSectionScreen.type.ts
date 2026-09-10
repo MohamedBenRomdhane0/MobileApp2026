@@ -1,3 +1,5 @@
+import type { PlanMaterialPriceUI } from "@redux/apis/plans/plansApi.type";
+
 export type ProPlanType = "monthly" | "quarterly" | "yearly" | "single";
 
 export type ProPlanOption = {
@@ -6,6 +8,9 @@ export type ProPlanOption = {
   price: string;
   noteKey: string;
   badge?: string;
+  _perMaterial?: boolean;
+  _materialPricings?: PlanMaterialPriceUI[];
+  _startingFromPrice?: number;
 };
 
 export type ProIncludedFeature = {
@@ -14,7 +19,7 @@ export type ProIncludedFeature = {
   labelKey: string;
 };
 
-export type SwiperPack = "pack1" | "pack2";
+export type SwiperPack = string;
 
 export type PackConfig = {
   id: SwiperPack;
@@ -23,4 +28,9 @@ export type PackConfig = {
   highlightColor: string;
   features: ProIncludedFeature[];
   plans: ProPlanOption[];
+  _planId?: number;
+  _planType?: string;
+  _pricingType?: string;
+  _materialPricings?: PlanMaterialPriceUI[];
+  _startingFromPrice?: number;
 };

@@ -442,8 +442,8 @@ export const booksStyles = StyleSheet.create({
 
   infoWrap: {
     flex: 1,
-    paddingTop: 8,
-    paddingBottom: 8,
+    paddingTop: 4,
+    paddingBottom: 6,
     paddingHorizontal: 10,
     justifyContent: "space-between",
     alignItems: isRTL ? "flex-end" : "flex-start",
@@ -451,20 +451,29 @@ export const booksStyles = StyleSheet.create({
     overflow: "hidden",
   },
 
-  infoGlowOverlay: [StyleSheet.absoluteFill, {
-    pointerEvents: "none",
-    zIndex: 0,
-  }] as unknown as import("react-native").ViewStyle,
+  infoGlowOverlay: [
+    StyleSheet.absoluteFill,
+    {
+      pointerEvents: "none",
+      zIndex: 0,
+    },
+  ] as unknown as import("react-native").ViewStyle,
 
-  infoScrim: [StyleSheet.absoluteFill, {
-    pointerEvents: "none",
-    zIndex: 1,
-  }] as unknown as import("react-native").ViewStyle,
+  infoScrim: [
+    StyleSheet.absoluteFill,
+    {
+      pointerEvents: "none",
+      zIndex: 1,
+    },
+  ] as unknown as import("react-native").ViewStyle,
 
-  infoScanlinesOverlay: [StyleSheet.absoluteFill, {
-    pointerEvents: "none",
-    zIndex: 2,
-  }] as unknown as import("react-native").ViewStyle,
+  infoScanlinesOverlay: [
+    StyleSheet.absoluteFill,
+    {
+      pointerEvents: "none",
+      zIndex: 2,
+    },
+  ] as unknown as import("react-native").ViewStyle,
 
   infoContent: {
     flex: 1,

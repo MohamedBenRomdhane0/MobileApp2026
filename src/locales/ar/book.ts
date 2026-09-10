@@ -41,6 +41,7 @@ export const book = {
   book_information: 'معلومات الكتاب',
   edit_details: 'تعديل التفاصيل',
    title: " مكتبتي",
+  concours_title: "كتب المناظرات",
   subtitle: "مكتبتك المدرسية",
   section_title: "الرياضيات",
   search_placeholder: "ابحث عن كتاب",

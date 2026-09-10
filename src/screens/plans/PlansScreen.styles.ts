@@ -1086,7 +1086,8 @@ export function createPlansStyles(colors: ThemeColors, isDark: boolean, isRTL: b
       flexGrow: 1,
     },
     cardSubscribeWrap: {
-      marginTop: 14,
+      marginTop: "auto",
+      paddingTop: 14,
       borderRadius: 16,
       overflow: "hidden",
     },

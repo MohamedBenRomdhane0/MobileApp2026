@@ -28,7 +28,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import ActiveChildHeaderAvatar from "@components/header/ActiveChildHeaderAvatar";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
@@ -37,12 +37,17 @@ import { LEVEL_LABEL_BY_ID } from "@config/enums/Level.enum";
 import { useEnsureChildSession } from "@hooks/useEnsureChildSession";
 import { useActiveChildHeaderData } from "@hooks/useActiveChildHeaderData";
 import { useGetBooksQuery } from "@redux/apis/books/bookApi";
+import { useGetDraftBooksQuery } from "@redux/apis/draft/draftApi";
 import type {
   BookListItemUI,
   BookTeacherUI,
 } from "@redux/apis/books/bookApi.type";
 import { useAppSelector } from "@redux/hooks";
-import { selectActiveChildId } from "@redux/slices/authSlice";
+import {
+  selectActiveChildId,
+  selectDraftLevelId,
+  selectIsDraftMode,
+} from "@redux/slices/authSlice";
 import { LIQUID } from "@styles/liquidTheme";
 import { useAppTheme } from "@theme/ThemeProvider";
 import {
@@ -198,6 +203,16 @@ function InfoScanlinesLayer() {
 
 export default function BooksScreen() {
   const navigation = useNavigation<BooksNav>();
+  const route = useRoute();
+
+  // Concours tab passes type 2; the regular Books tab defaults to 1 (manual).
+  const bookType =
+    typeof route.params === "object" &&
+    route.params !== null &&
+    "type" in route.params &&
+    typeof route.params.type === "number"
+      ? route.params.type
+      : 1;
   const insets = useSafeAreaInsets();
   const { t, i18n } = useTranslation();
   const { colors, mode } = useAppTheme();
@@ -220,6 +235,8 @@ export default function BooksScreen() {
     useEnsureChildSession();
 
   const activeChildId = useAppSelector(selectActiveChildId);
+  const isDraftMode = useAppSelector(selectIsDraftMode);
+  const draftLevelId = useAppSelector(selectDraftLevelId);
 
   const [selectedBook, setSelectedBook] = useState<BookListItemUI | null>(null);
   const [selectedMaterialKey, setSelectedMaterialKey] = useState<string>("all");
@@ -230,16 +247,40 @@ export default function BooksScreen() {
     {}
   );
 
-  const { data, isLoading, isFetching, isError, refetch } = useGetBooksQuery(
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useGetBooksQuery(
     {
       page: BOOKS_PAGINATION.firstPage,
       keyword: "",
       childId: activeChildId ?? undefined,
+      type: bookType,
     },
-    { skip: !activeChildId }
+    { skip: isDraftMode || !activeChildId }
   );
 
-  const books = Array.isArray(data?.data) ? data.data : EMPTY_BOOKS;
+  const {
+    data: draftData,
+    isLoading: isDraftLoading,
+    isFetching: isDraftFetching,
+    isError: isDraftError,
+    refetch: refetchDraftBooks,
+  } = useGetDraftBooksQuery(
+    { levelId: draftLevelId ?? 0, page: BOOKS_PAGINATION.firstPage, perPage: 20 },
+    { skip: !isDraftMode || !draftLevelId }
+  );
+
+  const books = isDraftMode
+    ? Array.isArray(draftData?.data)
+      ? draftData.data
+      : EMPTY_BOOKS
+    : Array.isArray(data?.data)
+      ? data.data
+      : EMPTY_BOOKS;
 
   const filterOptions = useMemo(() => {
     const seen = new Set<string>();
@@ -287,7 +328,9 @@ export default function BooksScreen() {
   const selectedBookTitle = selectedBook?.title ?? "";
   const selectedBookSubject = selectedBook?.materialName ?? "";
 
-  const meta = (data as { meta?: BooksQueryMeta } | undefined)?.meta;
+  const meta = isDraftMode
+    ? (draftData as { meta?: BooksQueryMeta } | undefined)?.meta
+    : (data as { meta?: BooksQueryMeta } | undefined)?.meta;
   const levelLabel = meta?.levelLabel ?? meta?.level_label ?? "";
   const effectiveLevelLabel = childLevelLabel || levelLabel;
 
@@ -320,8 +363,11 @@ export default function BooksScreen() {
     return effectiveLevelLabel || t(BOOKS_UI.subtitle);
   }, [effectiveLevelLabel, meta?.subtitle, t]);
 
-  const showLoadingState = isEnsuringChildSession || (isLoading && books.length === 0);
-  const showErrorState = isError && books.length === 0;
+  const showLoadingState =
+    isEnsuringChildSession ||
+    (isDraftMode ? isDraftLoading : isLoading) && books.length === 0;
+  const showErrorState =
+    (isDraftMode ? isDraftError : isError) && books.length === 0;
 
   const validBookIds = useMemo(
     () => books.map((b) => b.id).filter(isValidPositiveId),
@@ -331,6 +377,10 @@ export default function BooksScreen() {
   const bookIdsKey = useMemo(() => validBookIds.join(","), [validBookIds]);
 
   const loadResumeMap = useCallback(async () => {
+    if (isDraftMode) {
+      setResumeMap({});
+      return;
+    }
     if (!bookIdsKey) {
       setResumeMap((prev) => (Object.keys(prev).length === 0 ? prev : {}));
       return;
@@ -338,11 +388,13 @@ export default function BooksScreen() {
 
     const nextMap = await getBooksLearningResumeMap(validBookIds);
     setResumeMap((prev) => (areResumeMapsEqual(prev, nextMap) ? prev : nextMap));
-  }, [bookIdsKey, validBookIds]);
+  }, [bookIdsKey, validBookIds, isDraftMode]);
 
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
+
+      if (isDraftMode) return;
 
       const run = async () => {
         if (!isActive) return;
@@ -363,7 +415,7 @@ export default function BooksScreen() {
       return () => {
         isActive = false;
       };
-    }, [bookIdsKey, validBookIds])
+    }, [bookIdsKey, validBookIds, isDraftMode])
   );
 
   function openBook(book: BookListItemUI) {
@@ -664,13 +716,13 @@ export default function BooksScreen() {
                 <Ionicons name="play" size={10} color={palette.white} />
               </View>
             </View>
-
+             {/* content book */}
             <View style={styles.infoWrap}>
               <InfoGlowLayer accent={accent} />
               <LinearGradient
                 colors={[
-                  "rgba(6,14,24,0.42)",
-                  "rgba(6,14,24,0.10)",
+                  "rgba(233, 235, 237, 0.42)",
+                  "rgba(185, 208, 236, 0.1)",
                   "transparent",
                 ]}
                 start={{ x: 0, y: 0 }}
@@ -862,7 +914,7 @@ export default function BooksScreen() {
     );
   }
 
-  if (!canSwitch) {
+  if (!canSwitch && !isDraftMode) {
     return (
       <View style={[styles.centerState, { backgroundColor: palette.bg }]}>
         <View
@@ -949,7 +1001,7 @@ export default function BooksScreen() {
           </Text>
           <TouchableOpacity
             activeOpacity={0.9}
-            onPress={refetch}
+            onPress={isDraftMode ? refetchDraftBooks : refetch}
             style={[
               styles.retryButton,
               {
@@ -986,7 +1038,7 @@ export default function BooksScreen() {
         <View style={styles.headerTopRow}>
           <View style={styles.headerTitleBlock}>
             <Text style={[styles.title, { textAlign: headerTextAlign }]}>
-              {t(BOOKS_UI.title)}
+              {bookType === 2 ? t(BOOKS_UI.concoursTitle) : t(BOOKS_UI.title)}
             </Text>
 
             <Text
@@ -1203,9 +1255,9 @@ export default function BooksScreen() {
           ]}
           refreshControl={
             <RefreshControl
-              refreshing={isFetching && !isLoading}
+              refreshing={isDraftMode ? isDraftFetching && !isDraftLoading : isFetching && !isLoading}
               onRefresh={async () => {
-                await refetch();
+                await (isDraftMode ? refetchDraftBooks() : refetch());
                 await loadResumeMap();
               }}
               tintColor={palette.primary}

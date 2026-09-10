@@ -4,6 +4,8 @@ import {
   ScrollView,
   RefreshControl,
   StatusBar,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -12,10 +14,10 @@ import { useTranslation } from "react-i18next";
 import { useAppTheme } from "@theme/ThemeProvider";
 import { createHomeStyles } from "./HomeScreen.styles";
 import { useActiveChildHeaderData } from "@hooks/useActiveChildHeaderData";
-import { LEVEL_LABEL_BY_ID } from "@config/enums/Level.enum";
+import { LEVEL_LABEL_BY_ID, LevelEnum } from "@config/enums/Level.enum";
 import { PATHS } from "@config/constants/paths";
 import { useAppSelector } from "@redux/hooks";
-import { selectActiveChildId } from "@redux/slices/authSlice";
+import { selectActiveChildId, selectIsDraftMode, selectDraftLevelId } from "@redux/slices/authSlice";
 import { useSwitchToChildMutation } from "@redux/apis/child/childApi";
 import { useGetMaterialsByLevelQuery } from "@redux/apis/materials/materialsApi";
 import type { MaterialUI } from "@redux/apis/materials/materialsApi.type";
@@ -28,7 +30,14 @@ import type { MeetingListItemUI } from "@redux/apis/meetings/meetingApi.type";
 import { useGetPlansForChildQuery } from "@redux/apis/plans/plansApi";
 import type { PlanUI } from "@redux/apis/plans/plansApi.type";
 
+import {
+  useGetDraftBooksQuery,
+  useGetDraftLevelMaterialsQuery,
+  useGetDraftPlansQuery,
+} from "@redux/apis/draft/draftApi";
+
 import HomeHero from "@screens/home/components/HomeHero";
+import HomeStickyHeader from "@screens/home/components/HomeStickyHeader";
 import QuickActions from "@screens/home/components/QuickActions";
 import ContinueCard from "@screens/home/components/ContinueCard";
 import MaterialsRow from "@screens/home/components/MaterialsRow";
@@ -46,6 +55,7 @@ import WalletBottomSheet from "@components/wallet/WalletBottomSheet";
 import RecordBubbles from "@screens/home/components/RecordBubbles";
 import MeetingCardsRail from "@components/meetings/MeetingCardsRail";
 import MiniPlanCards from "@screens/home/components/MiniPlanCards";
+import LevelSelectionPopup from "@screens/home/components/LevelSelectionPopup";
 
 import {
   HOME_UI,
@@ -63,10 +73,7 @@ import {
 import { pickLevelIdFromChild } from "@utils/helpers/level.helper";
 import type { HomeQuickAction } from "./HomeScreen.type";
 
-/** Books kept in the home carousel — the rest live on the Books tab. */
 const HOME_BOOKS_LIMIT = 12;
-
-/** Mini plan tiles shown in the 2-column grid — the rest live on Plans. */
 const HOME_MINI_PLANS_LIMIT = 4;
 
 export default function HomeScreen() {
@@ -86,12 +93,27 @@ export default function HomeScreen() {
     [colors, isDark]
   );
 
-  // Every block takes the same styling trio — bundle it once instead of
-  // repeating three props on ten components.
   const block = useMemo(
     () => ({ styles, palette, isRTL }),
     [styles, palette, isRTL]
   );
+
+  const isDraftMode = useAppSelector(selectIsDraftMode);
+  const draftLevelId = useAppSelector(selectDraftLevelId);
+  const [showLevelPopup, setShowLevelPopup] = useState(false);
+
+  useEffect(() => {
+    if (isDraftMode && !draftLevelId) {
+      setShowLevelPopup(true);
+    }
+    if (!isDraftMode) {
+      setShowLevelPopup(false);
+    }
+  }, [isDraftMode, draftLevelId]);
+
+  const handleLevelSelect = useCallback(() => {
+    setShowLevelPopup(false);
+  }, []);
 
   const headerData = useActiveChildHeaderData();
   const levelId = useMemo(
@@ -103,21 +125,23 @@ export default function HomeScreen() {
     [levelId]
   );
 
+  const showConcours = levelId === LevelEnum.Six || levelId === 12;
+
   const activeChildId = useAppSelector(selectActiveChildId);
   const childAccessToken = useAppSelector((s) => s.auth.childAccessToken);
   const [keyword] = useState("");
   const [searchVisible, setSearchVisible] = useState(false);
   const [walletVisible, setWalletVisible] = useState(false);
   const [notifVisible, setNotifVisible] = useState(false);
-  const [calendarMonthOffset, setCalendarMonthOffset] = useState(0); // 0 = current month, 1 = next
+  const [calendarMonthOffset, setCalendarMonthOffset] = useState(0);
   const [switchToChild, switchState] = useSwitchToChildMutation();
 
   const canSwitch = typeof activeChildId === "number" && activeChildId > 0;
   const needsChildToken = !childAccessToken;
   const lastSwitchChildIdRef = useRef<number | null>(null);
 
-  // Exchange the parent token for a child token before any child-scoped query.
   useEffect(() => {
+    if (isDraftMode) return;
     if (!needsChildToken) {
       lastSwitchChildIdRef.current = null;
       return;
@@ -134,6 +158,7 @@ export default function HomeScreen() {
         lastSwitchChildIdRef.current = null;
       });
   }, [
+    isDraftMode,
     needsChildToken,
     canSwitch,
     activeChildId,
@@ -142,8 +167,42 @@ export default function HomeScreen() {
     switchState.isSuccess,
   ]);
 
-  const isChildReady = canSwitch && !!childAccessToken;
+  const isChildReady = !isDraftMode && canSwitch && !!childAccessToken;
 
+  // ── Draft mode queries ──────────────────────────────────────────
+  const {
+    data: draftMaterials,
+    isLoading: isDraftMaterialsLoading,
+    isFetching: isDraftMaterialsFetching,
+    isError: isDraftMaterialsError,
+    refetch: refetchDraftMaterials,
+  } = useGetDraftLevelMaterialsQuery(
+    { levelId: draftLevelId ?? 0, locale: i18n.language ?? "fr" },
+    { skip: !isDraftMode || !draftLevelId }
+  );
+
+  const {
+    data: draftBooksData,
+    isLoading: isDraftBooksLoading,
+    isFetching: isDraftBooksFetching,
+    isError: isDraftBooksError,
+    refetch: refetchDraftBooks,
+  } = useGetDraftBooksQuery(
+    { levelId: draftLevelId ?? 0, page: 1, perPage: 20 },
+    { skip: !isDraftMode || !draftLevelId }
+  );
+
+  const {
+    data: draftPlans,
+    isLoading: isDraftPlansLoading,
+    isError: isDraftPlansError,
+    refetch: refetchDraftPlans,
+  } = useGetDraftPlansQuery(
+    draftLevelId ? { levelId: draftLevelId } : undefined,
+    { skip: !isDraftMode || !draftLevelId }
+  );
+
+  // ── Auth mode queries ───────────────────────────────────────────
   const {
     data: materialsData,
     isLoading: isMaterialsLoading,
@@ -152,14 +211,16 @@ export default function HomeScreen() {
     refetch: refetchMaterials,
   } = useGetMaterialsByLevelQuery(
     { levelId: toValidId(levelId), locale: i18n.language ?? "fr" },
-    { skip: !toValidId(levelId) }
+    { skip: isDraftMode || !toValidId(levelId) }
   );
 
-  const materials: MaterialUI[] = useMemo(
-    () => (Array.isArray(materialsData) ? materialsData : []),
-    [materialsData]
-  );
-  const showMaterialsLoader = isMaterialsLoading || isMaterialsFetching;
+  const materials: MaterialUI[] = useMemo(() => {
+    if (isDraftMode) return Array.isArray(draftMaterials) ? draftMaterials : [];
+    return Array.isArray(materialsData) ? materialsData : [];
+  }, [isDraftMode, draftMaterials, materialsData]);
+  const showMaterialsLoader = isDraftMode
+    ? isDraftMaterialsLoading || isDraftMaterialsFetching
+    : isMaterialsLoading || isMaterialsFetching;
 
   const {
     data: booksData,
@@ -168,16 +229,39 @@ export default function HomeScreen() {
     isError: isBooksError,
     refetch: refetchBooks,
   } = useGetBooksQuery(
-    { page: 1, perPage: 20, keyword, childId: activeChildId ?? undefined },
-    { skip: !activeChildId }
+    { page: 1, perPage: 20, keyword, childId: activeChildId ?? undefined, type: 1 },
+    { skip: isDraftMode || !activeChildId }
   );
 
-  const books: BookListItemUI[] = useMemo(
-    () => (Array.isArray(booksData?.data) ? booksData.data : []),
-    [booksData]
-  );
+  const books: BookListItemUI[] = useMemo(() => {
+    if (isDraftMode) {
+      const items = draftBooksData?.data;
+      return Array.isArray(items) ? items : [];
+    }
+    return Array.isArray(booksData?.data) ? booksData.data : [];
+  }, [isDraftMode, draftBooksData, booksData]);
   const homeBooks = useMemo(() => books.slice(0, HOME_BOOKS_LIMIT), [books]);
-  const showBooksLoader = isBooksLoading || isBooksFetching;
+  const showBooksLoader = isDraftMode
+    ? isDraftBooksLoading || isDraftBooksFetching
+    : isBooksLoading || isBooksFetching;
+
+  const {
+    data: concoursData,
+    isLoading: isConcoursLoading,
+    isFetching: isConcoursFetching,
+    isError: isConcoursError,
+    refetch: refetchConcours,
+  } = useGetBooksQuery(
+    { page: 1, perPage: 20, keyword, childId: activeChildId ?? undefined, type: 2 },
+    { skip: isDraftMode || !activeChildId || !showConcours }
+  );
+
+  const concoursBooks: BookListItemUI[] = useMemo(
+    () => (Array.isArray(concoursData?.data) ? concoursData.data : []),
+    [concoursData]
+  );
+  const homeConcours = useMemo(() => concoursBooks.slice(0, HOME_BOOKS_LIMIT), [concoursBooks]);
+  const showConcoursLoader = isConcoursLoading || isConcoursFetching;
 
   const {
     data: teachersData,
@@ -185,7 +269,7 @@ export default function HomeScreen() {
     isFetching: isTeachersFetching,
   } = useGetTeachersQuery(
     activeChildId ? { page: 1, perPage: 20 } : undefined,
-    { skip: !activeChildId, refetchOnMountOrArgChange: true }
+    { skip: isDraftMode || !activeChildId, refetchOnMountOrArgChange: true }
   );
 
   const teachers = useMemo(() => {
@@ -203,7 +287,14 @@ export default function HomeScreen() {
     }));
   }, [teachersData]);
 
-  // ── Plans (mini cards, monthly pricing) ─────────────────────────
+  const plans: PlanUI[] = useMemo(() => {
+    if (isDraftMode) {
+      const items = draftPlans;
+      return Array.isArray(items) ? items.slice(0, HOME_MINI_PLANS_LIMIT) : [];
+    }
+    return [];
+  }, [isDraftMode, draftPlans]);
+
   const {
     data: plansData,
     isLoading: isPlansLoading,
@@ -211,18 +302,19 @@ export default function HomeScreen() {
     refetch: refetchPlans,
   } = useGetPlansForChildQuery(
     levelId ? { levelId: toValidId(levelId) } : undefined,
-    { skip: !toValidId(levelId) }
+    { skip: isDraftMode || !toValidId(levelId) }
   );
 
-  const plans: PlanUI[] = useMemo(
+  const authPlans: PlanUI[] = useMemo(
     () =>
-      Array.isArray(plansData)
+      !isDraftMode && Array.isArray(plansData)
         ? plansData.slice(0, HOME_MINI_PLANS_LIMIT)
         : [],
-    [plansData]
+    [isDraftMode, plansData]
   );
 
-  // ── Meetings data (live classes + activities calendar) ──────────
+  const displayPlans = isDraftMode ? plans : authPlans;
+
   const TEACHER_PHOTOS = useMemo(() => [
     require("@assets/teachers/ismail.png"),
     require("@assets/teachers/tounes.png"),
@@ -231,10 +323,10 @@ export default function HomeScreen() {
 
   const { data: meetingsData } = useGetMeetingsQuery(
     { page: 1, perPage: 10, childId: activeChildId ?? undefined },
-    { skip: !activeChildId, refetchOnMountOrArgChange: true }
+    { skip: isDraftMode || !activeChildId, refetchOnMountOrArgChange: true }
   );
   const { data: reservedData } = useGetReservedMeetingsQuery(activeChildId ?? undefined, {
-    skip: !activeChildId,
+    skip: isDraftMode || !activeChildId,
     refetchOnMountOrArgChange: true,
   });
 
@@ -245,30 +337,9 @@ export default function HomeScreen() {
 
   const reservedMeetings: MeetingListItemUI[] = useMemo(() => {
     const items = reservedData?.data?.items;
-    const arr = Array.isArray(items) ? items : [];
-    if (arr.length > 0) {
-      console.log("[HomeScreen] reservedMeetings count:", arr.length);
-      arr.forEach((m, i) => {
-        const groups = m.meetingGroups ?? [];
-        groups.forEach((g, gi) => {
-          const times = g.meetingTimes ?? [];
-          console.log(`[HomeScreen] meeting[${i}] group[${gi}]:`, {
-            materialName: m.materialName,
-            teacherName: m.teacherName,
-            scheduleDays: g.scheduleDays,
-            meetingTimesCount: times.length,
-            meetingTimes: times.map((t) => ({
-              meetingDate: t.meetingDate,
-              startTime: t.startTime,
-            })),
-          });
-        });
-      });
-    }
-    return arr;
+    return Array.isArray(items) ? items : [];
   }, [reservedData]);
 
-  // Set of group IDs the child has already reserved (for rail badges)
   const reservedGroupIds = useMemo(() => {
     const ids = new Set<number>();
     for (const m of reservedMeetings) {
@@ -279,7 +350,6 @@ export default function HomeScreen() {
     return ids;
   }, [reservedMeetings]);
 
-  // Find the NEAREST upcoming meeting from reserved meetings
   const nearestMeeting = useMemo(() => {
     if (reservedMeetings.length === 0) return null;
     const now = new Date();
@@ -292,7 +362,6 @@ export default function HomeScreen() {
       const groups = m.meetingGroups ?? [];
       let foundDated = false;
       for (const g of groups) {
-        // 1) Specific dated sessions — only future ones count
         for (const mt of g.meetingTimes ?? []) {
           if (!mt.startsAt) continue;
           const startMs = new Date(mt.startsAt.replace(" ", "T")).getTime();
@@ -304,7 +373,6 @@ export default function HomeScreen() {
         }
         if (foundDated) break;
 
-        // 2) Fallback: scheduleDays → find exact next datetime
         const schedDays = g.scheduleDays ?? [];
         if (schedDays.length > 0 && g.startTime) {
           const [sh, sm] = g.startTime.split(":").map(Number);
@@ -332,7 +400,6 @@ export default function HomeScreen() {
   const activeMeeting = nearestMeeting ?? meetings[0];
   const firstTeacherId = activeMeeting?.teacherId ?? -1;
 
-  // Live detection for the nearest meeting
   const { isLive, startTimeLabel, nextSessionDate } = useMemo(() => {
     if (!activeMeeting) return { isLive: false, startTimeLabel: "", nextSessionDate: "" };
     const groups = activeMeeting.meetingGroups ?? [];
@@ -347,14 +414,12 @@ export default function HomeScreen() {
       return `${dayNames[d.getDay()]} ${d.getDate()} ${monthNames[d.getMonth()]}`;
     };
 
-    // Try meetingTimes first (specific dates)
     for (const g of groups) {
       for (const mt of g.meetingTimes ?? []) {
         if (!mt.startsAt || !mt.endsAt) continue;
         const start = new Date(mt.startsAt.replace(" ", "T"));
         const end = new Date(mt.endsAt.replace(" ", "T"));
         if (isNaN(start.getTime()) || isNaN(end.getTime())) continue;
-        const isToday = start.toDateString() === now.toDateString();
         if (
           start.getFullYear() === now.getFullYear() &&
           start.getMonth() === now.getMonth() &&
@@ -370,15 +435,13 @@ export default function HomeScreen() {
             return { isLive: false, startTimeLabel: label, nextSessionDate: "Aujourd'hui" };
           }
         }
-        // Future session → show its time + date
         if (start.getTime() > now.getTime()) {
           const label = `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`;
-          return { isLive: false, startTimeLabel: label, nextSessionDate: isToday ? "Aujourd'hui" : fmtDate(start) };
+          return { isLive: false, startTimeLabel: label, nextSessionDate: start.toDateString() === now.toDateString() ? "Aujourd'hui" : fmtDate(start) };
         }
       }
     }
 
-    // Fallback: scheduleDay match
     const todayWeekday = now.getDay();
     for (const g of groups) {
       const schedDays = g.scheduleDays ?? [];
@@ -394,7 +457,6 @@ export default function HomeScreen() {
           return { isLive: false, startTimeLabel: stripSeconds(g.startTime), nextSessionDate: "Aujourd'hui" };
         }
       }
-      // Next session from scheduleDays
       if (schedDays.length > 0 && g.startTime) {
         for (let d = 1; d <= 7; d++) {
           const check = new Date(now);
@@ -409,25 +471,20 @@ export default function HomeScreen() {
     return { isLive: false, startTimeLabel: stripSeconds(activeMeeting.nextSessionAt ?? ""), nextSessionDate: "" };
   }, [activeMeeting]);
 
-  // Build teacher avatar lookup: teacherId → { avatarUrl, localPhoto }
   const teacherAvatarLookup = useMemo(() => {
     const map = new Map<number, { avatarUrl: string | null; localPhoto: number }>();
     let localIdx = 0;
-    // First, populate from real teachers API data (has avatarUrl)
     for (const t of teachers) {
       const local = TEACHER_PHOTOS[localIdx % TEACHER_PHOTOS.length];
       map.set(t.id, { avatarUrl: t.avatarUrl ?? null, localPhoto: local });
       localIdx++;
     }
-    // Then add any meeting teachers not in the teachers list (from reserved meetings)
-    // Also backfill avatarUrl from meeting data if teachers API didn't have it
     const all = [...meetings, ...reservedMeetings];
     for (const m of all) {
       const tid = m.teacherId ?? -1;
       if (tid < 0) continue;
       const existing = map.get(tid);
       if (existing) {
-        // Backfill avatarUrl from meeting data if teachers API didn't provide one
         if (!existing.avatarUrl && m.teacherAvatarUrl) {
           existing.avatarUrl = m.teacherAvatarUrl;
         }
@@ -460,8 +517,6 @@ export default function HomeScreen() {
     return lookup?.localPhoto ?? TEACHER_PHOTOS[0];
   }, [firstTeacherId, teacherAvatarLookup]);
 
-  // Reserved days for ActivitiesCard calendar
-  // Uses meetingTimes dates when available, falls back to scheduleDays (weekday → dates this month)
   const reservedDays = useMemo(() => {
     const now = new Date();
     const targetMonth = (now.getMonth() + calendarMonthOffset) % 12;
@@ -476,10 +531,7 @@ export default function HomeScreen() {
       if (seen.has(dayNum)) return;
       const lookup = teacherAvatarLookup.get(teacherId ?? -1);
       const photo = lookup?.avatarUrl ? { uri: lookup.avatarUrl } : (lookup?.localPhoto ?? TEACHER_PHOTOS[0]);
-      seen.set(dayNum, {
-        teacherPhoto: photo,
-        accent: color || "#22BEC8",
-      });
+      seen.set(dayNum, { teacherPhoto: photo, accent: color || "#22BEC8" });
     };
 
     const isInCycle = (dateMs: number, cycleStart: string | null, cycleEnd: string | null): boolean => {
@@ -503,7 +555,6 @@ export default function HomeScreen() {
         const times = g.meetingTimes ?? [];
         let foundFromTimes = false;
 
-        // 1) Exact session dates from meetingTimes
         for (const mt of times) {
           const dateStr = mt.meetingDate;
           if (!dateStr) continue;
@@ -514,7 +565,6 @@ export default function HomeScreen() {
           foundFromTimes = true;
         }
 
-        // 2) Fallback: scheduleDays (weekday 0=Sun..6=Sat) → dates this month
         if (!foundFromTimes) {
           const schedDays = g.scheduleDays ?? [];
           const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
@@ -549,7 +599,7 @@ export default function HomeScreen() {
   const calendarToday = useMemo(() => {
     const now = new Date();
     if (calendarMonthOffset === 0) return now.getDate();
-    return -1; // no "today" highlight for non-current months
+    return -1;
   }, [calendarMonthOffset]);
 
   const calendarTargetDate = useMemo(() => {
@@ -557,9 +607,6 @@ export default function HomeScreen() {
     return new Date(now.getFullYear(), now.getMonth() + calendarMonthOffset, 1);
   }, [calendarMonthOffset]);
 
-  // Carousels are laid out LTR by the platform, so in Arabic the arrays are
-  // reversed and the swiper is parked at its end — that puts the first item
-  // at the natural reading start (the right edge).
   const displayMaterials = useMemo(
     () => (isRTL ? [...materials].reverse() : materials),
     [materials, isRTL]
@@ -567,6 +614,10 @@ export default function HomeScreen() {
   const displayBooks = useMemo(
     () => (isRTL ? [...homeBooks].reverse() : homeBooks),
     [homeBooks, isRTL]
+  );
+  const displayConcours = useMemo(
+    () => (isRTL ? [...homeConcours].reverse() : homeConcours),
+    [homeConcours, isRTL]
   );
 
   const parkBooksAtStart = useCallback(
@@ -579,10 +630,17 @@ export default function HomeScreen() {
 
   const resume = useMemo(() => pickResumeBook(homeBooks, t), [homeBooks, t]);
 
-  // Pull-to-refresh: the spinner is tied to a user gesture, so background
-  // refetches (locale switch, cache invalidation) don't flash it.
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const isFetchingAny = isMaterialsFetching || isBooksFetching;
+  const isFetchingAny = isDraftMode
+    ? isDraftMaterialsFetching || isDraftBooksFetching
+    : isMaterialsFetching || isBooksFetching || isConcoursFetching;
+
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const onStickyScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const y = e.nativeEvent.contentOffset.y;
+    setIsScrolled(y > 2);
+  }, []);
 
   useEffect(() => {
     if (isRefreshing && !isFetchingAny) setIsRefreshing(false);
@@ -591,13 +649,27 @@ export default function HomeScreen() {
   const onRefresh = useCallback(() => {
     setIsRefreshing(true);
     setCalendarMonthOffset(0);
-    if (toValidId(levelId)) refetchMaterials();
-    if (isChildReady) refetchBooks();
-  }, [levelId, isChildReady, refetchMaterials, refetchBooks]);
+    if (isDraftMode) {
+      if (draftLevelId) {
+        refetchDraftMaterials();
+        refetchDraftBooks();
+      }
+    } else {
+      if (toValidId(levelId)) refetchMaterials();
+      if (isChildReady) {
+        refetchBooks();
+        refetchConcours();
+      }
+    }
+  }, [isDraftMode, draftLevelId, levelId, isChildReady, refetchDraftMaterials, refetchDraftBooks, refetchMaterials, refetchBooks, refetchConcours]);
 
   const goSubscribe = useCallback(
-    () => navigation.navigate(PATHS.TABS.PLANS as never),
-    [navigation]
+    () => navigation.navigate(PATHS.APP.PLAN_PRO_PRICING as never, { plans: displayPlans } as never),
+    [navigation, displayPlans]
+  );
+  const goPlanPricing = useCallback(
+    (planId: number) => navigation.navigate(PATHS.APP.PLAN_PRO_PRICING as never, { plans: displayPlans, selectedPlanId: planId } as never),
+    [navigation, displayPlans]
   );
   const goBooks = useCallback(
     () => navigation.navigate(PATHS.TABS.BOOKS as never),
@@ -633,7 +705,7 @@ export default function HomeScreen() {
 
   const openMaterial = useCallback(
     (m: MaterialUI) => {
-      const lvl = toValidId(levelId);
+      const lvl = isDraftMode ? draftLevelId : toValidId(levelId);
       const mat = toValidId(m?.id);
       if (!lvl || !mat) return;
       navigation.navigate(PATHS.APP.MATERIAL_HUB, {
@@ -643,7 +715,7 @@ export default function HomeScreen() {
         levelMaterialId: toValidId(m?.levelMaterialId),
       });
     },
-    [navigation, levelId]
+    [navigation, levelId, isDraftMode, draftLevelId]
   );
 
   const openTeacher = useCallback(
@@ -672,14 +744,50 @@ export default function HomeScreen() {
 
   const seeAllLabel = t(HOME_COMMON_UI.seeAll);
 
+  const draftLevelLabel = useMemo(() => {
+    if (!isDraftMode || !draftLevelId) return "";
+    return LEVEL_LABEL_BY_ID[draftLevelId] ?? "";
+  }, [isDraftMode, draftLevelId]);
+
+  const heroChildName = isDraftMode
+    ? t("home.visitor_greeting", { defaultValue: "Welcome, Visitor!" })
+    : headerData?.name ?? "";
+  const heroLevelLabel = isDraftMode
+    ? draftLevelLabel || t("home.level_default")
+    : levelLabel || t("home.level_default");
+
   return (
     <View style={styles.root}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+
+      {isDraftMode && (
+        <LevelSelectionPopup visible={showLevelPopup} onSelect={handleLevelSelect} />
+      )}
+
+      <HomeStickyHeader
+        styles={styles}
+        isDark={isDark}
+        topInset={insets.top}
+        scrolled={isScrolled}
+        notificationsLabel={t(HOME_COMMON_UI.notifications)}
+        onNotifications={isDraftMode ? undefined : goNotifications}
+        onSearch={() => setSearchVisible(true)}
+        onStreak={isDraftMode ? undefined : () => setWalletVisible(true)}
+        onAvatarPress={
+          isDraftMode
+            ? undefined
+            : showConcours
+              ? () => navigation.navigate(PATHS.TABS.SETTINGS as never)
+              : undefined
+        }
+      />
 
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        onScroll={onStickyScroll}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -692,26 +800,13 @@ export default function HomeScreen() {
         <HomeHero
           {...block}
           isDark={isDark}
-          childName={headerData?.name ?? ""}
-          levelLabel={levelLabel || t("home.level_default")}
-          topInset={insets.top}
-          notificationsLabel={t(HOME_COMMON_UI.notifications)}
-           onNotifications={goNotifications}
-           onSearch={() => setSearchVisible(true)}
-           onStreak={() => setWalletVisible(true)}
+          scrolled={isScrolled}
+          childName={heroChildName}
+          levelLabel={heroLevelLabel}
         />
 
-        {/* Floats over the hero curve — kept outside `body` so its own
-            horizontal margin isn't doubled by the body padding. */}
-        {/* <QuickActions
-          {...block}
-          actions={HOME_QUICK_ACTIONS}
-          onPressAction={onPressQuickAction}
-        /> */}
-
         <View style={styles.body}>
-          {/* Continue learning — only once something has been started */}
-          {!!resume && (
+          {!isDraftMode && !!resume && (
             <ContinueCard
               {...block}
               resume={resume}
@@ -722,7 +817,6 @@ export default function HomeScreen() {
             />
           )}
 
-          {/* Subjects */}
           <View style={styles.section}>
             <SectionHeader
               {...block}
@@ -734,12 +828,12 @@ export default function HomeScreen() {
 
             {showMaterialsLoader ? (
               <SectionState {...block} status="loading" />
-            ) : isMaterialsError ? (
+            ) : isMaterialsError || isDraftMaterialsError ? (
               <SectionState
                 {...block}
                 status="error"
                 message={t(HOME_COMMON_UI.tapToRetry)}
-                onRetry={refetchMaterials}
+                onRetry={isDraftMode ? refetchDraftMaterials : refetchMaterials}
               />
             ) : (
               <MaterialsRow
@@ -752,7 +846,6 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {/* School books */}
           <View style={styles.section}>
             <SectionHeader
               {...block}
@@ -766,12 +859,12 @@ export default function HomeScreen() {
 
             {showBooksLoader ? (
               <SectionState {...block} status="loading" />
-            ) : isBooksError ? (
+            ) : isBooksError || isDraftBooksError ? (
               <SectionState
                 {...block}
                 status="error"
                 message={t(HOME_COMMON_UI.tapToRetry)}
-                onRetry={refetchBooks}
+                onRetry={isDraftMode ? refetchDraftBooks : refetchBooks}
               />
             ) : displayBooks.length === 0 ? (
               <SectionState {...block} status="empty" message={t(HOME_UI.booksEmpty)} />
@@ -786,123 +879,154 @@ export default function HomeScreen() {
             )}
           </View>
 
-         
-          {/* Teachers */}
-          <View style={styles.section}>
-            <SectionHeader
-              {...block}
-              title={t(HOME_UI.availableTeachers)}
-              count={teachers.length}
-              seeAllLabel={seeAllLabel}
-              onSeeAll={goAllTeachers}
-              icon="people"
-              accent={HOME_SECTION_ACCENT.teachers}
+          {!isDraftMode && (
+            <View style={styles.section}>
+              <SectionHeader
+                {...block}
+                title={t(HOME_UI.availableTeachers)}
+                count={teachers.length}
+                seeAllLabel={seeAllLabel}
+                onSeeAll={goAllTeachers}
+                icon="people"
+                accent={HOME_SECTION_ACCENT.teachers}
+              />
+
+              <TeachersRow
+                {...block}
+                teachers={teachers}
+                onPressTeacher={openTeacher}
+              />
+            </View>
+          )}
+
+          {!isDraftMode && showConcours && (
+            <View style={styles.section}>
+              <SectionHeader
+                {...block}
+                title={t(HOME_UI.concoursBooks)}
+                count={homeConcours.length}
+                seeAllLabel={seeAllLabel}
+                onSeeAll={goBooks}
+                icon="trophy"
+                accent={HOME_SECTION_ACCENT.concours}
+              />
+
+              {showConcoursLoader ? (
+                <SectionState {...block} status="loading" />
+              ) : isConcoursError ? (
+                <SectionState
+                  {...block}
+                  status="error"
+                  message={t(HOME_COMMON_UI.tapToRetry)}
+                  onRetry={refetchConcours}
+                />
+              ) : displayConcours.length === 0 ? (
+                <SectionState {...block} status="empty" message={t(HOME_UI.concoursEmpty)} />
+              ) : (
+                <BooksRow
+                  {...block}
+                  books={displayConcours}
+                  unnamedLabel={t("common.unnamed")}
+                  onPressBook={openBook}
+                  onLayoutReady={parkBooksAtStart}
+                />
+              )}
+            </View>
+          )}
+
+          {!isDraftMode && (
+            <View style={styles.section}>
+              <SectionHeader
+                {...block}
+                title={t(HOME_UI.liveMeetings)}
+                seeAllLabel={seeAllLabel}
+                onSeeAll={goMeetings}
+                icon="videocam"
+                accent={HOME_SECTION_ACCENT.live}
+              />
+            </View>
+          )}
+
+          {!isDraftMode && (
+            <View style={styles.summaryRow}>
+              <SummaryCard
+                {...block}
+                title={summaryTitle}
+                meta={summaryMeta}
+                teacherPhoto={summaryTeacherPhoto}
+                liveLabel={t("home.summary_live_now")}
+                joinLabel={t("home.summary_join")}
+                reserveLabel={t("home.summary_reserve", { defaultValue: "Réserver" })}
+                isLive={isLive}
+                startTimeLabel={startTimeLabel}
+                nextSessionDate={nextSessionDate}
+                participants={activeMeeting?.meetingGroups?.reduce((s, g) => s + (g.enrolledCount ?? 0), 0) ?? 0}
+                hasReservedMeeting={hasReservedMeeting}
+                onJoin={goMeetings}
+                onReserve={goReserve}
+              />
+              <ActivitiesCard
+                {...block}
+                title={t("home.activities_title")}
+                subtitle={t("home.activities_subtitle")}
+                weekDays={["S", "M", "T", "W", "T", "F", "S"]}
+                reservedDays={reservedDays}
+                today={calendarToday}
+                monthLabel={calendarMonthLabel}
+                targetDate={calendarTargetDate}
+                onMonthAdvance={() => setCalendarMonthOffset((p) => Math.min(p + 1, 1))}
+              />
+            </View>
+          )}
+
+          {!isDraftMode && (
+            <MeetingCardsRail
+              meetings={meetings}
+              reservedGroupIds={reservedGroupIds}
+              onPressCard={() =>
+                navigation.navigate(PATHS.APP.DETAIL_PLAN_MEETING as never)
+              }
             />
+          )}
 
-            <TeachersRow
-              {...block}
-              teachers={teachers}
-              onPressTeacher={openTeacher}
-            />
-          </View>
-          {/* Live classes — time-sensitive, so it sits above browse content */}
-                    <View style={styles.section}>
-                      <SectionHeader
-                        {...block}
-                        title={t(HOME_UI.liveMeetings)}
-                        seeAllLabel={seeAllLabel}
-                        onSeeAll={goMeetings}
-                        icon="videocam"
-                        accent={HOME_SECTION_ACCENT.live}
-                      />
-
-                        {/* <LiveNowCard
-                          {...block}
-                          title={t("home.live_title_mock")}
-                          meta={t("home.live_meta_mock")}
-                          liveLabel={t(HOME_COMMON_UI.live)}
-                          joinLabel={t(HOME_UI.join)}
-                          onJoin={goMeetings}
-                        /> */}
-                    </View>
-
-          {/* Summary + Activities row */}
-          <View style={styles.summaryRow}>
-            <SummaryCard
-              {...block}
-              title={summaryTitle}
-              meta={summaryMeta}
-              teacherPhoto={summaryTeacherPhoto}
-              liveLabel={t("home.summary_live_now")}
-              joinLabel={t("home.summary_join")}
-              reserveLabel={t("home.summary_reserve", { defaultValue: "Réserver" })}
-              isLive={isLive}
-              startTimeLabel={startTimeLabel}
-              nextSessionDate={nextSessionDate}
-              participants={activeMeeting?.meetingGroups?.reduce((s, g) => s + (g.enrolledCount ?? 0), 0) ?? 0}
-              hasReservedMeeting={hasReservedMeeting}
-              onJoin={goMeetings}
-              onReserve={goReserve}
-            />
-            <ActivitiesCard
-              {...block}
-              title={t("home.activities_title")}
-              subtitle={t("home.activities_subtitle")}
-              weekDays={["S", "M", "T", "W", "T", "F", "S"]}
-              reservedDays={reservedDays}
-              today={calendarToday}
-              monthLabel={calendarMonthLabel}
-              targetDate={calendarTargetDate}
-              onMonthAdvance={() => setCalendarMonthOffset((p) => Math.min(p + 1, 1))}
-            />
-          </View>
-
-          {/* Most-requested meeting cards — same rail as LearnCalendarScreen */}
-          <MeetingCardsRail
-            meetings={meetings}
-            reservedGroupIds={reservedGroupIds}
-            onPressCard={() =>
-              navigation.navigate(PATHS.APP.DETAIL_PLAN_MEETING as never)
-            }
-          />
-
-       
-
-          {/* Plans — mini cards, monthly pricing */}
           <View style={styles.section}>
             <SectionHeader
               {...block}
               title={t(HOME_UI.plansTitle)}
-              count={plans.length}
+              count={displayPlans.length}
               seeAllLabel={seeAllLabel}
               onSeeAll={goSubscribe}
               icon="diamond"
               accent={HOME_SECTION_ACCENT.plans}
             />
 
-            {isPlansLoading ? (
+            {(isDraftMode ? isDraftPlansLoading : isPlansLoading) ? (
               <SectionState {...block} status="loading" />
-            ) : isPlansError ? (
+            ) : (isDraftMode ? isDraftPlansError : isPlansError) ? (
               <SectionState
                 {...block}
                 status="error"
                 message={t(HOME_COMMON_UI.tapToRetry)}
-                onRetry={refetchPlans}
+                onRetry={isDraftMode ? refetchDraftPlans : refetchPlans}
               />
-            ) : plans.length > 0 ? (
-              <MiniPlanCards
-                {...block}
-                plans={plans}
-                currencyLabel={t("plan.currency", { defaultValue: "د.ت" })}
-                perMonthLabel={t("plan.per_month")}
-                popularLabel={t("plan.most_popular")}
-                ctaLabel={t("plan.cta_label")}
-                onPress={goSubscribe}
-              />
+            ) : displayPlans.length > 0 ? (
+              <View style={styles.plansCardFrame}>
+                <MiniPlanCards
+                  {...block}
+                  plans={displayPlans}
+                  currencyLabel={t("plan.currency", { defaultValue: "د.ت" })}
+                  perMonthLabel={t("plan.per_month")}
+                  annualLabel={t("plan.period_yearly", { defaultValue: "Annuel" })}
+                  startingFromLabel={t("plan.starting_from", { defaultValue: "À partir de" })}
+                  popularLabel={t("plan.most_popular")}
+                  ctaLabel={t("plan.cta_label")}
+                  onPress={goSubscribe}
+                  onPlanPress={goPlanPricing}
+                />
+              </View>
             ) : null}
           </View>
 
-          {/* Subscribe */}
           <View style={styles.section}>
             <SubscribeBanner
               {...block}
@@ -911,15 +1035,15 @@ export default function HomeScreen() {
               ctaLabel={t(HOME_UI.subscribeCta)}
               onPress={goSubscribe}
             />
-           </View>
-         </View>
+          </View>
+        </View>
 
-            {/* Record bubbles — navigate to recording screens */}
-          <RecordBubbles {...block} />
-        </ScrollView>
+        {!isDraftMode && <RecordBubbles {...block} />}
+      </ScrollView>
 
+      {!isDraftMode && (
         <DynamicIslandNotification
-          visible={notifVisible}
+          visible={isLive ? notifVisible : false}
           teacherPhoto={summaryTeacherPhoto}
           liveLabel={t("home.notif_live_now")}
           teacherName={activeMeeting?.teacherName || ""}
@@ -932,31 +1056,34 @@ export default function HomeScreen() {
           onPress={() => { setNotifVisible(false); goMeetings(); }}
           onDismiss={() => setNotifVisible(false)}
           topInset={insets.top}
-          autoShowIntervalMs={30_000}
+          autoShowIntervalMs={isLive ? 30_000 : undefined}
         />
+      )}
 
-        <HomeSearchModal
-          styles={styles}
-          palette={palette}
-          isRTL={isRTL}
-          isDark={isDark}
-          visible={searchVisible}
-          onClose={() => setSearchVisible(false)}
-          materials={materials}
-          labelForMaterial={(m) => getMaterialLabel(t, m)}
-          onSelectMaterial={openMaterial}
-          books={books}
-          unnamedLabel={t("common.unnamed")}
-          onSelectBook={openBook}
-          liveSessions={MOCK_MEETINGS}
-          onSelectLive={goMeetings}
-        />
+      <HomeSearchModal
+        styles={styles}
+        palette={palette}
+        isRTL={isRTL}
+        isDark={isDark}
+        visible={searchVisible}
+        onClose={() => setSearchVisible(false)}
+        materials={materials}
+        labelForMaterial={(m) => getMaterialLabel(t, m)}
+        onSelectMaterial={openMaterial}
+        books={books}
+        unnamedLabel={t("common.unnamed")}
+        onSelectBook={openBook}
+        liveSessions={MOCK_MEETINGS}
+        onSelectLive={goMeetings}
+      />
 
+      {!isDraftMode && (
         <WalletBottomSheet
           visible={walletVisible}
           currency="DT"
           onClose={() => setWalletVisible(false)}
         />
-      </View>
-   );
+      )}
+    </View>
+  );
 }

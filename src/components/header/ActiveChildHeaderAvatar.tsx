@@ -8,7 +8,12 @@ import { useActiveChild } from "@hooks/useActiveChild";
 import { useChildSkinAvatar } from "@hooks/useAvatarCustomization";
 import { styles } from "./ActiveChildHeaderAvatar.styles";
 
-export default function ActiveChildHeaderAvatar() {
+type Props = {
+  /** Optional override for the default tap action (CustomizeAvatar). */
+  onPress?: () => void;
+};
+
+export default function ActiveChildHeaderAvatar({ onPress }: Props) {
   const navigation = useNavigation<any>();
   const data = useActiveChildHeaderData();
   const child = useActiveChild();
@@ -20,7 +25,7 @@ export default function ActiveChildHeaderAvatar() {
 
   return (
     <TouchableOpacity
-      onPress={() => navigation.navigate(PATHS.APP.CUSTOMIZE_AVATAR as any)}
+      onPress={onPress ?? (() => navigation.navigate(PATHS.APP.CUSTOMIZE_AVATAR as any))}
       style={styles.container}
       activeOpacity={0.85}
     >

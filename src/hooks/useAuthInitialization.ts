@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch } from "@redux/hooks";
-import { restoreSession } from "@redux/slices/authSlice";
+import { restoreSession, enterDraftMode } from "@redux/slices/authSlice";
 import { getFromLocalStorage } from "@utils/localStorage/storage";
 import { LocalStorageKeysEnum } from "@config/enums/localStorage.enum";
 import { useLazyGetParentMeQuery } from "@redux/apis/parent/parentApi";
@@ -13,7 +13,7 @@ export const useAuthInitialization = () => {
   useEffect(() => {
     const bootstrapAsync = async () => {
       try {
-        const [accessToken, parentToken, childToken, user, refreshToken, savedActiveChildId] =
+        const [accessToken, parentToken, childToken, user, refreshToken, savedActiveChildId, draftLevelId] =
           await Promise.all([
             getFromLocalStorage<string>(LocalStorageKeysEnum.AccessToken, false),
             getFromLocalStorage<string>(
@@ -27,6 +27,7 @@ export const useAuthInitialization = () => {
             getFromLocalStorage<any>(LocalStorageKeysEnum.User, true),
             getFromLocalStorage<string>(LocalStorageKeysEnum.RefreshToken, false),
             getFromLocalStorage<string>(LocalStorageKeysEnum.ActiveChildId, false),
+            getFromLocalStorage<string>(LocalStorageKeysEnum.DraftLevelId, false),
           ]);
 
         const tokenToUse = parentToken || accessToken;
@@ -43,6 +44,10 @@ export const useAuthInitialization = () => {
           );
 
           void triggerGetParentMe();
+        } else {
+          const parsed = draftLevelId ? Number(draftLevelId) : 0;
+          const validId = Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+          dispatch(enterDraftMode(validId ? { levelId: validId } : undefined));
         }
       } finally {
         setIsReady(true);

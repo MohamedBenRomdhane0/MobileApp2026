@@ -48,6 +48,11 @@ const MainTabNavigator: React.FC = () => {
       }}
     >
       <Tab.Screen name="Books" component={BooksScreen} />
+      <Tab.Screen
+        name="Concours"
+        component={BooksScreen}
+        initialParams={{ type: 2 }}
+      />
       <Tab.Screen name="Courses" component={CoursesScreen} />
       <Tab.Screen name="Meetings" component={MeetingsScreen} />
       <Tab.Screen name="ReservedMeetings" component={ReservedMeetingsScreen} />

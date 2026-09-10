@@ -69,12 +69,8 @@ export type HomeHeroProps = HomeBlockBaseProps & {
   childName: string;
   levelLabel: string;
   isDark: boolean;
-  topInset: number;
-  notificationsLabel: string;
-  onNotifications?: () => void;
-  onSearch?: () => void;
-  /** Tapping the daily-streak pill opens the wallet bottom sheet. */
-  onStreak?: () => void;
+  /** True once the user scrolls; restores the hero top inset. */
+  scrolled?: boolean;
 };
 
 export type QuickActionsProps = HomeBlockBaseProps & {
@@ -136,9 +132,12 @@ export type MiniPlanCardsProps = HomeBlockBaseProps & {
   plans: PlanUI[];
   currencyLabel: string;
   perMonthLabel: string;
+  annualLabel: string;
+  startingFromLabel: string;
   popularLabel: string;
   ctaLabel: string;
   onPress: () => void;
+  onPlanPress?: (planId: number) => void;
 };
 
 export type TeacherCard = {

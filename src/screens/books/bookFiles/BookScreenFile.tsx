@@ -45,11 +45,16 @@ import { useTranslation } from "react-i18next";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import ActiveChildHeaderAvatar from "@components/header/ActiveChildHeaderAvatar";
+import LoginRequiredPopup from "@components/guards/LoginRequiredPopup";
 import type { RootStackParamList } from "@config/types/navigation.types";
 import { useAppSelector } from "@redux/hooks";
 import { useGetBookByIdQuery } from "@redux/apis/books/bookApi";
+import { useGetDraftBookByIdQuery } from "@redux/apis/draft/draftApi";
 import type { BookDetailsUI, BookIconUI, BookModuleUI } from "@redux/apis/books/bookApi.type";
-import { selectActiveChildId } from "@redux/slices/authSlice";
+import {
+  selectActiveChildId,
+  selectIsDraftMode,
+} from "@redux/slices/authSlice";
 import { useAppTheme } from "@theme/ThemeProvider";
 import { saveBookPageResume } from "@utils/helpers/bookLearningResume.helpers";
 import { PATHS } from "@config/constants/paths";
@@ -121,6 +126,9 @@ export default function BookScreenFile() {
 
   const bookId = getBookIdFromRouteParams(route.params);
   const activeChildId = useAppSelector(selectActiveChildId);
+  const isDraftMode = useAppSelector(selectIsDraftMode);
+
+  const [loginPopupVisible, setLoginPopupVisible] = useState(false);
 
   const requestedPageNumber =
     typeof route.params?.pageNumber === "number" && route.params.pageNumber > 0
@@ -139,10 +147,33 @@ export default function BookScreenFile() {
 
   const openFromResume = Boolean(route.params?.openFromResume);
 
-  const { data, isLoading, isFetching, isError, refetch } = useGetBookByIdQuery(
+  const {
+    data: authBookData,
+    isLoading: isAuthLoading,
+    isFetching: isAuthFetching,
+    isError: isAuthError,
+    refetch: refetchAuthBook,
+  } = useGetBookByIdQuery(
     { bookId, childId: activeChildId ?? 0 },
-    { skip: !bookId || !activeChildId }
+    { skip: isDraftMode || !bookId || !activeChildId }
   );
+
+  const {
+    data: draftBookData,
+    isLoading: isDraftLoading,
+    isFetching: isDraftFetching,
+    isError: isDraftError,
+    refetch: refetchDraftBook,
+  } = useGetDraftBookByIdQuery(
+    { bookId },
+    { skip: !isDraftMode || !bookId }
+  );
+
+  const data = isDraftMode ? draftBookData : authBookData;
+  const isLoading = isDraftMode ? isDraftLoading : isAuthLoading;
+  const isFetching = isDraftMode ? isDraftFetching : isAuthFetching;
+  const isError = isDraftMode ? isDraftError : isAuthError;
+  const refetch = isDraftMode ? refetchDraftBook : refetchAuthBook;
 
   const book: BookDetailsUI | null = data?.data ?? null;
   const pages = normalizePages(book);
@@ -261,7 +292,7 @@ export default function BookScreenFile() {
 
   const persistResume = useCallback(
     async (params?: { pageNumber?: number; iconId?: number; videoId?: number }) => {
-      if (!bookId) return;
+      if (!bookId || isDraftMode) return;
       await saveBookPageResume({
         bookId,
         pageNumber: typeof params?.pageNumber === "number" && params.pageNumber > 0 ? params.pageNumber : currentPage,
@@ -272,7 +303,7 @@ export default function BookScreenFile() {
         updatedAt: new Date().toISOString(),
       });
     },
-    [bookId, book?.materialName, currentPage, title]
+    [bookId, book?.materialName, currentPage, isDraftMode, title]
   );
 
   const openVideo = useCallback(
@@ -292,6 +323,10 @@ export default function BookScreenFile() {
 
   const openIconContent = useCallback(
     async (icon: BookIconUI) => {
+      if (isDraftMode) {
+        setLoginPopupVisible(true);
+        return;
+      }
       const iconType = String(icon.iconType ?? "video").trim().toLowerCase();
       const targetPage = typeof icon.pageNumber === "number" && icon.pageNumber > 0 ? icon.pageNumber : currentPage;
       await persistResume({ pageNumber: targetPage, iconId: icon.id });
@@ -316,7 +351,7 @@ export default function BookScreenFile() {
 
       void openVideo(icon);
     },
-    [book?.materialName, bookId, currentPage, navigation, openVideo, persistResume]
+    [book?.materialName, bookId, currentPage, isDraftMode, navigation, openVideo, persistResume]
   );
 
   function goToPage(pageNumber: number) {
@@ -805,6 +840,11 @@ export default function BookScreenFile() {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
+
+      <LoginRequiredPopup
+        visible={loginPopupVisible}
+        onClose={() => setLoginPopupVisible(false)}
+      />
     </View>
   );
 }

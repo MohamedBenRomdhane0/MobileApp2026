@@ -31,8 +31,13 @@ import CustomizeAvatarScreen from "@screens/child/customizeAvatar/CustomizeAvata
 import TopupScreen from "@screens/wallet/TopupScreen/TopupScreen";
 import RecordMeetingSilverScreen from "@screens/meetings/recordMeetingSilver/RecordMeetingSilver";
 import RecordTimelineScreen from "@screens/meetings/recordTimeline/RecordTimeline";
+import RequireAuth from "@components/guards/RequireAuth";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const AuthProtected = ({ children }: { children: React.ReactNode }) => (
+  <RequireAuth>{children}</RequireAuth>
+);
 
 export default function AppTree() {
   return (
@@ -40,10 +45,28 @@ export default function AppTree() {
       <Stack.Screen name={PATHS.APP.TABS} component={MainTabs} />
       <Stack.Screen
         name={PATHS.APP.PROFILE_PARENT}
-        component={ParentInfoScreen}
+        component={() => (
+          <AuthProtected>
+            <ParentInfoScreen />
+          </AuthProtected>
+        )}
       />
-      <Stack.Screen name={PATHS.APP.KIDS_LIST} component={KidsListScreen} />
-      <Stack.Screen name={PATHS.APP.ADD_KIDS} component={AddKidsScreen} />
+      <Stack.Screen
+        name={PATHS.APP.KIDS_LIST}
+        component={() => (
+          <AuthProtected>
+            <KidsListScreen />
+          </AuthProtected>
+        )}
+      />
+      <Stack.Screen
+        name={PATHS.APP.ADD_KIDS}
+        component={() => (
+          <AuthProtected>
+            <AddKidsScreen />
+          </AuthProtected>
+        )}
+      />
       <Stack.Screen name={PATHS.APP.BOOKS_FILE} component={BookScreenFile} />
       <Stack.Screen name={PATHS.APP.VIDEO} component={VideoScreen} />
       <Stack.Screen name={PATHS.APP.AUDIO} component={AudioPlayerScreen} />
@@ -63,7 +86,11 @@ export default function AppTree() {
       />
       <Stack.Screen
         name={PATHS.APP.FAVORITE_COURSES}
-        component={FavoriteCoursesScreen}
+        component={() => (
+          <AuthProtected>
+            <FavoriteCoursesScreen />
+          </AuthProtected>
+        )}
       />
       <Stack.Screen
         name={PATHS.APP.COURSE_CHAPTERS}
@@ -75,16 +102,28 @@ export default function AppTree() {
       />
       <Stack.Screen
         name={PATHS.APP.RESERVED_MEETINGS}
-        component={ReservedMeetingsScreen}
+        component={() => (
+          <AuthProtected>
+            <ReservedMeetingsScreen />
+          </AuthProtected>
+        )}
       />
       <Stack.Screen
         name={PATHS.APP.JOIN_SESSION}
-        component={JoinSessionScreen}
+        component={() => (
+          <AuthProtected>
+            <JoinSessionScreen />
+          </AuthProtected>
+        )}
       />
       <Stack.Screen name={PATHS.APP.PLANS} component={PlansScreen} />
       <Stack.Screen
         name={PATHS.APP.PLANS_CHECKOUT}
-        component={CheckoutScreen}
+        component={() => (
+          <AuthProtected>
+            <CheckoutScreen />
+          </AuthProtected>
+        )}
         options={{ headerShown: false, animation: "slide_from_bottom" }}
       />
       <Stack.Screen
@@ -94,12 +133,20 @@ export default function AppTree() {
       />
       <Stack.Screen
         name={PATHS.APP.PLAN_PRO_PRICING}
-        component={PlanProPricingSectionScreen}
+        component={() => (
+          <AuthProtected>
+            <PlanProPricingSectionScreen />
+          </AuthProtected>
+        )}
         options={{ headerShown: false, animation: "slide_from_bottom" }}
       />
       <Stack.Screen
         name={PATHS.APP.PLAN_UNLOCK}
-        component={PlanUnlockScreen}
+        component={() => (
+          <AuthProtected>
+            <PlanUnlockScreen />
+          </AuthProtected>
+        )}
         options={{ headerShown: false, animation: "slide_from_bottom" }}
       />
       <Stack.Screen
@@ -109,21 +156,37 @@ export default function AppTree() {
       <Stack.Screen name={PATHS.APP.TRAILERS} component={TrailersScreen} />
       <Stack.Screen
         name={PATHS.APP.CUSTOMIZE_AVATAR}
-        component={CustomizeAvatarScreen}
+        component={() => (
+          <AuthProtected>
+            <CustomizeAvatarScreen />
+          </AuthProtected>
+        )}
       />
       <Stack.Screen
         name={PATHS.APP.TOPUP}
-        component={TopupScreen}
+        component={() => (
+          <AuthProtected>
+            <TopupScreen />
+          </AuthProtected>
+        )}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={PATHS.APP.RECORD_MEETING_SILVER}
-        component={RecordMeetingSilverScreen}
+        component={() => (
+          <AuthProtected>
+            <RecordMeetingSilverScreen />
+          </AuthProtected>
+        )}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={PATHS.APP.RECORD_TIMELINE}
-        component={RecordTimelineScreen}
+        component={() => (
+          <AuthProtected>
+            <RecordTimelineScreen />
+          </AuthProtected>
+        )}
         options={{ headerShown: false, animation: "slide_from_bottom" }}
       />
     </Stack.Navigator>

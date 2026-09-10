@@ -39,7 +39,7 @@ export default function PlanUnlockScreen() {
   const styles = createUnlockStyles(colors, isDark, isRTL);
 
   const packId = route.params?.packId ?? "pack1";
-  const pack = UNLOCK_PACKS[packId];
+  const pack = UNLOCK_PACKS[packId as keyof typeof UNLOCK_PACKS] ?? UNLOCK_PACKS["pack1"];
 
   const [selectedPlan, setSelectedPlan] = useState<string>(
     pack.plans[0]?.id ?? "monthly",

@@ -96,4 +96,7 @@ export const common = {
   unnamed: "بدون عنوان",
   close: "إغلاق",
   continue: "متابعة",
+  login_required_title: "تسجيل الدخول مطلوب",
+  login_required_subtitle: "يرجى تسجيل الدخول للوصول لهذه الميزة",
+  login: "تسجيل الدخول",
 };

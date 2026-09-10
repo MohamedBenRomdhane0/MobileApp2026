@@ -33,4 +33,18 @@ CHILD_SWITCH_TO_PARENT: "child/switch-to-parent",
 PARENT_ME: "user",
   PARENT_WALLET: "parent/wallet",
   PARENT_WALLET_RECHARGE: "parent/wallet/recharge",
+
+  DRAFT_SESSION_CREATE: 'draft-session',
+  DRAFT_BOOKS: 'draft/books',
+  DRAFT_BOOK_BY_ID: 'draft/books',
+  DRAFT_STATION_CONTENT: 'draft/books',
+  DRAFT_LEVEL_MATERIALS: 'draft/level-materials',
+  DRAFT_PLANS: 'draft/plans',
+  DRAFT_SESSION_RESTORE: 'draft/session/restore',
+  DRAFT_SESSION_INTERACT: 'draft/session/interact',
+  DRAFT_SESSION_CHECK_PARENT: 'draft/session/check-parent',
+  DRAFT_SESSION_COMPLETE: 'draft/session/complete',
+
+  PUBLIC_LEVEL_TYPES: 'public/level-types',
+  PUBLIC_LEVELS: 'public/levels',
 }

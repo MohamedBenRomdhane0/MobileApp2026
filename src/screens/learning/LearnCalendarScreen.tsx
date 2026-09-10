@@ -224,14 +224,14 @@ const FeaturedSessionCard = React.memo(
             {s.isFull && !s.isReserved && (
               <View style={styles.fullBadgeInline}>
                 <Ionicons name="close-circle" size={13} color="#FFFFFF" />
-                <Text style={styles.fullBadgeInlineText}>{t("learning.full_badge", { defaultValue: "Complet" })}</Text>
+                <Text style={styles.fullBadgeInlineText}>{t("learning.full_badge")}</Text>
               </View>
             )}
             {s.isReserved && (
               <View style={styles.reservedOverlay}>
                 <View style={styles.reservedOverlayChip}>
                   <Ionicons name="checkmark" size={14} color="#FFFFFF" />
-                  <Text style={styles.reservedOverlayText}>{t("learning.reserved_badge", { defaultValue: "Réservé" })}</Text>
+                  <Text style={styles.reservedOverlayText}>{t("learning.reserved_badge")}</Text>
                 </View>
               </View>
             )}
@@ -278,7 +278,7 @@ const FeaturedSessionCard = React.memo(
                 <View style={[styles.groupPill, { backgroundColor: `${s.accent}14` }]}>
                   <Ionicons name="repeat-outline" size={13} color={s.accent} />
                   <Text style={[styles.groupPillText, { color: s.accent }]}>
-                    {s.daysPerWeek} {t("learning.days_per_week_short", { defaultValue: "jours / sem" })}
+                    {s.daysPerWeek} {t("learning.days_per_week_short")}
                   </Text>
                 </View>
               </View>
@@ -300,7 +300,7 @@ const FeaturedSessionCard = React.memo(
                   <Text style={styles.childrenAvatarCount}>{s.enrolled}</Text>
                 </View>
               </View>
-              <Text style={styles.childrenAvatarLabel}>{t("learning.reserved_children", { defaultValue: "enfants réservés" })}</Text>
+              <Text style={styles.childrenAvatarLabel}>{t("learning.reserved_children")}</Text>
             </View>
 
             {/* Progress bar */}
@@ -316,7 +316,7 @@ const FeaturedSessionCard = React.memo(
             {/* Footer: price + CTA */}
             <View style={styles.sessionBottomRow}>
               <View style={styles.priceBlock}>
-                <Text style={styles.priceFromLabel}>{t("learning.starting_from", { defaultValue: "à partir de" })}</Text>
+                <Text style={styles.priceFromLabel}>{t("learning.starting_from")}</Text>
                 <View style={styles.priceValueRow}>
                   <Text style={styles.priceValue}>{s.price}</Text>
                   <Text style={styles.priceUnit}>{t("learning.price_per_month")}</Text>
@@ -332,7 +332,7 @@ const FeaturedSessionCard = React.memo(
                 accessibilityLabel="Réserver"
                 onPress={() => onReserve(s)}
               >
-                <Text style={styles.detailsBtnText}>{t("learning.reserve", { defaultValue: "Réserver" })}</Text>
+                <Text style={styles.detailsBtnText}>{t("learning.reserve")}</Text>
                 <Ionicons name="arrow-forward" size={15} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
@@ -1160,14 +1160,12 @@ export default function LearnCalendarScreen() {
                 style={styles.todayChip}
                 activeOpacity={0.85}
                 accessibilityRole="button"
-                accessibilityLabel={t("learning.today", {
-                  defaultValue: "Aujourd'hui",
-                })}
+                accessibilityLabel={t("learning.today")}
                 onPress={goToday}
               >
                 <Ionicons name="locate-outline" size={13} color="#0E7C86" />
                 <Text style={styles.todayChipText}>
-                  {t("learning.today", { defaultValue: "Aujourd'hui" })}
+                  {t("learning.today")}
                 </Text>
               </TouchableOpacity>
 
@@ -1460,9 +1458,9 @@ export default function LearnCalendarScreen() {
           <View style={{ marginBottom: 12 }}>
             <View style={styles.sectionRow}>
               <View style={styles.sectionTitleWrap}>
-                <Text style={styles.sectionTitle}>{t("learning.single_meetings_title", { defaultValue: "Séances disponibles" })}</Text>
+                <Text style={styles.sectionTitle}>{t("learning.single_meetings_title")}</Text>
                 <Text style={styles.sectionCaption}>
-                  {t("learning.single_meetings_subtitle", { defaultValue: "Réservez votre créneau" })}
+                  {t("learning.single_meetings_subtitle")}
                 </Text>
               </View>
             </View>
@@ -1482,9 +1480,9 @@ export default function LearnCalendarScreen() {
           <View style={{ marginBottom: 24 }}>
             <View style={styles.sectionRow}>
               <View style={styles.sectionTitleWrap}>
-                <Text style={styles.sectionTitle}>{t("learning.multiple_meetings_title", { defaultValue: "Plusieurs créneaux disponibles" })}</Text>
+                <Text style={styles.sectionTitle}>{t("learning.multiple_meetings_title")}</Text>
                 <Text style={styles.sectionCaption}>
-                  {t("learning.swipe_hint", { defaultValue: "Glissez pour explorer" })}
+                  {t("learning.swipe_hint")}
                 </Text>
               </View>
             </View>
@@ -1605,7 +1603,7 @@ export default function LearnCalendarScreen() {
               {uniqueTeachers.length > 0 && (
                 <>
                   <Text style={[styles.filterLabel, { marginTop: 20 }]}>
-                    {t("learning.teacher_label", { defaultValue: "Enseignant" })}
+                    {t("learning.teacher_label")}
                   </Text>
                   <ScrollView
                     horizontal

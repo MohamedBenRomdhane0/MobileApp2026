@@ -91,4 +91,7 @@ export const common = {
   unnamed: "Sans titre",
   close: "Fermer",
   continue: "Continuer",
+  login_required_title: "Connexion requise",
+  login_required_subtitle: "Connecte-toi pour accéder à cette fonctionnalité",
+  login: "Se connecter",
 }
