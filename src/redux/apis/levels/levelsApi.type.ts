@@ -31,3 +31,21 @@ export type GetLevelsApiResponse =
   | LevelApi[]
   | { data: LevelApi[] }
   | { data: { data: LevelApi[] } };
+
+export type LevelTypeApi = {
+  id: number | string;
+  name: string;
+  name_ar?: string | null;
+  is_active?: number | string | boolean | null;
+};
+
+export type LevelTypeUI = {
+  id: number;
+  name: string;
+  nameAr: string | null;
+};
+
+export type GetPublicLevelTypesApiResponse =
+  | LevelTypeApi[]
+  | { data: LevelTypeApi[] }
+  | { data: { data: LevelTypeApi[] } };

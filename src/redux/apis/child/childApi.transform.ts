@@ -1,4 +1,5 @@
 import { MediaTagEnum } from "@config/enums/MediaTag.enum";
+import { appendFormDataFile } from "@utils/helpers/uploadFile.helper";
 import type { DeleteChildResponse, DeleteChildResponseApi } from "./childApi.type";
 import type {
   Child,
@@ -183,16 +184,7 @@ export function encodeUpdateChildRequest(body: UpdateChildRequest): UpdateChildR
     fd.append("remove_avatar", "1");
   }
 
-  if (body.avatar?.uri) {
-    fd.append(
-      "avatar",
-      {
-        uri: body.avatar.uri,
-        type: body.avatar.type || "image/jpeg",
-        name: body.avatar.name || "avatar.jpg",
-      } as any
-    );
-  }
+  appendFormDataFile(fd, "avatar", body.avatar);
 
   return fd;
 }

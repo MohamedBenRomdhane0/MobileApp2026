@@ -29,6 +29,19 @@ const PUBLIC_ENDPOINT_NAMES = new Set<string>([
   "sendResetPasswordEmail",
   "setPassword",
   "refreshToken",
+  "getLevels",
+  "getPublicLevelTypes",
+  "getPublicLevels",
+  "getDraftBooks",
+  "getDraftBookById",
+  "getDraftStationContent",
+  "getDraftLevelMaterials",
+  "getDraftPlans",
+  "createDraftSession",
+  "restoreDraftSession",
+  "logDraftInteraction",
+  "checkDraftParent",
+  "completeDraftSession",
 ]);
 
 const FORCE_PARENT_ENDPOINTS = new Set<string>([

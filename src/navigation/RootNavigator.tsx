@@ -12,10 +12,13 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      screenOptions={{ headerShown: false }}
+      initialRouteName={PATHS.APP.ROOT}
+    >
+      <Stack.Screen name={PATHS.APP.ROOT} component={AppTree} />
       <Stack.Screen name={PATHS.AUTH.ROOT} component={AuthTree} />
       <Stack.Screen name={PATHS.ONBOARDING.ROOT} component={OnboardingTree} />
-      <Stack.Screen name={PATHS.APP.ROOT} component={AppTree} />
     </Stack.Navigator>
   );
 }

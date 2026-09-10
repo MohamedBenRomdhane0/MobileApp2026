@@ -19,6 +19,9 @@ import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useAppSelector } from "@redux/hooks";
+import { selectIsDraftMode } from "@redux/slices/authSlice";
+import LoginRequiredPopup from "@components/guards/LoginRequiredPopup";
 import { LIQUID } from "@styles/liquidTheme";
 import { getLiquidBarBottomOffset } from "@utils/helpers/liquidBar.helpers";
 import { useActiveChildHeaderData } from "@hooks/useActiveChildHeaderData";
@@ -71,7 +74,10 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
   const { width: screenW } = useWindowDimensions();
   const TABS = useTabsForChild();
 
+  const isDraftMode = useAppSelector(selectIsDraftMode);
+
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loginPopupVisible, setLoginPopupVisible] = useState(false);
   const menu = useSharedValue(0);
   const indicatorX = useSharedValue(0);
   const stretch = useSharedValue(0);
@@ -152,9 +158,13 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
     (routeName: string) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       if (menuOpen) closeMenu();
+      if (isDraftMode && (routeName === "Settings" || routeName === "LearnCalendar")) {
+        setLoginPopupVisible(true);
+        return;
+      }
       navigation.navigate(routeName);
     },
-    [menuOpen, closeMenu, navigation]
+    [menuOpen, closeMenu, navigation, isDraftMode]
   );
 
   const handleQuickAction = useCallback(
@@ -270,6 +280,11 @@ function LiquidGlassTabBar({ state, navigation }: LiquidGlassTabBarProps) {
           />
         </View>
       </View>
+
+      <LoginRequiredPopup
+        visible={loginPopupVisible}
+        onClose={() => setLoginPopupVisible(false)}
+      />
     </View>
   );
 }

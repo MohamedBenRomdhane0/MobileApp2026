@@ -30,6 +30,8 @@ type AuthState = {
   pendingResetUserId: number | null;
   activeChildId: number | null;
   actingAs: "parent" | "child";
+  isDraftMode: boolean;
+  draftLevelId: number | null;
 };
 
 const initialState: AuthState = {
@@ -45,6 +47,8 @@ const initialState: AuthState = {
   pendingResetUserId: null,
   activeChildId: null,
   actingAs: "parent",
+  isDraftMode: false,
+  draftLevelId: null,
 };
 
 const toNumberId = (v: any) => {
@@ -122,7 +126,11 @@ const authSlice = createSlice({
       state.activeChildId = null;
       state.actingAs = "parent";
 
+      state.isDraftMode = true;
+      state.draftLevelId = null;
+
       removeFromLocalStorage(LocalStorageKeysEnum.ChildAccessToken);
+      removeFromLocalStorage(LocalStorageKeysEnum.DraftLevelId);
     },
 
     restoreSession(
@@ -146,6 +154,8 @@ const authSlice = createSlice({
       state.refreshToken = refreshToken ?? null;
       state.isAuthenticated = true;
       state.actingAs = "parent";
+      state.isDraftMode = false;
+      state.draftLevelId = null;
 
       if (activeChildId) {
         state.activeChildId = activeChildId;
@@ -179,6 +189,15 @@ const authSlice = createSlice({
         state.authToken = state.childAccessToken ?? state.authToken;
       }
     },
+
+    enterDraftMode(state, action: PayloadAction<{ levelId?: number } | undefined>) {
+      state.isDraftMode = true;
+      state.draftLevelId = action.payload?.levelId ?? null;
+    },
+
+    setDraftLevelId(state, action: PayloadAction<number | null>) {
+      state.draftLevelId = action.payload;
+    },
   },
 
   extraReducers: (builder) => {
@@ -199,6 +218,8 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.actingAs = "parent";
       state.activeChildId = getFirstChildId(parent);
+      state.isDraftMode = false;
+      state.draftLevelId = null;
 
       removeFromLocalStorage(LocalStorageKeysEnum.ChildAccessToken);
     });
@@ -223,6 +244,8 @@ const authSlice = createSlice({
       state.pendingSignupUserId = null;
       state.pendingResetUserId = null;
       state.activeChildId = getFirstChildId(parent);
+      state.isDraftMode = false;
+      state.draftLevelId = null;
 
       removeFromLocalStorage(LocalStorageKeysEnum.ChildAccessToken);
     });
@@ -238,6 +261,8 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.actingAs = "child";
       state.activeChildId = child.id || state.activeChildId;
+      state.isDraftMode = false;
+      state.draftLevelId = null;
 
       // Update parent's children array with full child data (including profile/level)
       if (state.parentUser && (data.user || data.child)) {
@@ -282,6 +307,8 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.isAuthenticated = true;
       state.actingAs = "parent";
+      state.isDraftMode = false;
+      state.draftLevelId = null;
 
       const stillExists = parent.children?.some(
         (c: any) => String(c?.id) === String(state.activeChildId)
@@ -431,6 +458,8 @@ export const selectActiveChildId = (state: RootState) => state.auth.activeChildI
 export const selectActingAs = (state: RootState) => state.auth.actingAs;
 export const selectPendingSignupUserId = (state: RootState) => state.auth.pendingSignupUserId;
 export const selectPendingResetUserId = (state: RootState) => state.auth.pendingResetUserId;
+export const selectIsDraftMode = (state: RootState) => state.auth.isDraftMode;
+export const selectDraftLevelId = (state: RootState) => state.auth.draftLevelId;
 
 export const {
   logout,
@@ -439,6 +468,8 @@ export const {
   setPendingResetUserId,
   setActiveChildId,
   setActingAs,
+  enterDraftMode,
+  setDraftLevelId,
 } = authSlice.actions;
 
 export default authSlice.reducer;

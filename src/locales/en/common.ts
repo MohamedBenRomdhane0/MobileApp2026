@@ -87,4 +87,7 @@ export const common = {
   unnamed: "Untitled",
   close: "Close",
   continue: "Continue",
+  login_required_title: "Login Required",
+  login_required_subtitle: "Please login to access this feature",
+  login: "Login",
 }
