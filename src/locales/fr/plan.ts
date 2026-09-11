@@ -158,6 +158,7 @@ export default {
   live_teachers_label:"Choisir des enseignants Live",
   per_month:          "mois",
   cta_label:          "S'abonner",
+  no_pricing:         "Voir détails",
   guarantee:          "Garantie remboursement 7 jours",
   total_label:        "Total",
   layout_2col:        "2 colonnes",

@@ -29,19 +29,9 @@ const PUBLIC_ENDPOINT_NAMES = new Set<string>([
   "sendResetPasswordEmail",
   "setPassword",
   "refreshToken",
-  "getLevels",
   "getPublicLevelTypes",
   "getPublicLevels",
-  "getDraftBooks",
-  "getDraftBookById",
-  "getDraftStationContent",
-  "getDraftLevelMaterials",
-  "getDraftPlans",
   "createDraftSession",
-  "restoreDraftSession",
-  "logDraftInteraction",
-  "checkDraftParent",
-  "completeDraftSession",
 ]);
 
 const FORCE_PARENT_ENDPOINTS = new Set<string>([
@@ -105,6 +95,19 @@ async function pickTokenForRequest(params: {
   const parentTokenFromState = auth?.parentAccessToken ?? null;
   const childTokenFromState = auth?.childAccessToken ?? null;
   const activeTokenFromState = auth?.authToken ?? null;
+  const draftTokenFromState = auth?.draftToken ?? null;
+
+  const clean = normalizeUrl(url);
+  if (clean.startsWith("draft/") || clean.startsWith("draft-session")) {
+    if (draftTokenFromState) {
+      return draftTokenFromState;
+    }
+
+    const draftTokenFromStorage = await getFromLocalStorage<string>(
+      LocalStorageKeysEnum.DraftToken
+    );
+    return draftTokenFromStorage;
+  }
 
   if (scope === "child") {
     if (childTokenFromState) {

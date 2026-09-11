@@ -409,6 +409,7 @@ export function toBookListItemUI(api: BookListItemApi): BookListItemUI {
     teachers,
     modules,
     lastLearning: toBookLastLearningUI(api.last_learning),
+    type: toSafeNumber(api.type, 0),
   };
 }
 

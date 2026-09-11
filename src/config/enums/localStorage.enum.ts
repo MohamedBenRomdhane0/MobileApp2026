@@ -11,4 +11,5 @@ export enum LocalStorageKeysEnum {
   ActiveChildId = "ActiveChildId",
   SelectedPlanMaterials = "selectedPlanMaterials",
   DraftLevelId = "DraftLevelId",
+  DraftToken = "DraftToken",
 }

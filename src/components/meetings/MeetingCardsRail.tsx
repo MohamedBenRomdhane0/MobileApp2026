@@ -32,6 +32,9 @@ type RailCard = {
   daysPerWeek: number;
   price: number;
   cover: ImageSourcePropType;
+  teacherAvatarUrl: string | null;
+  teacherName: string;
+  groupId: number | null;
   isReserved: boolean;
   isFull: boolean;
 };
@@ -43,14 +46,16 @@ const COVER_BY_MATERIAL: Record<string, ImageSourcePropType> = {
   arabic: require("../../../assets/teachers/ar1.jpeg"),
   math: require("../../../assets/teachers/ma1.jpeg"),
   french: require("../../../assets/teachers/fr1.jpeg"),
-  science: require("../../../assets/teachers/ar1.jpeg"),
+  science: require("../../../assets/teachers/back_eng.jpeg"),
+  english: require("../../../assets/teachers/testtt.jpeg"),
 };
 
 const MATERIAL_KEYWORDS_FOR_COVER: Record<string, string[]> = {
-  arabic: ["arabic", "arabe", "arab"],
-  math: ["math", "maths", "mathématiques"],
-  french: ["french", "français", "francais"],
-  science: ["science", "sciences"],
+  arabic: ["arabic", "arabe", "arab", "عربي", "العربية", "لغة عربية"],
+  math: ["math", "maths", "mathématiques", "mathematique", "رياضيات", "الرياضيات"],
+  french: ["french", "français", "francais", "française", "فرنسية", "الفرنسية"],
+  science: ["science", "sciences", "علوم", "العلوم"],
+  english: ["english", "anglais", "إنجليزية", "انجليزية", "الإنجليزية", "الانجليزية"],
 };
 
 function getCoverForMaterial(materialName: string): ImageSourcePropType {
@@ -130,6 +135,9 @@ function meetingsToRailCards(
       daysPerWeek: sessionsPerWeek,
       price: m.finalPrice || m.price,
       cover: getCoverForMaterial(m.materialName),
+      teacherAvatarUrl: m.teacherAvatarUrl ?? null,
+      teacherName: m.teacherName ?? "",
+      groupId: firstGroup?.id ?? null,
       isReserved: allGroups.some((g) => reservedGroupIds?.has(g.id) ?? false),
       isFull: placesTotal > 0 && placesLeft <= 0,
     };
@@ -144,6 +152,10 @@ type MeetingCardsRailProps = {
     name: string;
     accent: string;
     price: number;
+    teacherName: string;
+    groupId: number | null;
+    time: string;
+    daysPerWeek: number;
   }) => void;
 };
 
@@ -188,6 +200,10 @@ export default function MeetingCardsRail({
                 name: s.name,
                 accent: s.accent,
                 price: s.price,
+                teacherName: s.teacherName,
+                groupId: s.groupId,
+                time: s.time,
+                daysPerWeek: s.daysPerWeek,
               })
             }
           >
@@ -199,6 +215,18 @@ export default function MeetingCardsRail({
                 end={{ x: 0, y: 1 }}
                 style={StyleSheet.absoluteFill}
               />
+              {s.teacherAvatarUrl || s.teacherName ? (
+                <View style={styles.railTeacherInfo}>
+                  {s.teacherAvatarUrl ? (
+                    <Image source={{ uri: s.teacherAvatarUrl }} style={styles.railTeacherAvatar} />
+                  ) : null}
+                  {s.teacherName ? (
+                    <Text style={styles.railTeacherName} numberOfLines={1}>
+                      {s.teacherName}
+                    </Text>
+                  ) : null}
+                </View>
+              ) : null}
               <View
                 style={[styles.railSubjectPill, { backgroundColor: s.accent }]}
               >
@@ -303,6 +331,28 @@ const styles = StyleSheet.create({
   },
   railCoverWrap: { width: "100%", height: 124, backgroundColor: "#DCE5EF" },
   railCover: { width: "100%", height: "100%", resizeMode: "cover" },
+  railTeacherAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 3,
+    borderColor: "#FFFFFF",
+  },
+  railTeacherInfo: {
+    position: "absolute",
+    alignSelf: "center",
+    top: 30,
+    alignItems: "center",
+  },
+  railTeacherName: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    marginTop: 4,
+    textShadowColor: "rgba(0,0,0,0.5)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
   railSubjectPill: {
     position: "absolute",
     top: 10,

@@ -10,11 +10,13 @@ import type {
   ApiLevelMaterialRow,
   MaterialUI,
 } from "@redux/apis/materials/materialsApi.type";
+import type { MeetingListItemUI } from "@redux/apis/meetings/meetingApi.type";
 
 export type DraftBooksArgs = {
   levelId?: number;
   page?: number;
   perPage?: number;
+  type?: number;
 };
 
 export type DraftBooksApiResponse = {
@@ -102,5 +104,31 @@ export type DraftCompleteApiResponse = {
   data: {
     session_id: number;
     completed_at: string;
+  };
+};
+
+export type DraftMeetingsArgs = {
+  levelId?: number;
+  page?: number;
+  perPage?: number;
+};
+
+export type DraftMeetingsApiResponse = {
+  message: string;
+  data: any[];
+  meta?: {
+    current_page: number;
+    per_page: number;
+    total: number;
+  };
+};
+
+export type DraftMeetingsResponse = {
+  message: string;
+  data: MeetingListItemUI[];
+  meta?: {
+    current_page: number;
+    per_page: number;
+    total: number;
   };
 };

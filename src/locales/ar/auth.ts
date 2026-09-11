@@ -74,4 +74,15 @@ export const auth = {
   reset_password: "إعادة تعيين كلمة المرور",
   reset_password_subtitle: "اختر كلمة مرور جديدة",
   reset_password_action: "تأكيد",
+
+  step_label: "الخطوة {{current}} / {{total}}",
+  signup_popup_title: "إنشاء الحساب",
+  signup_popup_subtitle: "أدخل بياناتك للبدء",
+  verify_popup_title: "تأكيد الحساب",
+  verify_popup_subtitle: "أدخل الرمز المرسل إلى هاتفك",
+   login_popup_subtitle: "مرحبا بعودتك! سجل دخولك للمتابعة",
+   back_to_edit: "العودة للتعديل",
+   remember_me: "تذكرني",
+   social_login_google: "متابعة باستخدام Google",
+   social_login_facebook: "متابعة باستخدام Facebook",
 };

@@ -100,6 +100,20 @@ export const createAuthStyles = (colors: AppColors, isDark: boolean) => {
         : "rgba(255,255,255,0.16)",
     },
 
+    backButton: {
+      position: "absolute",
+      left: 18,
+      width: 46,
+      height: 46,
+      borderRadius: 23,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: isDark
+        ? "rgba(255,255,255,0.10)"
+        : "rgba(255,255,255,0.42)",
+      zIndex: 4,
+    },
+
     heroContent: {
       width: "100%",
       alignItems: "center",

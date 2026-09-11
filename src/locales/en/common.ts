@@ -90,4 +90,5 @@ export const common = {
   login_required_title: "Login Required",
   login_required_subtitle: "Please login to access this feature",
   login: "Login",
+  ok: "OK",
 }

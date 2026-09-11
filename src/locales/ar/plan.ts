@@ -146,6 +146,7 @@ export default {
   live_teachers_label:"اختر أساتذة",
   per_month:          "شهر",
   cta_label:          "اشترك",
+  no_pricing:         "عرض التفاصيل",
   guarantee:          "ضمان استرداد 7 أيام",
   total_label:        "المجموع",
   layout_2col:        "عمودان",

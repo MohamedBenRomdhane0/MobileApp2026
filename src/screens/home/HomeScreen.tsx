@@ -4,6 +4,7 @@ import {
   ScrollView,
   RefreshControl,
   StatusBar,
+  Alert,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from "react-native";
@@ -25,7 +26,7 @@ import { useGetBooksQuery } from "@redux/apis/books/bookApi";
 import type { BookListItemUI } from "@redux/apis/books/bookApi.type";
 import { useGetTeachersQuery } from "@redux/apis/teachers/teacherApi";
 import type { TeacherUI } from "@redux/apis/teachers/teacherApi.type";
-import { useGetMeetingsQuery, useGetReservedMeetingsQuery } from "@redux/apis/meetings/meetingApi";
+import { useGetMeetingsQuery, useGetReservedMeetingsQuery, useSubscribeToGroupMutation } from "@redux/apis/meetings/meetingApi";
 import type { MeetingListItemUI } from "@redux/apis/meetings/meetingApi.type";
 import { useGetPlansForChildQuery } from "@redux/apis/plans/plansApi";
 import type { PlanUI } from "@redux/apis/plans/plansApi.type";
@@ -34,10 +35,12 @@ import {
   useGetDraftBooksQuery,
   useGetDraftLevelMaterialsQuery,
   useGetDraftPlansQuery,
+  useGetDraftMeetingsQuery,
 } from "@redux/apis/draft/draftApi";
 
 import HomeHero from "@screens/home/components/HomeHero";
 import HomeStickyHeader from "@screens/home/components/HomeStickyHeader";
+import DiscoveryModeCard from "@screens/home/components/DiscoveryModeCard";
 import QuickActions from "@screens/home/components/QuickActions";
 import ContinueCard from "@screens/home/components/ContinueCard";
 import MaterialsRow from "@screens/home/components/MaterialsRow";
@@ -54,8 +57,14 @@ import HomeSearchModal from "@screens/home/components/HomeSearchModal";
 import WalletBottomSheet from "@components/wallet/WalletBottomSheet";
 import RecordBubbles from "@screens/home/components/RecordBubbles";
 import MeetingCardsRail from "@components/meetings/MeetingCardsRail";
+import ReserveMeetingModal, {
+  type ReserveMeetingData,
+} from "@components/meetings/ReserveMeetingModal";
 import MiniPlanCards from "@screens/home/components/MiniPlanCards";
 import LevelSelectionPopup from "@screens/home/components/LevelSelectionPopup";
+import LoginRequiredPopup from "@components/guards/LoginRequiredPopup";
+import SignInPopup from "@components/auth/SignInPopup";
+import SignUpPopup from "@components/auth/SignUpPopup";
 
 import {
   HOME_UI,
@@ -101,6 +110,9 @@ export default function HomeScreen() {
   const isDraftMode = useAppSelector(selectIsDraftMode);
   const draftLevelId = useAppSelector(selectDraftLevelId);
   const [showLevelPopup, setShowLevelPopup] = useState(false);
+  const [showLoginRequired, setShowLoginRequired] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
 
   useEffect(() => {
     if (isDraftMode && !draftLevelId) {
@@ -115,6 +127,60 @@ export default function HomeScreen() {
     setShowLevelPopup(false);
   }, []);
 
+  const [reserveVisible, setReserveVisible] = useState(false);
+  const [reserveSession, setReserveSession] = useState<ReserveMeetingData | null>(null);
+  const [subscribeToGroup, { isLoading: subscribing }] = useSubscribeToGroupMutation();
+
+  const closeReserve = useCallback(() => {
+    setReserveVisible(false);
+    setReserveSession(null);
+  }, []);
+
+  const openReserve = useCallback(
+    (card: {
+      name: string;
+      accent: string;
+      price: number;
+      teacherName: string;
+      groupId: number | null;
+      time: string;
+      daysPerWeek: number;
+    }) => {
+      setReserveSession({
+        groupId: card.groupId,
+        materialName: card.name,
+        teacherName: card.teacherName,
+        price: card.price,
+        sessionsPerWeek: card.daysPerWeek,
+        time: card.time,
+        accent: card.accent,
+      });
+      setReserveVisible(true);
+    },
+    []
+  );
+
+  const confirmReserve = useCallback(async () => {
+    if (!reserveSession) return;
+    if (isDraftMode || !reserveSession.groupId) {
+      setReserveVisible(false);
+      setReserveSession(null);
+      setShowLoginRequired(true);
+      return;
+    }
+    try {
+      await subscribeToGroup({
+        groupId: reserveSession.groupId,
+        billingCycle: "monthly",
+      }).unwrap();
+      closeReserve();
+      Alert.alert(t("learning.reserve_success", { name: reserveSession.materialName }));
+    } catch (err: any) {
+      const msg = err?.data?.message || t("learning.reserve_error");
+      Alert.alert(msg);
+    }
+  }, [reserveSession, subscribeToGroup, isDraftMode, closeReserve, t]);
+
   const headerData = useActiveChildHeaderData();
   const levelId = useMemo(
     () => pickLevelIdFromChild(headerData?.child),
@@ -126,6 +192,7 @@ export default function HomeScreen() {
   );
 
   const showConcours = levelId === LevelEnum.Six || levelId === 12;
+  const showDraftConcours = draftLevelId === LevelEnum.Six || draftLevelId === 12;
 
   const activeChildId = useAppSelector(selectActiveChildId);
   const childAccessToken = useAppSelector((s) => s.auth.childAccessToken);
@@ -193,6 +260,33 @@ export default function HomeScreen() {
   );
 
   const {
+    data: draftConcoursData,
+    isLoading: isDraftConcoursLoading,
+    isFetching: isDraftConcoursFetching,
+    isError: isDraftConcoursError,
+    refetch: refetchDraftConcours,
+  } = useGetDraftBooksQuery(
+    { levelId: draftLevelId ?? 0, page: 1, perPage: 20, type: 2 },
+    { skip: !isDraftMode || !draftLevelId }
+  );
+
+  const draftConcoursBooks: BookListItemUI[] = useMemo(
+    () =>
+      isDraftMode
+        ? Array.isArray(draftConcoursData?.data)
+          ? draftConcoursData.data
+          : []
+        : [],
+    [isDraftMode, draftConcoursData]
+  );
+  const homeDraftConcours = useMemo(
+    () => draftConcoursBooks.slice(0, HOME_BOOKS_LIMIT),
+    [draftConcoursBooks]
+  );
+  const showDraftConcoursLoader = isDraftConcoursLoading || isDraftConcoursFetching;
+  const isDraftConcoursErrorBool = isDraftConcoursError;
+
+  const {
     data: draftPlans,
     isLoading: isDraftPlansLoading,
     isError: isDraftPlansError,
@@ -201,6 +295,33 @@ export default function HomeScreen() {
     draftLevelId ? { levelId: draftLevelId } : undefined,
     { skip: !isDraftMode || !draftLevelId }
   );
+
+  const {
+    data: draftMeetingsData,
+    isLoading: isDraftMeetingsLoading,
+    isFetching: isDraftMeetingsFetching,
+    isError: isDraftMeetingsError,
+    refetch: refetchDraftMeetings,
+  } = useGetDraftMeetingsQuery(
+    draftLevelId ? { levelId: draftLevelId, page: 1, perPage: 20 } : undefined,
+    { skip: !isDraftMode || !draftLevelId }
+  );
+
+  const draftMeetings: MeetingListItemUI[] = useMemo(
+    () =>
+      isDraftMode
+        ? Array.isArray(draftMeetingsData)
+          ? draftMeetingsData
+          : []
+        : [],
+    [isDraftMode, draftMeetingsData]
+  );
+  const homeDraftMeetings = useMemo(
+    () => draftMeetings.slice(0, 10),
+    [draftMeetings]
+  );
+  const showDraftMeetingsLoader = isDraftMeetingsLoading || isDraftMeetingsFetching;
+  const isDraftMeetingsErrorBool = isDraftMeetingsError;
 
   // ── Auth mode queries ───────────────────────────────────────────
   const {
@@ -267,10 +388,20 @@ export default function HomeScreen() {
     data: teachersData,
     isLoading: isTeachersLoading,
     isFetching: isTeachersFetching,
+    refetch: refetchTeachers,
   } = useGetTeachersQuery(
-    activeChildId ? { page: 1, perPage: 20 } : undefined,
+    activeChildId ? { page: 1, perPage: 20, childId: activeChildId } : undefined,
     { skip: isDraftMode || !activeChildId, refetchOnMountOrArgChange: true }
   );
+
+  const lastChildTokenRef = useRef<string | null>(childAccessToken);
+
+  useEffect(() => {
+    if (isDraftMode || !activeChildId || !childAccessToken) return;
+    if (lastChildTokenRef.current === childAccessToken) return;
+    lastChildTokenRef.current = childAccessToken;
+    refetchTeachers();
+  }, [isDraftMode, activeChildId, childAccessToken, refetchTeachers]);
 
   const teachers = useMemo(() => {
     const items: TeacherUI[] = Array.isArray(teachersData?.data)
@@ -764,18 +895,42 @@ export default function HomeScreen() {
         <LevelSelectionPopup visible={showLevelPopup} onSelect={handleLevelSelect} />
       )}
 
+      <LoginRequiredPopup
+        visible={showLoginRequired}
+        onClose={() => setShowLoginRequired(false)}
+      />
+
+      <SignInPopup
+        visible={showSignIn}
+        onClose={() => setShowSignIn(false)}
+      />
+
+      <SignUpPopup
+        visible={showSignUp}
+        onClose={() => setShowSignUp(false)}
+      />
+
+      <ReserveMeetingModal
+        visible={reserveVisible}
+        session={reserveSession}
+        loading={subscribing}
+        onClose={closeReserve}
+        onConfirm={confirmReserve}
+      />
+
       <HomeStickyHeader
         styles={styles}
         isDark={isDark}
         topInset={insets.top}
         scrolled={isScrolled}
         notificationsLabel={t(HOME_COMMON_UI.notifications)}
+        isGuest={isDraftMode}
         onNotifications={isDraftMode ? undefined : goNotifications}
         onSearch={() => setSearchVisible(true)}
         onStreak={isDraftMode ? undefined : () => setWalletVisible(true)}
         onAvatarPress={
           isDraftMode
-            ? undefined
+            ? () => setShowSignIn(true)
             : showConcours
               ? () => navigation.navigate(PATHS.TABS.SETTINGS as never)
               : undefined
@@ -797,13 +952,26 @@ export default function HomeScreen() {
           />
         }
       >
-        <HomeHero
-          {...block}
-          isDark={isDark}
-          scrolled={isScrolled}
-          childName={heroChildName}
-          levelLabel={heroLevelLabel}
-        />
+        {isDraftMode ? (
+          <View style={styles.bodyTop}>
+            <DiscoveryModeCard
+              {...block}
+              isDark={isDark}
+              titleLabel={t("home.discovery_mode_title")}
+              subtitleLabel={t("home.discovery_mode_subtitle")}
+              ctaLabel={t("home.finish_registration")}
+              onPress={() => setShowSignUp(true)}
+            />
+          </View>
+        ) : (
+          <HomeHero
+            {...block}
+            isDark={isDark}
+            scrolled={isScrolled}
+            childName={heroChildName}
+            levelLabel={heroLevelLabel}
+          />
+        )}
 
         <View style={styles.body}>
           {!isDraftMode && !!resume && (
@@ -878,6 +1046,71 @@ export default function HomeScreen() {
               />
             )}
           </View>
+
+          {showDraftConcours && (
+            <View style={styles.section}>
+              <SectionHeader
+                {...block}
+                title={t(HOME_UI.concoursBooks)}
+                count={homeDraftConcours.length}
+                seeAllLabel={seeAllLabel}
+                onSeeAll={goBooks}
+                icon="trophy"
+                accent={HOME_SECTION_ACCENT.concours}
+              />
+
+              {showDraftConcoursLoader ? (
+                <SectionState {...block} status="loading" />
+              ) : isDraftConcoursErrorBool ? (
+                <SectionState
+                  {...block}
+                  status="error"
+                  message={t(HOME_COMMON_UI.tapToRetry)}
+                  onRetry={refetchDraftConcours}
+                />
+              ) : homeDraftConcours.length === 0 ? (
+                <SectionState {...block} status="empty" message={t(HOME_UI.concoursEmpty)} />
+              ) : (
+                <BooksRow
+                  {...block}
+                  books={homeDraftConcours}
+                  unnamedLabel={t("common.unnamed")}
+                  onPressBook={openBook}
+                  onLayoutReady={parkBooksAtStart}
+                />
+              )}
+            </View>
+          )}
+
+          {isDraftMode && homeDraftMeetings.length > 0 && (
+            <View style={styles.section}>
+              <SectionHeader
+                {...block}
+                title={t(HOME_UI.liveClasses)}
+                count={homeDraftMeetings.length}
+                seeAllLabel={seeAllLabel}
+                onSeeAll={goMeetings}
+                icon="flame"
+                accent={HOME_SECTION_ACCENT.liveClasses}
+              />
+
+              {showDraftMeetingsLoader ? (
+                <SectionState {...block} status="loading" />
+              ) : isDraftMeetingsErrorBool ? (
+                <SectionState
+                  {...block}
+                  status="error"
+                  message={t(HOME_COMMON_UI.tapToRetry)}
+                  onRetry={refetchDraftMeetings}
+                />
+              ) : (
+                <MeetingCardsRail
+                  meetings={homeDraftMeetings}
+                  onPressCard={openReserve}
+                />
+              )}
+            </View>
+          )}
 
           {!isDraftMode && (
             <View style={styles.section}>
@@ -983,9 +1216,7 @@ export default function HomeScreen() {
             <MeetingCardsRail
               meetings={meetings}
               reservedGroupIds={reservedGroupIds}
-              onPressCard={() =>
-                navigation.navigate(PATHS.APP.DETAIL_PLAN_MEETING as never)
-              }
+              onPressCard={openReserve}
             />
           )}
 
@@ -1020,6 +1251,7 @@ export default function HomeScreen() {
                   startingFromLabel={t("plan.starting_from", { defaultValue: "À partir de" })}
                   popularLabel={t("plan.most_popular")}
                   ctaLabel={t("plan.cta_label")}
+                  noPricingLabel={t("plan.no_pricing", { defaultValue: "Voir détails" })}
                   onPress={goSubscribe}
                   onPlanPress={goPlanPricing}
                 />
