@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
@@ -17,6 +17,7 @@ export type HomeStickyHeaderProps = {
   topInset: number;
   scrolled: boolean;
   notificationsLabel: string;
+  isGuest?: boolean;
   onNotifications?: () => void;
   onSearch?: () => void;
   onStreak?: () => void;
@@ -29,6 +30,7 @@ export default function HomeStickyHeader({
   topInset,
   scrolled,
   notificationsLabel,
+  isGuest = false,
   onNotifications,
   onSearch,
   onStreak,
@@ -41,7 +43,24 @@ export default function HomeStickyHeader({
 
   const headerContent = (
     <View style={styles.heroTopRow}>
-      <ActiveChildHeaderAvatar onPress={onAvatarPress} />
+      {isGuest ? (
+        <TouchableOpacity
+          onPress={onAvatarPress}
+          style={styles.guestAvatarWrap}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel={t("home.guest_label")}
+        >
+          <View style={styles.guestAvatar}>
+            <Ionicons name="person-outline" size={22} color="#FFFFFF" />
+          </View>
+          <Text style={styles.guestAvatarName} numberOfLines={1}>
+            {t("home.guest_label")}
+          </Text>
+        </TouchableOpacity>
+      ) : (
+        <ActiveChildHeaderAvatar onPress={onAvatarPress} />
+      )}
       <GoldStreakPill
         label={t("home.streak_label")}
         onPress={onStreak}
@@ -78,10 +97,14 @@ export default function HomeStickyHeader({
       start={{ x: 0.08, y: 0 }}
       end={{ x: 0.95, y: 1 }}
       style={[
-        scrolled ? styles.stickyHeaderGradientCurved : styles.stickyHeaderGradient,
+        isGuest
+          ? styles.stickyHeaderGuest
+          : scrolled
+            ? styles.stickyHeaderGradientCurved
+            : styles.stickyHeaderGradient,
         {
           paddingTop: Math.max(topInset, 14),
-          paddingBottom: scrolled ? 10 : 0,
+          paddingBottom: !isGuest && scrolled ? 10 : 0,
         },
       ]}
     >

@@ -87,6 +87,15 @@ export function createHomeStyles(
       backgroundColor: colors.header,
     },
 
+    /* Guest (discovery) header — same size, just rounded corners. */
+    stickyHeaderGuest: {
+      paddingHorizontal: 16,
+      paddingBottom: 10,
+      borderBottomLeftRadius: 30,
+      borderBottomRightRadius: 30,
+      overflow: "hidden",
+    },
+
     // No bottom curve before scroll so the pinned bar merges seamlessly
     // into the hero's navy (avoids the rounded-corner seam/empty space).
     stickyHeaderGradientCurved: {
@@ -127,6 +136,27 @@ export function createHomeStyles(
       flexDirection: row,
       alignItems: "center",
       justifyContent: "space-between",
+    },
+
+    /* Guest (discovery mode) avatar in the header's top row. */
+    guestAvatarWrap: { alignItems: "center", paddingRight: 2 },
+    guestAvatar: {
+      width: 40,
+      height: 40,
+      borderRadius: 22,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "rgba(255,255,255,0.16)",
+      borderWidth: 2,
+      borderColor: "#fff",
+    },
+    guestAvatarName: {
+      marginTop: 2,
+      fontSize: 12,
+      color: "#fff",
+      fontWeight: "700",
+      textAlign: "center",
+      maxWidth: 90,
     },
 
     heroTopRight: { flexDirection: row, alignItems: "center", gap: 8 },
@@ -283,6 +313,198 @@ export function createHomeStyles(
 
     emojiText: { fontSize: 18 },
 
+    /* ── Discovery (guest) card — replaces HomeHero in draft mode ─────── */
+
+    discoveryCard: {
+      width: "100%",
+      maxWidth: 400,
+      alignSelf: "center",
+    },
+
+    discoveryShell: {
+      borderRadius: 24,
+      overflow: "hidden",
+      paddingHorizontal: 14,
+      paddingTop: 10,
+      paddingBottom: 16,
+    },
+
+    discoveryGlow: {
+      position: "absolute",
+      width: 100,
+      height: 100,
+      borderRadius: 999,
+      backgroundColor: "rgba(34,190,200,0.18)",
+      top: -60,
+      right: isRTL ? undefined : -40,
+      left: isRTL ? -40 : undefined,
+    },
+
+    discoveryGlowAlt: {
+      position: "absolute",
+      width: 90,
+      height: 90,
+      borderRadius: 999,
+      backgroundColor: "rgba(246,196,69,0.10)",
+      bottom: -60,
+      right: isRTL ? undefined : -30,
+      left: isRTL ? -30 : undefined,
+    },
+
+    discoveryContent: { gap: 0 },
+
+    discoveryBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      alignSelf: alignEnd,
+      paddingHorizontal: 10,
+      height: 24,
+      borderRadius: 999,
+      backgroundColor: "rgba(34,190,200,0.16)",
+      borderWidth: 1,
+      borderColor: "rgba(34,190,200,0.32)",
+    },
+
+    discoveryBadgeText: {
+      color: "#5EEAD4",
+      fontSize: 10,
+      fontWeight: "900",
+      letterSpacing: 0.5,
+      textAlign: textEnd,
+    },
+
+    discoveryTitle: {
+      marginTop: 6,
+      color: "#FFFFFF",
+      fontSize: 14,
+      fontWeight: "900",
+      lineHeight: 20,
+      textAlign: textEnd,
+      maxWidth: "92%",
+    },
+
+    discoveryChart: {
+      position: "relative",
+      marginTop: 4,
+      height: 64,
+    },
+
+    discoveryChartTouch: {
+      marginTop: 0,
+      borderRadius: 12,
+    },
+
+    discoveryMilestone: {
+      position: "absolute",
+      top: 8,
+      width: 68,
+      alignItems: "center",
+      marginLeft: -34,
+    },
+
+    discoveryChartNode: {
+      width: 26,
+      height: 26,
+      borderRadius: 999,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "#22BEC8",
+      borderWidth: 2,
+      borderColor: "#5EEAD4",
+      shadowColor: "#22BEC8",
+      shadowOpacity: 0.5,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 4,
+    },
+
+    discoveryChartNodeText: {
+      color: "#FFFFFF",
+      fontSize: 13,
+      fontWeight: "900",
+    },
+
+    discoveryChartCaption: {
+      marginTop: 3,
+      color: "rgba(255,255,255,0.92)",
+      fontSize: 9,
+      fontWeight: "700",
+      lineHeight: 11,
+      textAlign: "center",
+    },
+
+    discoveryFinish: {
+      width: 28,
+      height: 28,
+      borderRadius: 999,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+
+    discoveryFinishWrap: {
+      position: "absolute",
+      top: 8,
+      alignItems: "center",
+      width: 60,
+      marginLeft: -30,
+    },
+
+    discoveryFinishInner: {
+      width: 28,
+      height: 28,
+      borderRadius: 999,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "#F6C445",
+      borderWidth: 2,
+      borderColor: "rgba(255,255,255,0.9)",
+      shadowColor: "#F6C445",
+      shadowOpacity: 0.6,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 5,
+    },
+
+    discoveryFinishCaption: {
+      marginTop: 3,
+      color: "#F6C445",
+      fontSize: 9,
+      fontWeight: "900",
+      lineHeight: 11,
+      textAlign: "center",
+    },
+
+    discoveryCtaOuter: {
+      marginTop: 10,
+      marginBottom: 4,
+      borderRadius: 12,
+      overflow: "hidden",
+      shadowColor: "#22BEC8",
+      shadowOpacity: 0.4,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 4,
+    },
+
+    discoveryCta: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      minHeight: 44,
+    },
+
+    discoveryCtaText: {
+      color: "#FFFFFF",
+      fontSize: 14,
+      fontWeight: "900",
+      flexShrink: 1,
+      textAlign: "center",
+    },
+
     /* ── Motivational message card ───────────────────────────────────── */
 
     motivationCard: {
@@ -388,6 +610,8 @@ export function createHomeStyles(
     /* ── Body / sections ─────────────────────────────────────────────── */
 
     body: { paddingHorizontal: 16 },
+
+    bodyTop: { paddingHorizontal: 16, marginTop: 16 },
 
     section: { marginTop: 22 },
 

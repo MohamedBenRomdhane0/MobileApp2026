@@ -4,6 +4,8 @@ import { ENDPOINTS } from "@config/constants/endpoints";
 import { baseQueryConfig } from "@redux/baseQueryConfig";
 import { MethodsEnum } from "@config/enums/method.enum";
 
+import { teacherApi } from "@redux/apis/teachers/teacherApi";
+
 import type {
   CreateChildRequest,
   CreateChildResponse,
@@ -119,6 +121,14 @@ export const childApi = createApi({
       transformResponse: (response: SwitchToChildResponseApi) =>
         decodeSwitchToChildResponse(response),
       invalidatesTags: ["Books", "Book", "MaterialsByLevel"],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(teacherApi.util.invalidateTags(["Teachers"]));
+        } catch {
+          // switch failed - teachers stay on current child
+        }
+      },
     }),
 
     switchToParent: builder.mutation<SwitchToParentResponse, void>({
@@ -130,6 +140,14 @@ export const childApi = createApi({
       transformResponse: (response: SwitchToParentResponseApi) =>
         decodeSwitchToParentResponse(response),
       invalidatesTags: ["Books", "Book", "MaterialsByLevel"],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(teacherApi.util.invalidateTags(["Teachers"]));
+        } catch {
+          // switch failed - teachers stay on current child
+        }
+      },
     }),
   }),
 });

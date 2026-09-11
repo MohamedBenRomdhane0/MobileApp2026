@@ -4,6 +4,7 @@ import {
   Image,
   Keyboard,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   ScrollView,
   Text,
@@ -174,6 +175,8 @@ export default function AddKidsScreen() {
     null
   );
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showDuplicatePopup, setShowDuplicatePopup] = useState(false);
+  const [duplicateMessage, setDuplicateMessage] = useState("");
 
   const [createChildApi, { isLoading: isCreating }] = useCreateChildMutation();
   const [updateChildApi, { isLoading: isUpdating }] = useUpdateChildMutation();
@@ -336,6 +339,25 @@ export default function AddKidsScreen() {
           message: ADD_KIDS_UI.levelRequired,
         });
         return;
+      }
+
+      if (values.levelId) {
+        const siblings = (user?.children ?? []).filter(
+          (child) => child.id !== childId
+        );
+        const duplicate = siblings.find(
+          (child) => child.levelId === values.levelId
+        );
+
+        if (duplicate) {
+          setDuplicateMessage(
+            t("child.duplicate_level_alert", {
+              level: String(values.levelId),
+            })
+          );
+          setShowDuplicatePopup(true);
+          return;
+        }
       }
 
       try {
@@ -797,9 +819,125 @@ export default function AddKidsScreen() {
                 </LinearGradient>
               </TouchableOpacity>
             </View>
+
+            <Modal
+              visible={showDuplicatePopup}
+              transparent
+              animationType="fade"
+              onRequestClose={() => setShowDuplicatePopup(false)}
+            >
+              <View style={popupStyles.overlay}>
+                <View
+                  style={[
+                    popupStyles.card,
+                    { backgroundColor: isDark ? colors.card : "#FFFFFF" },
+                  ]}
+                >
+                  <View style={popupStyles.iconCircle}>
+                    <Ionicons
+                      name="alert-circle"
+                      size={28}
+                      color="#DC2626"
+                    />
+                  </View>
+                  <Text style={[popupStyles.title, { color: colors.text }]}>
+                    {t("common.error")}
+                  </Text>
+                  <Text style={[popupStyles.message, { color: colors.muted }]}>
+                    {duplicateMessage}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setShowDuplicatePopup(false)}
+                    activeOpacity={0.9}
+                    style={popupStyles.buttonTouch}
+                  >
+                    <LinearGradient
+                      colors={
+                        isDark
+                          ? ["#2BC5D3", "#179DAB"]
+                          : ["#19B6C5", "#0FA6B6"]
+                      }
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={popupStyles.button}
+                    >
+                      <Text style={popupStyles.buttonText}>
+                        {t("common.ok")}
+                      </Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
     </TouchableWithoutFeedback>
   );
 }
+
+const popupStyles = {
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+  } as const,
+  card: {
+    width: "100%",
+    maxWidth: 320,
+    borderRadius: 20,
+    padding: 20,
+    alignItems: "center",
+    shadowColor: "#0F172A",
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 10,
+  } as const,
+  iconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(220,38,38,0.10)",
+    marginBottom: 12,
+  } as const,
+  title: {
+    fontSize: 18,
+    fontWeight: "900",
+    textAlign: "center",
+    marginBottom: 6,
+  } as const,
+  message: {
+    fontSize: 14,
+    fontWeight: "500",
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 18,
+  } as const,
+  buttonTouch: {
+    borderRadius: 14,
+    overflow: "hidden",
+    width: "100%",
+    shadowColor: "#0F172A",
+    shadowOpacity: 0.14,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  } as const,
+  button: {
+    minHeight: 48,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 14,
+  } as const,
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "900",
+  } as const,
+};

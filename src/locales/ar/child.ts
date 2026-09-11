@@ -21,6 +21,7 @@ export default {
   level_lycee: "الثانوي",
   level_lycee_disabled: "غير متاح حالياً",
   level_locked_hint: "لا يمكن تغيير المستوى بعد الإنشاء",
+  duplicate_level_alert: "هذا المستوى مُسجّل لطفل آخر بالفعل",
   add_submit: "إضافة",
   edit_submit: "حفظ",
 };

@@ -21,6 +21,7 @@ export default {
   level_lycee: "High school",
   level_lycee_disabled: "Not available yet",
   level_locked_hint: "Level can't be changed after creation",
+  duplicate_level_alert: "This level is already assigned to another child",
   add_submit: "Add",
   edit_submit: "Save",
 };

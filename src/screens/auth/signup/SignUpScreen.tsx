@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -12,7 +12,8 @@ import {
   View,
   type ImageStyle,
 } from "react-native";
-import { FormProvider, type SubmitHandler, useForm } from "react-hook-form";
+import { Ionicons } from "@expo/vector-icons";
+import { FormProvider, type SubmitHandler } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -23,31 +24,11 @@ import { useAppTheme } from "@theme/ThemeProvider";
 import CustomTextField from "@components/inputs/customTextField/CutsomTextField";
 import { SIGNUP_FIELDS } from "./SignUpScreen.constants";
 import type { SignUpFormValues } from "./SignUpScreen.type";
-import { normalizeTNPhone } from "@utils/helpers/phone.helper";
 import { PATHS } from "@config/constants/paths";
 
-import { useSignupMutation } from "@redux/apis/auth/authApi";
 import PasswordConfirmationField from "@components/forms/PasswordConfirmationField";
 
-import { useError } from "src/hooks/useError";
-
-const pickUserIdFromSignup = (res: any): number | null => {
-  const candidates = [
-    res?.data?.userId,
-    res?.data?.user_id,
-    res?.data?.id,
-    res?.userId,
-    res?.user_id,
-    res?.id,
-  ];
-
-  for (const v of candidates) {
-    const n = Number(v);
-    if (Number.isFinite(n) && n > 0) return n;
-  }
-
-  return null;
-};
+import { useSignupAuth } from "src/hooks/useSignupAuth";
 
 export default function SignUpScreen() {
   const { t } = useTranslation();
@@ -61,57 +42,31 @@ export default function SignUpScreen() {
     [colors, isDark]
   );
 
-  const [signup, { isLoading }] = useSignupMutation();
+  const handleBackToHome = useCallback(() => {
+    const root = navigation.getParent();
+    if (root?.canGoBack()) {
+      root.goBack();
+    } else {
+      navigation.navigate(PATHS.APP.ROOT as never);
+    }
+  }, [navigation]);
 
-  const methods = useForm<SignUpFormValues>({
-    defaultValues: {
-      fullName: "",
-      phone: "",
-      address: "",
-      password: "",
-      passwordConfirmation: "",
-    },
-    mode: "onChange",
-    shouldFocusError: true,
-  });
-
-  const { handleApiError } = useError<SignUpFormValues>({
-    formMethods: methods,
+  const {
+    methods,
+    isLoading,
+    onSubmit: onSubmitSignup,
+  } = useSignupAuth((userId, phone) => {
+    navigation.replace(PATHS.AUTH.VERIFICATION as any, {
+      phone,
+      userId,
+    });
   });
 
   const rootError = methods.formState.errors.root?.message;
 
   const onSubmit: SubmitHandler<SignUpFormValues> = async (values) => {
     Keyboard.dismiss();
-
-    const formattedPhone = normalizeTNPhone(values.phone).trim();
-
-    try {
-      const res = await signup({
-        fullName: values.fullName.trim(),
-        phone: formattedPhone,
-        password: values.password,
-        passwordConfirmation: values.passwordConfirmation,
-        address: values.address.trim(),
-      }).unwrap();
-
-      const userId = pickUserIdFromSignup(res);
-
-      if (!userId) {
-        methods.setError("root", {
-          type: "validate",
-          message: "common.something_went_wrong",
-        });
-        return;
-      }
-
-      navigation.replace(PATHS.AUTH.VERIFICATION as any, {
-        phone: formattedPhone,
-        userId,
-      });
-    } catch (err: any) {
-      handleApiError(err);
-    }
+    await onSubmitSignup(values);
   };
 
   return (
@@ -143,6 +98,19 @@ export default function SignUpScreen() {
               <View style={styles.heroBubbleLeft} />
               <View style={styles.heroBubbleRight} />
               <View style={styles.heroBubbleBottom} />
+
+              <TouchableOpacity
+                onPress={handleBackToHome}
+                activeOpacity={0.88}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                style={[styles.backButton, { top: insets.top + 10 }]}
+              >
+                <Ionicons
+                  name="arrow-back"
+                  size={26}
+                  color={isDark ? "#FFFFFF" : "#1F3B64"}
+                />
+              </TouchableOpacity>
 
               <View style={styles.heroContent}>
                 <Image

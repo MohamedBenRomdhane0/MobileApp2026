@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 
 import { useAppTheme } from "@theme/ThemeProvider";
 import { useAppDispatch } from "@redux/hooks";
-import { enterDraftMode } from "@redux/slices/authSlice";
+import { enterDraftMode, setDraftToken } from "@redux/slices/authSlice";
 import { setToLocalStorage } from "@utils/localStorage/storage";
 import { LocalStorageKeysEnum } from "@config/enums/localStorage.enum";
 import type { LevelTypeEnum } from "@redux/apis/levels/levelsApi.type";
@@ -102,7 +102,12 @@ export default function LevelSelectionPopup({ visible, onSelect }: Props) {
   const handleConfirm = useCallback(async () => {
     if (!selectedLevelId) return;
     try {
-      await createSession({ levelId: selectedLevelId }).unwrap();
+      const result = await createSession({ levelId: selectedLevelId }).unwrap();
+      const token = result?.draft_token ?? null;
+      if (token) {
+        await setToLocalStorage(LocalStorageKeysEnum.DraftToken, token);
+        dispatch(setDraftToken(token));
+      }
     } catch {
       // draft session creation is best-effort; browsing works without it
     }

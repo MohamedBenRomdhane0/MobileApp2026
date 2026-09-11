@@ -146,6 +146,7 @@ export default {
   live_teachers_label:"Choose Live teachers",
   per_month:          "month",
   cta_label:          "Subscribe",
+  no_pricing:         "See details",
   guarantee:          "7-day money-back guarantee",
   total_label:        "Total",
   layout_2col:        "2 columns",

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -16,15 +16,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
-import { FormProvider, type SubmitHandler, useForm } from "react-hook-form";
+import { FormProvider, type SubmitHandler } from "react-hook-form";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { PATHS } from "@config/constants/paths";
 import { GLOBAL_VARIABLES } from "@config/constants/globalVariables";
 
 import { useAppSelector } from "@redux/hooks";
-import { useLoginMutation } from "@redux/apis/auth/authApi";
-import type { LoginRequest } from "@redux/apis/auth/authApi.type";
 import { selectActiveChildId } from "@redux/slices/authSlice";
 
 import { createAuthStyles } from "../style";
@@ -32,9 +30,8 @@ import { useAppTheme } from "@theme/ThemeProvider";
 import CustomTextField from "@components/inputs/customTextField/CutsomTextField";
 import { LOGIN_FIELDS } from "./SignInScreen.constants";
 import type { Nav, SignInFormData } from "./SignInScreen.type";
-import { normalizeTNPhone } from "@utils/helpers/phone.helper";
 
-import { useError } from "src/hooks/useError";
+import { useLoginAuth } from "src/hooks/useLoginAuth";
 
 export default function SignInScreen() {
   const { t } = useTranslation();
@@ -48,15 +45,20 @@ export default function SignInScreen() {
     [colors, isDark]
   );
 
-  const methods = useForm<SignInFormData>({
-    mode: "onChange",
-    shouldFocusError: true,
-    defaultValues: { phone: "", password: "" },
-  });
+  const handleBackToHome = useCallback(() => {
+    const root = navigation.getParent();
+    if (root?.canGoBack()) {
+      root.goBack();
+    } else {
+      navigation.navigate(PATHS.APP.ROOT as never);
+    }
+  }, [navigation]);
 
-  const { handleApiError } = useError<SignInFormData>({ formMethods: methods });
-
-  const [login, { isLoading }] = useLoginMutation();
+  const {
+    methods,
+    isLoading,
+    onSubmit: onSubmitLogin,
+  } = useLoginAuth();
 
   const user = useAppSelector((state) => state.auth.user);
   const activeChildId = useAppSelector(selectActiveChildId);
@@ -85,19 +87,7 @@ export default function SignInScreen() {
 
   const onSubmit: SubmitHandler<SignInFormData> = async (values) => {
     Keyboard.dismiss();
-
-    try {
-      const formattedPhone = normalizeTNPhone(values.phone);
-
-      const loginPayload: LoginRequest = {
-        phone: formattedPhone,
-        password: values.password,
-      };
-
-      await login(loginPayload).unwrap();
-    } catch (err: any) {
-      handleApiError(err);
-    }
+    await onSubmitLogin(values);
   };
 
   return (
@@ -128,6 +118,19 @@ export default function SignInScreen() {
               <View style={styles.heroBubbleLeft} />
               <View style={styles.heroBubbleRight} />
               <View style={styles.heroBubbleBottom} />
+
+              <TouchableOpacity
+                onPress={handleBackToHome}
+                activeOpacity={0.88}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                style={[styles.backButton, { top: insets.top + 10 }]}
+              >
+                <Ionicons
+                  name="arrow-back"
+                  size={26}
+                  color={isDark ? "#FFFFFF" : "#1F3B64"}
+                />
+              </TouchableOpacity>
 
               <View style={styles.heroContent}>
                 <Image

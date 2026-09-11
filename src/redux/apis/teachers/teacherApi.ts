@@ -28,7 +28,7 @@ import {
 export const teacherApi = createApi({
   reducerPath: "teacherApi",
   baseQuery: baseQueryConfig,
-  tagTypes: ["Teacher", "TeacherFollowers"],
+  tagTypes: ["Teachers", "Teacher", "TeacherFollowers"],
   endpoints: (build) => ({
     getTeacherById: build.query<ApiSuccess<TeacherUI>, number>({
       query: (teacherId) => ({
@@ -68,6 +68,7 @@ export const teacherApi = createApi({
           ? response.data.map(toTeacherUI)
           : [],
       }),
+      providesTags: ["Teachers"],
     }),
 
     followTeacher: build.mutation<ApiSuccess<FollowTeacherPayloadUI>, number>({

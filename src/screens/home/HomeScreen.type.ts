@@ -127,6 +127,15 @@ export type SubscribeBannerProps = HomeBlockBaseProps & {
   onPress: () => void;
 };
 
+/** Discovery-mode hero replacement shown to unauthenticated guests. */
+export type DiscoveryModeCardProps = HomeBlockBaseProps & {
+  isDark: boolean;
+  titleLabel: string;
+  subtitleLabel: string;
+  ctaLabel: string;
+  onPress: () => void;
+};
+
 /** Compact plan cards in a 2-column grid — monthly-priced mini tiles. */
 export type MiniPlanCardsProps = HomeBlockBaseProps & {
   plans: PlanUI[];
@@ -136,6 +145,7 @@ export type MiniPlanCardsProps = HomeBlockBaseProps & {
   startingFromLabel: string;
   popularLabel: string;
   ctaLabel: string;
+  noPricingLabel?: string;
   onPress: () => void;
   onPlanPress?: (planId: number) => void;
 };

@@ -71,4 +71,15 @@ export const auth = {
   reset_password: "Réinitialiser le mot de passe",
   reset_password_subtitle: "Choisissez un nouveau mot de passe",
   reset_password_action: "Réinitialiser",
+
+  step_label: "ÉTAPE {{current}} / {{total}}",
+  signup_popup_title: "Créer mon compte",
+  signup_popup_subtitle: "Entrez vos informations pour commencer",
+  verify_popup_title: "Vérifier mon compte",
+  verify_popup_subtitle: "Entrez le code reçu par SMS",
+   login_popup_subtitle: "Content de vous revoir ! Connectez-vous pour continuer",
+   back_to_edit: "Retour à la modification",
+   remember_me: "Se souvenir de moi",
+   social_login_google: "Continuer avec Google",
+   social_login_facebook: "Continuer avec Facebook",
 };

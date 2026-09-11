@@ -54,6 +54,7 @@ type CardProps = {
   startingFromLabel: string;
   popularLabel: string;
   ctaLabel: string;
+  noPricingLabel?: string;
   onPress: () => void;
   onPlanPress?: (planId: number) => void;
 };
@@ -69,6 +70,7 @@ function PlanCard({
   startingFromLabel,
   popularLabel,
   ctaLabel,
+  noPricingLabel,
   onPress,
   onPlanPress,
 }: CardProps) {
@@ -78,6 +80,8 @@ function PlanCard({
   const monthlyPricing = plan.pricings.find((p) => p.months === 1);
   const perMatPricing = bestPerMaterialPricing(plan);
   const isPerMaterial = perMatPricing?.pricingType === "per_material";
+
+  const hasPricings = Array.isArray(plan.pricings) && plan.pricings.length > 0;
 
   const cardColor =
     plan.color || (plan.isPopular ? POPULAR_COLOR_FALLBACK : "#22BEC8");
@@ -92,11 +96,14 @@ function PlanCard({
   } else if (monthlyPricing) {
     displayPrice = monthlyPricing.finalPrice ?? monthlyPricing.price ?? 0;
     suffix = `/ ${perMonthLabel}`;
-  } else {
+  } else if (hasPricings) {
     const fallback = plan.pricings[0];
     displayPrice = fallback?.finalPrice ?? fallback?.price ?? 0;
     suffix = periodSuffix(fallback?.months ?? 0);
     isAnnualOnly = true;
+  } else {
+    displayPrice = 0;
+    suffix = "";
   }
 
   const iconName = resolvePlanIcon(plan.icon);
@@ -176,12 +183,20 @@ function PlanCard({
           ) : null}
 
           <View style={styles.miniPlanPriceRow}>
-            <Text style={[styles.miniPlanPrice, { color: cardColor }]}>
-              {formatPrice(displayPrice)} {currencyLabel}
-            </Text>
-            {!isPerMaterial ? (
-              <Text style={styles.miniPlanPerMonth}>{suffix}</Text>
-            ) : null}
+            {hasPricings ? (
+              <>
+                <Text style={[styles.miniPlanPrice, { color: cardColor }]}>
+                  {formatPrice(displayPrice)} {currencyLabel}
+                </Text>
+                {!isPerMaterial ? (
+                  <Text style={styles.miniPlanPerMonth}>{suffix}</Text>
+                ) : null}
+              </>
+            ) : (
+              <Text style={[styles.miniPlanPrice, { color: cardColor }]}>
+                {noPricingLabel ?? "---"}
+              </Text>
+            )}
           </View>
 
           <View style={[styles.miniPlanCta, { backgroundColor: cardColor }]}>
@@ -213,6 +228,7 @@ export default function MiniPlanCards({
   startingFromLabel,
   popularLabel,
   ctaLabel,
+  noPricingLabel,
   onPress,
   onPlanPress,
 }: MiniPlanCardsProps) {
@@ -233,6 +249,7 @@ export default function MiniPlanCards({
           startingFromLabel={startingFromLabel}
           popularLabel={popularLabel}
           ctaLabel={ctaLabel}
+          noPricingLabel={noPricingLabel}
           onPress={onPress}
           onPlanPress={onPlanPress}
         />

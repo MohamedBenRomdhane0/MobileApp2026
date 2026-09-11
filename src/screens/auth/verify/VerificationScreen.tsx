@@ -15,7 +15,7 @@ import {
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { FormProvider, type SubmitHandler, useForm } from "react-hook-form";
+import { FormProvider } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -26,19 +26,12 @@ import { PATHS } from "@config/constants/paths";
 import CustomTextField from "@components/inputs/customTextField/CutsomTextField";
 
 import {
-  useSendResetCodeMutation,
-  useVerifyCodeMutation,
-} from "@redux/apis/auth/authApi";
-import { useResendTimer } from "src/hooks/useResendTimer";
-
-import {
   VERIFICATION_FIELDS,
   VERIFICATION_UI,
-  VERIFICATION_RESEND_SECONDS,
 } from "./VerificationScreen.constants";
 import type { Nav, VerificationForm } from "./VerificationScreen.type";
 
-import { useError } from "src/hooks/useError";
+import { useVerificationAuth } from "src/hooks/useVerificationAuth";
 
 export default function VerificationScreen() {
   const { t } = useTranslation();
@@ -57,79 +50,30 @@ export default function VerificationScreen() {
   const userId: number | null =
     typeof route?.params?.userId === "number" ? route.params.userId : null;
 
-  const form = useForm<VerificationForm>({
-    mode: "onChange",
-    shouldFocusError: true,
-    defaultValues: { code: "" },
+  const {
+    form,
+    isVerifying,
+    isResending,
+    onSubmit: onSubmitVerify,
+    handleResend,
+    resendText,
+    isRunning,
+  } = useVerificationAuth(t, phone, userId, () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: PATHS.AUTH.SIGN_IN as any }],
+    });
   });
 
-  const { handleApiError } = useError<VerificationForm>({ formMethods: form });
-
-  const [verifyCodeApi, { isLoading: isVerifying }] = useVerifyCodeMutation();
-  const [sendResetCodeApi, { isLoading: isResending }] =
-    useSendResetCodeMutation();
-
-  const { secondsLeft, isRunning, start } = useResendTimer();
+  const rootError = form.formState.errors?.root?.message;
+  const rootErrorText = rootError ? t(String(rootError)) : null;
 
   useEffect(() => {
     if (!userId) {
       navigation.replace(PATHS.AUTH.SIGN_UP as any);
       return;
     }
-
-    start(VERIFICATION_RESEND_SECONDS);
-  }, [userId, navigation, start]);
-
-  const rootError = form.formState.errors?.root?.message;
-  const rootErrorText = rootError ? t(String(rootError)) : null;
-
-  const onSubmit: SubmitHandler<VerificationForm> = async (values) => {
-    Keyboard.dismiss();
-
-    if (!phone) {
-      form.setError("root", { type: "server", message: "auth.phone_invalid" });
-      return;
-    }
-
-    if (!userId) {
-      navigation.replace(PATHS.AUTH.SIGN_UP as any);
-      return;
-    }
-
-    try {
-      await verifyCodeApi({
-        userId: Number(userId),
-        code: String(values.code).trim(),
-      }).unwrap();
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: PATHS.AUTH.SIGN_IN as any }],
-      });
-    } catch (err: any) {
-      handleApiError(err);
-    }
-  };
-
-  const handleResend = async () => {
-    if (isRunning || isResending) return;
-
-    if (!phone) {
-      form.setError("root", { type: "server", message: "auth.phone_invalid" });
-      return;
-    }
-
-    try {
-      await sendResetCodeApi({ identifier: phone }).unwrap();
-      start(VERIFICATION_RESEND_SECONDS);
-    } catch (err: any) {
-      handleApiError(err);
-    }
-  };
-
-  const resendText = isRunning
-    ? t(VERIFICATION_UI.resendIn, { s: secondsLeft })
-    : t(VERIFICATION_UI.resend);
+  }, [userId, navigation]);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -223,7 +167,7 @@ export default function VerificationScreen() {
 
                 <TouchableOpacity
                   style={styles.buttonPrimaryTouch}
-                  onPress={form.handleSubmit(onSubmit)}
+                  onPress={form.handleSubmit(onSubmitVerify)}
                   disabled={isVerifying}
                   activeOpacity={0.9}
                 >

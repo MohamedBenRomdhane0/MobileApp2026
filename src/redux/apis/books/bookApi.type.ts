@@ -342,6 +342,7 @@ export type BookListItemUI = {
   teachers: BookTeacherUI[];
   modules: BookModuleUI[];
   lastLearning: BookLastLearningUI | null;
+  type: number;
 };
 
 export type BookPageUI = {

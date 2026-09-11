@@ -21,6 +21,7 @@ export default {
   level_lycee: "Lycée",
   level_lycee_disabled: "Non disponible pour le moment",
   level_locked_hint: "Le niveau ne peut pas être changé après la création",
+  duplicate_level_alert: "Ce niveau est déjà attribué à un autre enfant",
   add_submit: "Ajouter",
   edit_submit: "Enregistrer",
 };

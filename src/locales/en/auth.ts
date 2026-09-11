@@ -83,6 +83,18 @@ export const auth = {
   reset_password: "Reset password",
   reset_password_subtitle: "Choose a new password",
   reset_password_action: "Reset password",
+
+  step_label: "STEP {{current}} / {{total}}",
+  signup_popup_title: "Create Account",
+  signup_popup_subtitle: "Enter your details to get started",
+  verify_popup_title: "Verify Account",
+  verify_popup_subtitle: "Enter the code sent to your phone",
+   login_popup_subtitle: "Welcome back! Please sign in to continue",
+   back_to_edit: "Back to edit",
+   remember_me: "Remember me",
+   social_login_google: "Continue with Google",
+   social_login_facebook: "Continue with Facebook",
+
   impersonation: {
     active: "Impersonation Mode Active",
     viewing_as: "Viewing as",

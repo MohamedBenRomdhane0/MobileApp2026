@@ -295,4 +295,5 @@ export type GetTeachersArgs = {
   page?: number;
   perPage?: number;
   materialId?: number;
+  childId?: number;
 };
